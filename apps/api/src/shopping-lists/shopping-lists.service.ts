@@ -34,7 +34,7 @@ export class ShoppingListsService {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('items_catalog')
-      .select('*, categories(name)')
+      .select('*, categories(name, sort_order)')
       .eq('household_id', householdId)
       .order('name', { ascending: true });
     

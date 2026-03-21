@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Sidebar } from "@/components/layout/Sidebar";
 import { fetchApi } from '@/lib/api';
 import { CatalogSearch } from '@/components/catalog/CatalogSearch';
 import { CatalogItemCard } from '@/components/catalog/CatalogItemCard';
 import { ProductForm } from '@/components/shopping/ProductForm';
-import { PlusIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
+import { PlusIcon } from '@heroicons/react/24/outline';
 import {
   Sheet,
   SheetContent,
@@ -27,6 +27,7 @@ import {
 interface Category {
   id: string;
   name: string;
+  sort_order: number;
 }
 
 interface CatalogItem {
@@ -35,7 +36,7 @@ interface CatalogItem {
   barcode?: string;
   unit?: string;
   category_id?: string;
-  categories?: { name: string };
+  categories?: { name: string; sort_order: number };
   usage_count: number;
 }
 
@@ -172,10 +173,29 @@ export default function CatalogPage() {
     }
   };
 
-  const filteredItems = items.filter(item => 
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (item.barcode && item.barcode.includes(searchQuery))
-  );
+  const filteredItems = useMemo(() => {
+    return items.filter(item => 
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.barcode && item.barcode.includes(searchQuery))
+    );
+  }, [items, searchQuery]);
+
+  // Grouping logic: Sans Rayon first, then by sort_order
+  const groupedItems = useMemo(() => {
+    const groups: Record<string, { name: string; items: CatalogItem[]; order: number }> = {};
+    
+    filteredItems.forEach(item => {
+      const categoryName = item.categories?.name || 'Sans Rayon';
+      const categoryOrder = item.categories?.sort_order ?? -1; // -1 to put them first
+      
+      if (!groups[categoryName]) {
+        groups[categoryName] = { name: categoryName, items: [], order: categoryOrder };
+      }
+      groups[categoryName].items.push(item);
+    });
+    
+    return Object.values(groups).sort((a, b) => a.order - b.order);
+  }, [filteredItems]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-[family-name:var(--font-geist-sans)] text-[#1A365D]">
@@ -202,21 +222,33 @@ export default function CatalogPage() {
 
           <CatalogSearch value={searchQuery} onChange={setSearchQuery} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-32">
+          <div className="flex flex-col gap-12 pb-32">
             {isLoading ? (
-              <p className="col-span-full text-center py-20 text-gray-400 italic animate-pulse">Chargement du catalogue...</p>
+              <p className="text-center py-20 text-gray-400 italic animate-pulse">Chargement du catalogue...</p>
             ) : filteredItems.length === 0 ? (
-              <p className="col-span-full text-center py-20 text-gray-400 italic">Aucun produit trouvé.</p>
+              <p className="text-center py-20 text-gray-400 italic">Aucun produit trouvé.</p>
             ) : (
-              filteredItems.map((item) => (
-                <CatalogItemCard 
-                  key={item.id} 
-                  item={item} 
-                  onEdit={openEditSheet} 
-                  onDelete={handleDelete}
-                  isSelected={selectedIds.includes(item.id)}
-                  onSelect={(checked) => handleSelect(item.id, checked)}
-                />
+              groupedItems.map((group) => (
+                <div key={group.name} className="flex flex-col gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="w-10 h-[2px] bg-[#FF6B35]" />
+                    <h2 className="text-xs font-black uppercase tracking-widest text-gray-400">
+                      {group.name} ({group.items.length})
+                    </h2>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {group.items.map((item) => (
+                      <CatalogItemCard 
+                        key={item.id} 
+                        item={item} 
+                        onEdit={openEditSheet} 
+                        onDelete={handleDelete}
+                        isSelected={selectedIds.includes(item.id)}
+                        onSelect={(checked) => handleSelect(item.id, checked)}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))
             )}
           </div>
