@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/table";
 import { ArrowUpTrayIcon, CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { fetchApi } from '@/lib/api';
+import { toast } from 'sonner';
 
 interface CatalogImportWizardProps {
   onSuccess: () => void;
@@ -109,8 +110,9 @@ export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({ onSucc
       onSuccess();
       setIsOpen(false);
       reset();
+      toast.success("Importation terminée avec succès !");
     } catch (error) {
-      alert("Erreur lors de l'importation.");
+      toast.error("Erreur lors de l'importation.");
     } finally {
       setIsImporting(false);
     }

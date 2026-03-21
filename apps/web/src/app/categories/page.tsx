@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ProductForm } from '@/components/shopping/ProductForm';
 import Papa from 'papaparse';
+import { toast } from 'sonner';
 
 interface Category {
   id: string;
@@ -85,7 +86,7 @@ export default function CategoriesPage() {
       fetchCategories();
       setIsSheetOpen(false);
     } catch (error) {
-      alert("Erreur lors de l'enregistrement.");
+      toast.error("Erreur lors de l'enregistrement.");
     } finally {
       setIsSubmitting(false);
     }
@@ -96,8 +97,9 @@ export default function CategoriesPage() {
     try {
       await fetchApi(`/shopping-lists/categories/${id}`, { method: 'DELETE' });
       setCategories(categories.filter(c => c.id !== id));
+      toast.success("Rayon supprimé !");
     } catch (error) {
-      alert("Erreur lors de la suppression.");
+      toast.error("Erreur lors de la suppression.");
     }
   };
 
@@ -120,7 +122,7 @@ export default function CategoriesPage() {
         })).filter(cat => cat.name);
 
         if (importedData.length === 0) {
-          alert("Aucune donnée valide trouvée dans le CSV. Format attendu : nom;ordre;icone");
+          toast.error("Aucune donnée valide trouvée dans le CSV. Format attendu : nom;ordre;icone");
           return;
         }
 
@@ -131,9 +133,9 @@ export default function CategoriesPage() {
             body: JSON.stringify({ categories: importedData }),
           });
           fetchCategories();
-          alert(`${importedData.length} rayons importés avec succès !`);
+          toast.success(`${importedData.length} rayons importés avec succès !`);
         } catch (error) {
-          alert("Erreur lors de l'importation.");
+          toast.error("Erreur lors de l'importation.");
         } finally {
           setIsLoading(false);
         }

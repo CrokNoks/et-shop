@@ -15,6 +15,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { toast } from 'sonner';
 import {
   Select,
   SelectContent,
@@ -120,8 +121,9 @@ export default function CatalogPage() {
 
       fetchData();
       setIsSheetOpen(false);
+      toast.success(editingItem ? "Produit mis à jour !" : "Produit créé !");
     } catch (error) {
-      alert("Erreur lors de l'enregistrement.");
+      toast.error("Erreur lors de l'enregistrement.");
     } finally {
       setIsSubmitting(false);
     }
@@ -134,8 +136,9 @@ export default function CatalogPage() {
       await fetchApi(`/shopping-lists/catalog/${id}`, { method: 'DELETE' });
       setItems(items.filter(item => item.id !== id));
       setSelectedIds(selectedIds.filter(sid => sid !== id));
+      toast.success("Produit supprimé !");
     } catch (error) {
-      alert("Erreur lors de la suppression.");
+      toast.error("Erreur lors de la suppression.");
     }
   };
 
@@ -161,9 +164,9 @@ export default function CatalogPage() {
       fetchData();
       setSelectedIds([]);
       setBulkCategoryId('');
-      alert(`${selectedIds.length} produits mis à jour !`);
+      toast.success(`${selectedIds.length} produits mis à jour !`);
     } catch (error) {
-      alert("Erreur lors de la mise à jour groupée.");
+      toast.error("Erreur lors de la mise à jour groupée.");
     } finally {
       setIsBulkUpdating(false);
     }

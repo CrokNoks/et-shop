@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { fetchApi } from '@/lib/api';
+import { toast } from 'sonner';
 
 interface ListHeaderProps {
   id: string;
@@ -30,8 +31,9 @@ export const ListHeader: React.FC<ListHeaderProps> = ({ id, name, isSynced, onUp
         body: JSON.stringify({ name: newName }),
       });
       onUpdate(newName);
+      toast.success("Liste renommée !");
     } catch (error) {
-      alert("Erreur lors du renommage.");
+      toast.error("Erreur lors du renommage.");
     }
   };
 
@@ -43,8 +45,9 @@ export const ListHeader: React.FC<ListHeaderProps> = ({ id, name, isSynced, onUp
         method: 'DELETE',
       });
       onDelete();
+      toast.success("Liste supprimée !");
     } catch (error) {
-      alert("Erreur lors de la suppression.");
+      toast.error("Erreur lors de la suppression.");
     }
   };
 

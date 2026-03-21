@@ -47,7 +47,7 @@ export class ShoppingListsService {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('items_catalog')
-      .insert({ ...payload, household_id: householdId })
+      .upsert({ ...payload, household_id: householdId }, { onConflict: 'name, household_id' })
       .select()
       .single();
     if (error) this.handleError(error);

@@ -7,6 +7,7 @@ import { fetchApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 export default function HouseholdSetupPage() {
   const [name, setName] = useState('');
@@ -44,8 +45,9 @@ export default function HouseholdSetupPage() {
       });
       localStorage.setItem('active_household_id', household.id);
       router.push('/');
+      toast.success("Foyer créé avec succès !");
     } catch (error) {
-      alert("Erreur lors de la création du foyer.");
+      toast.error("Erreur lors de la création du foyer.");
     } finally {
       setLoading(false);
     }

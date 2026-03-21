@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
-import { Logo } from '@/components/Logo';
+import { Logo } from '@/components/layout/Logo';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -51,7 +52,7 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
     } else {
-      alert('Vérifiez vos e-mails pour confirmer votre inscription !');
+      toast.success('Vérifiez vos e-mails pour confirmer votre inscription !');
     }
     setLoading(false);
   };

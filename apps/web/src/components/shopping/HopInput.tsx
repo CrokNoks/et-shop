@@ -11,6 +11,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ProductForm } from './ProductForm';
+import { toast } from 'sonner';
 
 interface Suggestion {
   name: string;
@@ -115,7 +116,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
       });
       onItemAdded?.();
     } catch (error: any) {
-      alert(error.message || "Code-barres inconnu dans le catalogue.");
+      toast.error(error.message || "Code-barres inconnu dans le catalogue.");
     } finally {
       setIsAdding(false);
     }
@@ -123,7 +124,10 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
 
   const startVoiceDictation = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) return alert("Votre navigateur ne supporte pas la dictée vocale.");
+    if (!SpeechRecognition) {
+      toast.error("Votre navigateur ne supporte pas la dictée vocale.");
+      return;
+    }
 
     const recognition = new SpeechRecognition();
     recognition.lang = 'fr-FR';
