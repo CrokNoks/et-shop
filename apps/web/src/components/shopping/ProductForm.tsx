@@ -116,9 +116,14 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       {!isCategoryForm && (
         <div className="space-y-2">
           <Label htmlFor="category" className="text-xs font-black text-gray-400 uppercase tracking-widest">Rayon (Catégorie)</Label>
-          <Select value={categoryId} onValueChange={setCategoryId}>
+          <Select 
+            value={categoryId || undefined} 
+            onValueChange={setCategoryId}
+          >
             <SelectTrigger className="w-full text-lg font-bold text-[#1A365D] border-gray-200 focus:ring-[#FF6B35]">
-              <SelectValue placeholder="Choisir un rayon..." />
+              <SelectValue placeholder="Choisir un rayon...">
+                {categories.find(c => c.id === categoryId)?.name}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {categories.map((cat) => (
