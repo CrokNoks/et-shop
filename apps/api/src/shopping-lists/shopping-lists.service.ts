@@ -136,9 +136,31 @@ export class ShoppingListsService {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('categories')
-      .insert({ ...payload, household_id: householdId })
+      .insert({ 
+        ...payload, 
+        icon: payload.icon || '📦', 
+        household_id: householdId 
+      })
       .select()
       .single();
+    if (error) this.handleError(error);
+    return data;
+  }
+
+  async importCategories(categories: { name: string; icon?: string; sort_order?: number }[]) {
+    const householdId = this.getHouseholdIdOrThrow();
+    const payload = categories.map(cat => ({
+      ...cat,
+      icon: cat.icon || '📦',
+      household_id: householdId
+    }));
+
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('categories')
+      .insert(payload)
+      .select();
+
     if (error) this.handleError(error);
     return data;
   }

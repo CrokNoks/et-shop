@@ -40,6 +40,11 @@ export class ShoppingListsController {
     return this.shoppingListsService.createCategory(payload);
   }
 
+  @Post('categories/import')
+  async importCategories(@Body('categories') categories: { name: string; icon?: string; sort_order?: number }[]) {
+    return this.shoppingListsService.importCategories(categories);
+  }
+
   // 2. Routes de Ressources Globales (Patches/Deletes)
   @Patch('categories/:id')
   async updateCategory(

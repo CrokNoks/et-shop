@@ -163,7 +163,15 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
           placeholder={isListening ? "Écoute en cours..." : "Ajouter un article... (ex: Lait)"}
           className="flex-1 px-3 py-2 text-lg outline-none text-[#1A365D]"
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && inputValue) handleAdd(inputValue);
+            if (e.key === 'Enter') {
+              if (suggestions.length > 0) {
+                // Sélectionner le premier produit suggéré
+                handleAdd(suggestions[0].name);
+              } else if (inputValue.trim()) {
+                // Si aucune suggestion mais du texte, ouvrir le formulaire de création
+                openCreateSheet();
+              }
+            }
           }}
           disabled={isAdding}
         />

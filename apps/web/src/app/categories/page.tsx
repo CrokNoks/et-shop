@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Sidebar } from "@/components/layout/Sidebar";
 import { fetchApi } from '@/lib/api';
-import { PencilIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, PlusIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import {
   Sheet,
   SheetContent,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ProductForm } from '@/components/shopping/ProductForm';
+import Papa from 'papaparse';
 
 interface Category {
   id: string;
@@ -24,6 +25,7 @@ interface Category {
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form state
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -68,7 +70,7 @@ export default function CategoriesPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const payload = { name, icon: icon || null, sort_order: sortOrder };
+      const payload = { name, icon: icon || '📦', sort_order: sortOrder };
       if (editingCategory) {
         await fetchApi(`/shopping-lists/categories/${editingCategory.id}`, {
           method: 'PATCH',
@@ -99,6 +101,49 @@ export default function CategoriesPage() {
     }
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        const importedData = results.data.map((row: any) => ({
+          name: row.nom || row.name || row.Nom,
+          sort_order: parseInt(row.ordre || row.sort_order || row.Ordre) || 0,
+          icon: row.icone || row.icon || row.Icone || '📦'
+        })).filter(cat => cat.name);
+
+        if (importedData.length === 0) {
+          alert("Aucune donnée valide trouvée dans le CSV. Format attendu : nom;ordre;icone");
+          return;
+        }
+
+        try {
+          setIsLoading(true);
+          await fetchApi('/shopping-lists/categories/import', {
+            method: 'POST',
+            body: JSON.stringify({ categories: importedData }),
+          });
+          fetchCategories();
+          alert(`${importedData.length} rayons importés avec succès !`);
+        } catch (error) {
+          alert("Erreur lors de l'importation.");
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    });
+    
+    // Reset input
+    e.target.value = '';
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-[family-name:var(--font-geist-sans)]">
       <Sidebar activeListId="" onListSelect={() => {}} />
@@ -111,13 +156,30 @@ export default function CategoriesPage() {
               <h1 className="text-4xl font-black">Gestion des Rayons</h1>
               <p className="text-gray-500">Personnalisez l'ordre de passage en magasin.</p>
             </div>
-            <Button 
-              onClick={handleOpenCreate}
-              className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold rounded-2xl px-6 py-6 shadow-lg transition-all border-none"
-            >
-              <PlusIcon className="w-5 h-5 mr-2" strokeWidth={3} />
-              Nouveau Rayon
-            </Button>
+            <div className="flex gap-3">
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                accept=".csv" 
+                className="hidden" 
+              />
+              <Button 
+                onClick={handleImportClick}
+                variant="outline"
+                className="border-gray-200 text-gray-500 font-bold rounded-2xl px-6 py-6 shadow-sm hover:bg-gray-50 transition-all"
+              >
+                <ArrowUpTrayIcon className="w-5 h-5 mr-2" strokeWidth={2} />
+                Importer CSV
+              </Button>
+              <Button 
+                onClick={handleOpenCreate}
+                className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold rounded-2xl px-6 py-6 shadow-lg transition-all border-none"
+              >
+                <PlusIcon className="w-5 h-5 mr-2" strokeWidth={3} />
+                Nouveau Rayon
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4">
@@ -184,9 +246,10 @@ export default function CategoriesPage() {
                 isSubmitting={isSubmitting}
                 submitLabel={editingCategory ? "Mettre à jour" : "Créer le rayon"}
                 onSubmit={handleSubmit}
-                // Props requis par l'interface mais inutilisés ici
                 barcode=""
                 setBarcode={() => {}}
+                unit="pcs"
+                setUnit={() => {}}
                 categoryId=""
                 setCategoryId={() => {}}
                 categories={[]}
