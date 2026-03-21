@@ -63,10 +63,8 @@ export const ListHeader: React.FC<ListHeaderProps> = ({ id, name, isSynced, onUp
 
       <div className="flex items-center gap-2">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="p-2 hover:bg-white rounded-xl transition-all border border-transparent hover:border-gray-100 text-gray-400 hover:text-[#1A365D]" title="Plus d'options">
-              <EllipsisHorizontalIcon className="w-6 h-6" />
-            </button>
+          <DropdownMenuTrigger className="p-2 hover:bg-white rounded-xl transition-all border border-transparent hover:border-gray-100 text-gray-400 hover:text-[#1A365D] outline-none" title="Plus d'options">
+            <EllipsisHorizontalIcon className="w-6 h-6" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48 p-2 rounded-2xl shadow-xl border-gray-100 text-[#1A365D]">
             <DropdownMenuItem onClick={handleRename} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-gray-50 focus:bg-gray-50 font-bold transition-colors">

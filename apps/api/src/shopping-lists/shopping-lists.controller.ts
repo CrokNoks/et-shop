@@ -92,6 +92,11 @@ export class ShoppingListsController {
     return this.shoppingListsService.updateBarcode(itemId, barcode);
   }
 
+  @Delete('items/:id')
+  async removeItem(@Param('id') itemId: string) {
+    return this.shoppingListsService.removeItem(itemId);
+  }
+
   @Get('suggest/:query')
   async suggest(@Param('query') query: string) {
     return this.shoppingListsService.suggestItems(query);

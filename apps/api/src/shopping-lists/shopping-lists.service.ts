@@ -148,6 +148,7 @@ export class ShoppingListsService {
     const householdId = this.getHouseholdIdOrThrow();
     const { name, quantity = 1, barcode, category_id, unit } = payload;
 
+    // 1. Chercher dans le catalogue du foyer
     let { data: catalogItem } = await client
       .from('items_catalog')
       .select('id, unit, category_id, barcode')
@@ -155,37 +156,58 @@ export class ShoppingListsService {
       .eq('household_id', householdId)
       .maybeSingle();
 
-    let finalUnit = unit || catalogItem?.unit || 'pcs';
-    let finalCategoryId = category_id || catalogItem?.category_id || null;
-    let finalBarcode = barcode || catalogItem?.barcode || null;
+    // L'unité par défaut est celle du catalogue, ou 'pcs'
+    let finalUnit = catalogItem?.unit || unit || 'pcs';
+    
+    // Si l'utilisateur a saisi une unité spécifique dans le formulaire et que le produit existe déjà, 
+    // on utilise sa saisie pour CET item de liste, mais on ne met PAS à jour le catalogue.
+    if (unit && unit !== 'pcs') {
+      finalUnit = unit;
+    }
 
     if (!catalogItem) {
+      // Produit inconnu : ON LE CRÉE dans le catalogue
       const { data: newItem, error: cError } = await client
         .from('items_catalog')
         .insert({ 
           name, 
           household_id: householdId, 
-          category_id: finalCategoryId, 
-          barcode: finalBarcode,
+          category_id: category_id || null, 
+          barcode: barcode || null,
           unit: finalUnit
         })
         .select()
         .single();
       if (cError) this.handleError(cError);
       catalogItem = newItem;
-    } else {
-      const updates: any = {};
-      if (unit && !catalogItem.unit) updates.unit = unit;
-      if (category_id && !catalogItem.category_id) updates.category_id = category_id;
-      if (barcode && !catalogItem.barcode) updates.barcode = barcode;
-      
-      if (Object.keys(updates).length > 0) {
-        await client.from('items_catalog').update(updates).eq('id', catalogItem.id);
-      }
     }
 
     if (!catalogItem) throw new InternalServerErrorException('Failed to resolve catalog item');
 
+    // 2. LOGIQUE DE RÉUTILISATION : Vérifier si l'article est déjà dans la liste
+    const { data: existingListItem } = await client
+      .from('shopping_list_items')
+      .select('id, quantity')
+      .eq('list_id', listId)
+      .eq('catalog_item_id', catalogItem.id)
+      .maybeSingle();
+
+    if (existingListItem) {
+      const { data, error } = await client
+        .from('shopping_list_items')
+        .update({ 
+          quantity: Number(existingListItem.quantity) + Number(quantity),
+          is_checked: false,
+          unit: finalUnit 
+        })
+        .eq('id', existingListItem.id)
+        .select()
+        .single();
+      if (error) this.handleError(error);
+      return data;
+    }
+
+    // 3. Ajouter normalement
     const { data, error } = await client
       .from('shopping_list_items')
       .insert({ 
@@ -216,6 +238,27 @@ export class ShoppingListsService {
       throw new NotFoundException('Product not found in catalog.');
     }
 
+    const { data: existingListItem } = await client
+      .from('shopping_list_items')
+      .select('id, quantity')
+      .eq('list_id', listId)
+      .eq('catalog_item_id', catalogItem.id)
+      .maybeSingle();
+
+    if (existingListItem) {
+      const { data, error } = await client
+        .from('shopping_list_items')
+        .update({ 
+          quantity: Number(existingListItem.quantity) + 1,
+          is_checked: false 
+        })
+        .eq('id', existingListItem.id)
+        .select()
+        .single();
+      if (error) this.handleError(error);
+      return data;
+    }
+
     const { data, error } = await client
       .from('shopping_list_items')
       .insert({ 
@@ -231,6 +274,17 @@ export class ShoppingListsService {
 
     if (error) this.handleError(error);
     return data;
+  }
+
+  async removeItem(itemId: string) {
+    const client = this.supabaseService.getClient();
+    const { error } = await client
+      .from('shopping_list_items')
+      .delete()
+      .eq('id', itemId);
+    
+    if (error) this.handleError(error);
+    return { success: true };
   }
 
   async toggleItem(itemId: string, isChecked: boolean) {
@@ -338,7 +392,7 @@ export class ShoppingListsService {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('items_catalog')
-      .select('name, category_id, categories(name)')
+      .select('name, category_id, categories(name), unit')
       .eq('household_id', householdId)
       .ilike('name', `%${query}%`)
       .limit(5);
@@ -348,6 +402,7 @@ export class ShoppingListsService {
 
   async updateBarcode(itemId: string, barcode: string) {
     const client = this.supabaseService.getClient();
+    // ON NE MET PLUS À JOUR LE CATALOGUE ICI
     const { data, error } = await client
       .from('shopping_list_items')
       .update({ barcode })
@@ -355,12 +410,6 @@ export class ShoppingListsService {
       .select()
       .single();
     if (error) this.handleError(error);
-    if (data) {
-      await client
-        .from('items_catalog')
-        .update({ barcode })
-        .ilike('name', data.name);
-    }
     return data;
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { CheckCircleIcon, ShoppingCartIcon, TagIcon, ChevronRightIcon, MinusIcon, PlusIcon, QrCodeIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, ShoppingCartIcon, TagIcon, ChevronRightIcon, MinusIcon, PlusIcon, QrCodeIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolidIcon, QrCodeIcon as QrCodeSolidIcon } from '@heroicons/react/24/solid';
 import { fetchApi } from '@/lib/api';
 import { useSupabase } from '@/hooks/useSupabase';
@@ -82,6 +82,18 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
       });
     } catch (error) {
       console.error('Failed to toggle item:', error);
+      fetchItems();
+    }
+  };
+
+  const handleDeleteItem = async (id: string) => {
+    try {
+      setItems(prev => prev.filter(item => item.id !== id));
+      await fetchApi(`/shopping-lists/items/${id}`, {
+        method: 'DELETE',
+      });
+    } catch (error) {
+      console.error('Failed to delete item:', error);
       fetchItems();
     }
   };
@@ -235,7 +247,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
                     <div 
                       key={item.id}
                       onClick={() => toggleCheck(item.id, item.is_checked)}
-                      className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
+                      className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer group/item ${
                         item.is_checked 
                           ? 'bg-gray-50/50 border-transparent' 
                           : 'bg-white border-gray-100 shadow-sm hover:shadow-md'
@@ -249,7 +261,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
                         )}
                       </button>
                       
-                      <div className="flex-1 min-w-0 flex flex-col gap-1">
+                      <div className="flex-1 min-w-0 flex flex-col gap-1 text-left">
                         <div className="flex items-center gap-2">
                           <p className={`font-bold truncate ${isShoppingMode ? 'text-xl' : 'text-base'} ${item.is_checked ? 'line-through text-gray-400' : 'text-[#1A365D]'}`}>
                             {name}
@@ -289,22 +301,32 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
                       </div>
 
                       {!isShoppingMode && (
-                        <div className="flex items-center gap-2 bg-gray-50 px-2 py-1 rounded-lg border border-gray-100" onClick={(e) => e.stopPropagation()}>
-                          <input 
-                            type="number"
-                            step="0.01"
-                            defaultValue={item.price || ''}
-                            onBlur={(e) => handlePriceUpdate(item.id, e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                handlePriceUpdate(item.id, (e.target as HTMLInputElement).value);
-                                (e.target as HTMLInputElement).blur();
-                              }
-                            }}
-                            placeholder="0.00"
-                            className="w-16 bg-transparent text-right font-bold outline-none text-sm"
-                          />
-                          <span className="text-xs font-bold text-gray-400">€</span>
+                        <div className="flex items-center gap-4" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-2 bg-gray-50 px-2 py-1 rounded-lg border border-gray-100">
+                            <input 
+                              type="number"
+                              step="0.01"
+                              defaultValue={item.price || ''}
+                              onBlur={(e) => handlePriceUpdate(item.id, e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  handlePriceUpdate(item.id, (e.target as HTMLInputElement).value);
+                                  (e.target as HTMLInputElement).blur();
+                                }
+                              }}
+                              placeholder="0.00"
+                              className="w-16 bg-transparent text-right font-bold outline-none text-sm"
+                            />
+                            <span className="text-xs font-bold text-gray-400">€</span>
+                          </div>
+                          
+                          <button 
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover/item:opacity-100"
+                            title="Supprimer de la liste"
+                          >
+                            <TrashIcon className="w-5 h-5" />
+                          </button>
                         </div>
                       )}
 
