@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { CheckCircleIcon, ShoppingCartIcon, TagIcon, ChevronRightIcon, MinusIcon, PlusIcon, QrCodeIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolidIcon, QrCodeIcon as QrCodeSolidIcon } from '@heroicons/react/24/solid';
 import { fetchApi } from '@/lib/api';
+import { useSupabase } from '@/hooks/useSupabase';
 
 interface ListItem {
   id: string;
@@ -22,6 +23,7 @@ interface ShoppingListProps {
 }
 
 export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
+  const supabase = useSupabase();
   const [items, setItems] = useState<ListItem[]>([]);
   const [isShoppingMode, setIsShoppingMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,12 +41,33 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
 
   useEffect(() => {
     fetchItems();
-    const interval = setInterval(fetchItems, 3000);
-    return () => clearInterval(interval);
-  }, [listId]);
+
+    // Abonnement Realtime
+    const channel = supabase
+      .channel(`shopping_list_${listId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'shopping_list_items',
+          filter: `list_id=eq.${listId}`,
+        },
+        () => {
+          // On rafraîchit la liste complète pour récupérer les jointures (items_catalog)
+          fetchItems();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [listId, supabase]);
 
   const toggleCheck = async (id: string, currentChecked: boolean) => {
     try {
+      // Optimistic update
       setItems(prev => prev.map(item => 
         item.id === id ? { ...item, is_checked: !currentChecked } : item
       ));
@@ -87,6 +110,24 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
       });
     } catch (error) {
       console.error('Failed to update quantity:', error);
+      fetchItems();
+    }
+  };
+
+  const handleBarcodeUpdate = async (id: string) => {
+    const barcode = prompt("Scannez ou entrez le code-barres pour cet article :");
+    if (barcode === null) return;
+
+    try {
+      setItems(prev => prev.map(item => 
+        item.id === id ? { ...item, barcode } : item
+      ));
+      await fetchApi(`/shopping-lists/items/${id}/barcode`, {
+        method: 'PATCH',
+        body: JSON.stringify({ barcode }),
+      });
+    } catch (error) {
+      console.error('Failed to update barcode:', error);
       fetchItems();
     }
   };

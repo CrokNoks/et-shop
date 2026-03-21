@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Logo } from './Logo';
 import { UserBadge } from './UserBadge';
+import { useSupabase } from '@/hooks/useSupabase';
 
 interface List {
   id: string;
@@ -14,6 +15,7 @@ interface List {
   itemCount: number;
   isShared: boolean;
   color: string;
+  household_id: string;
 }
 
 interface ListSidebarProps {
@@ -23,6 +25,7 @@ interface ListSidebarProps {
 
 export const Sidebar: React.FC<ListSidebarProps> = ({ activeListId, onListSelect }) => {
   const pathname = usePathname();
+  const supabase = useSupabase();
   const [lists, setLists] = useState<List[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -41,9 +44,31 @@ export const Sidebar: React.FC<ListSidebarProps> = ({ activeListId, onListSelect
 
   useEffect(() => {
     loadLists();
-    const interval = setInterval(loadLists, 5000);
-    return () => clearInterval(interval);
-  }, []);
+
+    const householdId = localStorage.getItem('active_household_id');
+    if (!householdId) return;
+
+    // Abonnement Realtime pour les listes du foyer
+    const channel = supabase
+      .channel('sidebar_lists')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'shopping_lists',
+          filter: `household_id=eq.${householdId}`,
+        },
+        () => {
+          loadLists();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase]);
 
   const handleCreateList = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +92,7 @@ export const Sidebar: React.FC<ListSidebarProps> = ({ activeListId, onListSelect
     <aside className="w-full sm:w-80 bg-white border-r border-gray-100 p-8 flex flex-col gap-8 sm:h-screen sm:sticky sm:top-0">
       <Logo width={200} height={60} />
       
-      <div className="w-full flex flex-col gap-6">
+      <div className="w-full flex flex-col gap-6 text-[#1A365D]">
         {/* Catalogue & Categories Links */}
         <div className="px-2 flex flex-col gap-2">
           <Link 
@@ -109,7 +134,6 @@ export const Sidebar: React.FC<ListSidebarProps> = ({ activeListId, onListSelect
           </button>
         </div>
 
-        {/* Formulaire de création rapide */}
         {showCreateForm && (
           <form onSubmit={handleCreateList} className="px-2 mb-2 animate-in fade-in slide-in-from-top-2">
             <input
