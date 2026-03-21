@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import { Logo } from '@/components/Logo';
 
@@ -11,7 +11,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const supabase = createClientComponentClient();
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,11 +57,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 text-[#1A365D]">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 flex flex-col gap-8">
         <div className="flex flex-col items-center gap-4">
           <Logo width={200} height={60} />
-          <h1 className="text-xl font-bold text-[#1A365D]">Connectez-vous à Et SHop!</h1>
+          <h1 className="text-xl font-bold">Connectez-vous à Et SHop!</h1>
         </div>
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
@@ -67,7 +71,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] text-[#1A365D] font-medium transition-all"
+              className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all"
               placeholder="votre@email.com"
               required
             />
@@ -79,7 +83,7 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] text-[#1A365D] font-medium transition-all"
+              className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all"
               placeholder="••••••••"
               required
             />
@@ -112,10 +116,6 @@ export default function LoginPage() {
           </button>
         </div>
       </div>
-
-      <p className="mt-8 text-xs text-gray-400 font-bold uppercase tracking-widest">
-        Propulsionné par Et SHop! 🚀
-      </p>
     </div>
   );
 }
