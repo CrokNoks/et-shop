@@ -10,7 +10,6 @@ export class ShoppingListsService {
       .getClient()
       .from('shopping_lists')
       .select('*, list_members(*)');
-
     if (error) throw error;
     return data;
   }
@@ -19,35 +18,45 @@ export class ShoppingListsService {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('shopping_lists')
-      .select('*, shopping_list_items(*)')
+      .select('*, shopping_list_items(*, categories(name))')
       .eq('id', id)
       .single();
-
     if (error || !data) throw new NotFoundException('Shopping list not found');
     return data;
   }
 
-  async create(name: string, ownerId: string) {
+  async suggestItems(query: string) {
     const { data, error } = await this.supabaseService
       .getClient()
-      .from('shopping_lists')
-      .insert({ name, owner_id: ownerId })
-      .select()
-      .single();
-
+      .from('items_catalog')
+      .select('name, category_id, categories(name)')
+      .ilike('name', `%${query}%`)
+      .limit(5);
     if (error) throw error;
     return data;
   }
 
-  async addItem(listId: string, name: string, categoryId?: string) {
-    const { data, error } = await this.supabaseService
-      .getClient()
+  async addItem(listId: string, name: string) {
+    const client = this.supabaseService.getClient();
+    const { data: catalogItem } = await client
+      .from('items_catalog')
+      .select('category_id')
+      .ilike('name', name)
+      .maybeSingle();
+
+    const categoryId = catalogItem?.category_id || null;
+
+    const { data, error } = await client
       .from('shopping_list_items')
       .insert({ list_id: listId, name, category_id: categoryId })
       .select()
       .single();
 
     if (error) throw error;
+
+    if (!catalogItem) {
+      client.from('items_catalog').insert({ name, category_id: null }).then();
+    }
     return data;
   }
 
@@ -59,7 +68,6 @@ export class ShoppingListsService {
       .eq('id', itemId)
       .select()
       .single();
-
     if (error) throw error;
     return data;
   }

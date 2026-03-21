@@ -8,7 +8,7 @@ import { fetchApi } from '@/lib/api';
 interface ListItem {
   id: string;
   name: string;
-  category_id?: string;
+  categories?: { name: string };
   price: number;
   is_checked: boolean;
   quantity: number;
@@ -36,31 +36,29 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
 
   useEffect(() => {
     fetchItems();
-    const interval = setInterval(fetchItems, 3000); // Polling simple toutes les 3s
+    const interval = setInterval(fetchItems, 3000);
     return () => clearInterval(interval);
   }, [listId]);
 
   const toggleCheck = async (id: string, currentChecked: boolean) => {
     try {
-      // Optimistic update
       setItems(prev => prev.map(item => 
         item.id === id ? { ...item, is_checked: !currentChecked } : item
       ));
-
       await fetchApi(`/shopping-lists/items/${id}/toggle`, {
         method: 'PATCH',
         body: JSON.stringify({ isChecked: !currentChecked }),
       });
     } catch (error) {
       console.error('Failed to toggle item:', error);
-      fetchItems(); // Rollback en cas d'erreur
+      fetchItems();
     }
   };
 
   const groupedItems = useMemo(() => {
     const groups: Record<string, ListItem[]> = {};
     items.forEach(item => {
-      const category = item.category_id || 'Autre'; // Simplifié pour l'instant
+      const category = item.categories?.name || 'Inconnu';
       if (!groups[category]) groups[category] = [];
       groups[category].push(item);
     });
@@ -117,10 +115,10 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
         {items.length === 0 ? (
           <div className="text-center py-12 opacity-40 italic">Votre liste est vide. Ajoutez un article ci-dessus ! 🚀</div>
         ) : (
-          Object.entries(groupedItems).map(([category, categoryItems]) => (
+          Object.entries(groupedItems).sort().map(([category, categoryItems]) => (
             <div key={category} className="space-y-3">
               <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest px-2 flex items-center gap-2">
-                <span className="w-8 h-[2px] bg-gray-200" />
+                <span className="w-8 h-[2px] bg-[#FF6B35]" />
                 Rayon : {category}
               </h3>
               <div className="space-y-2">

@@ -20,6 +20,11 @@ export class ShoppingListsController {
     return this.shoppingListsService.create(name, ownerId);
   }
 
+  @Get('suggest/:query')
+  async suggest(@Param('query') query: string) {
+    return this.shoppingListsService.suggestItems(query);
+  }
+
   @Post(':id/items')
   async addItem(
     @Param('id') listId: string,
