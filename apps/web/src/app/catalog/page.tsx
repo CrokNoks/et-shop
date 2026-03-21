@@ -23,6 +23,7 @@ interface CatalogItem {
   id: string;
   name: string;
   barcode?: string;
+  unit?: string;
   category_id?: string;
   categories?: { name: string };
   usage_count: number;
@@ -38,6 +39,7 @@ export default function CatalogPage() {
   const [editingItem, setEditingItem] = useState<CatalogItem | null>(null);
   const [editName, setEditName] = useState('');
   const [editBarcode, setEditBarcode] = useState('');
+  const [editUnit, setEditUnit] = useState('');
   const [editCategoryId, setEditCategoryId] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -75,6 +77,7 @@ export default function CatalogPage() {
     setEditingItem(item);
     setEditName(item.name);
     setEditBarcode(item.barcode || '');
+    setEditUnit(item.unit || 'pcs');
     setEditCategoryId(item.category_id || '');
   };
 
@@ -84,16 +87,16 @@ export default function CatalogPage() {
 
     setIsUpdating(true);
     try {
-      const updated = await fetchApi(`/shopping-lists/catalog/${editingItem.id}`, {
+      await fetchApi(`/shopping-lists/catalog/${editingItem.id}`, {
         method: 'PATCH',
         body: JSON.stringify({
           name: editName,
           barcode: editBarcode || null,
+          unit: editUnit,
           category_id: editCategoryId || null,
         }),
       });
 
-      // Refetch data to get updated category names correctly
       fetchData();
       setEditingItem(null);
     } catch (error) {
@@ -109,14 +112,14 @@ export default function CatalogPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-[family-name:var(--font-geist-sans)]">
+    <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-[family-name:var(--font-geist-sans)] text-[#1A365D]">
       <Sidebar activeListId="" onListSelect={() => {}} />
 
-      <main className="flex-1 p-6 sm:p-12 flex justify-center">
+      <main className="flex-1 p-6 sm:p-12 flex justify-center text-left">
         <div className="w-full max-w-4xl flex flex-col gap-10">
           
-          <div className="flex flex-col gap-2 text-left">
-            <h1 className="text-4xl font-black text-[#1A365D]">Catalogue Produits</h1>
+          <div className="flex flex-col gap-2">
+            <h1 className="text-4xl font-black">Catalogue Produits</h1>
             <p className="text-gray-500">Gérez le référentiel global de vos articles.</p>
           </div>
 
@@ -140,9 +143,9 @@ export default function CatalogPage() {
           </div>
 
           <Sheet open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
-            <SheetContent side="right" className="w-full sm:max-w-[450px] p-10">
+            <SheetContent side="right" className="w-full sm:max-w-[450px] p-10 text-[#1A365D]">
               <SheetHeader className="mb-10 text-left">
-                <SheetTitle className="text-3xl font-black text-[#1A365D]">Modifier le produit</SheetTitle>
+                <SheetTitle className="text-3xl font-black">Modifier le produit</SheetTitle>
                 <SheetDescription className="text-base text-gray-500 mt-2">
                   Mettez à jour les informations globales de cet article dans le catalogue.
                 </SheetDescription>
@@ -151,6 +154,8 @@ export default function CatalogPage() {
               <ProductForm 
                 name={editName}
                 setName={setEditName}
+                unit={editUnit}
+                setUnit={setEditUnit}
                 barcode={editBarcode}
                 setBarcode={setEditBarcode}
                 categoryId={editCategoryId}
@@ -163,7 +168,7 @@ export default function CatalogPage() {
             </SheetContent>
           </Sheet>
 
-          <footer className="mt-auto py-12 flex gap-6 flex-wrap items-center justify-center text-[#1A365D] opacity-40 text-xs text-center">
+          <footer className="mt-auto py-12 flex gap-6 flex-wrap items-center justify-center opacity-40 text-xs text-center">
             <p>© 2026 Et SHop! - Votre catalogue intelligent propulsionné 🚀</p>
           </footer>
         </div>

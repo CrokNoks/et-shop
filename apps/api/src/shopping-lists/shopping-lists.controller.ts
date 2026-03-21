@@ -61,7 +61,7 @@ export class ShoppingListsController {
   @Patch('catalog/:id')
   async updateCatalog(
     @Param('id') id: string,
-    @Body() payload: { name?: string; barcode?: string; category_id?: string },
+    @Body() payload: { name?: string; barcode?: string; category_id?: string; unit?: string },
   ) {
     return this.shoppingListsService.updateCatalogItem(id, payload);
   }
@@ -100,7 +100,7 @@ export class ShoppingListsController {
   @Post(':id/items')
   async addItem(
     @Param('id') listId: string,
-    @Body() payload: { name: string; quantity?: number; barcode?: string; category_id?: string },
+    @Body() payload: { name: string; quantity?: number; barcode?: string; category_id?: string; unit?: string },
   ) {
     try {
       this.logger.log(`Adding item ${payload.name} to list ${listId}`);

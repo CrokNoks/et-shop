@@ -41,6 +41,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [newProductName, setNewProductName] = useState('');
   const [newProductQuantity, setNewProductQuantity] = useState(1);
+  const [newProductUnit, setNewProductUnit] = useState('pcs');
   const [newProductBarcode, setNewProductBarcode] = useState('');
   const [newProductCategoryId, setNewProductCategoryId] = useState('');
 
@@ -77,13 +78,13 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
     return () => clearTimeout(timer);
   }, [inputValue]);
 
-  const handleAdd = async (name: string, quantity = 1, barcode?: string, category_id?: string) => {
+  const handleAdd = async (name: string, quantity = 1, unit = 'pcs', barcode?: string, category_id?: string) => {
     if (!name || isAdding) return;
     setIsAdding(true);
     try {
       await fetchApi(`/shopping-lists/${listId}/items`, {
         method: 'POST',
-        body: JSON.stringify({ name, quantity, barcode, category_id }),
+        body: JSON.stringify({ name, quantity, unit, barcode, category_id }),
       });
       
       setInputValue('');
@@ -142,6 +143,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
   const openCreateSheet = () => {
     setNewProductName(inputValue);
     setNewProductQuantity(1);
+    setNewProductUnit('pcs');
     setNewProductBarcode('');
     setNewProductCategoryId('');
     setShowSuggestions(false);
@@ -232,6 +234,8 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
             setName={setNewProductName}
             quantity={newProductQuantity}
             setQuantity={setNewProductQuantity}
+            unit={newProductUnit}
+            setUnit={setNewProductUnit}
             barcode={newProductBarcode}
             setBarcode={setNewProductBarcode}
             categoryId={newProductCategoryId}
@@ -242,7 +246,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
             showQuantity={true}
             onSubmit={(e) => {
               e.preventDefault();
-              handleAdd(newProductName, newProductQuantity, newProductBarcode || undefined, newProductCategoryId || undefined);
+              handleAdd(newProductName, newProductQuantity, newProductUnit, newProductBarcode || undefined, newProductCategoryId || undefined);
             }}
           />
         </SheetContent>

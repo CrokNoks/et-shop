@@ -94,18 +94,22 @@ export class ShoppingListsService {
     return data;
   }
 
-  async addItem(listId: string, payload: { name: string; quantity?: number; barcode?: string; category_id?: string }) {
+  async addItem(listId: string, payload: { name: string; quantity?: number; barcode?: string; category_id?: string; unit?: string }) {
     const client = this.supabaseService.getClient();
     const householdId = this.getHouseholdIdOrThrow();
-    const { name, quantity = 1, barcode, category_id } = payload;
+    const { name, quantity = 1, barcode, category_id, unit } = payload;
 
     // 1. Chercher ou Créer dans le catalogue du foyer
     let { data: catalogItem } = await client
       .from('items_catalog')
-      .select('id')
+      .select('id, unit, category_id, barcode')
       .ilike('name', name)
       .eq('household_id', householdId)
       .maybeSingle();
+
+    let finalUnit = unit || catalogItem?.unit || 'pcs';
+    let finalCategoryId = category_id || catalogItem?.category_id || null;
+    let finalBarcode = barcode || catalogItem?.barcode || null;
 
     if (!catalogItem) {
       const { data: newItem, error: cError } = await client
@@ -113,13 +117,24 @@ export class ShoppingListsService {
         .insert({ 
           name, 
           household_id: householdId, 
-          category_id: category_id || null, 
-          barcode: barcode || null 
+          category_id: finalCategoryId, 
+          barcode: finalBarcode,
+          unit: finalUnit
         })
         .select()
         .single();
       if (cError) this.handleError(cError);
       catalogItem = newItem;
+    } else {
+      // Mettre à jour si de nouvelles infos sont fournies
+      const updates: any = {};
+      if (unit && !catalogItem.unit) updates.unit = unit;
+      if (category_id && !catalogItem.category_id) updates.category_id = category_id;
+      if (barcode && !catalogItem.barcode) updates.barcode = barcode;
+      
+      if (Object.keys(updates).length > 0) {
+        await client.from('items_catalog').update(updates).eq('id', catalogItem.id);
+      }
     }
 
     // 2. Ajouter l'article à la liste (liaison)
@@ -129,7 +144,8 @@ export class ShoppingListsService {
         list_id: listId, 
         catalog_item_id: catalogItem.id,
         quantity,
-        is_checked: false
+        is_checked: false,
+        unit: finalUnit
       })
       .select()
       .single();
@@ -174,7 +190,7 @@ export class ShoppingListsService {
     return data;
   }
 
-  async updateCatalogItem(id: string, payload: { name?: string; barcode?: string; category_id?: string }) {
+  async updateCatalogItem(id: string, payload: { name?: string; barcode?: string; category_id?: string; unit?: string }) {
     const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService
       .getClient()

@@ -30,6 +30,8 @@ interface ProductFormProps {
   setName: (name: string) => void;
   quantity?: number;
   setQuantity?: (qty: number) => void;
+  unit: string;
+  setUnit: (unit: string) => void;
   barcode: string;
   setBarcode: (bc: string) => void;
   categoryId: string;
@@ -50,6 +52,7 @@ interface ProductFormProps {
 export const ProductForm: React.FC<ProductFormProps> = ({
   name, setName,
   quantity, setQuantity,
+  unit, setUnit,
   barcode, setBarcode,
   categoryId, setCategoryId,
   categories,
@@ -137,16 +140,41 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       )}
       
       {!isCategoryForm && showQuantity && setQuantity && (
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="quantity" className="text-xs font-black text-gray-400 uppercase tracking-widest">Quantité</Label>
+            <Input 
+              id="quantity" 
+              type="number" 
+              min="1" 
+              value={quantity} 
+              onChange={(e) => setQuantity(parseInt(e.target.value) || 1)} 
+              className="text-lg font-bold text-[#1A365D] border-gray-200 focus-visible:ring-[#FF6B35]"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="unit" className="text-xs font-black text-gray-400 uppercase tracking-widest">Unité</Label>
+            <Input 
+              id="unit" 
+              value={unit} 
+              onChange={(e) => setUnit(e.target.value)} 
+              placeholder="Ex: brique, pack de 6..."
+              className="text-lg font-bold text-[#1A365D] border-gray-200 focus-visible:ring-[#FF6B35]"
+            />
+          </div>
+        </div>
+      )}
+
+      {!isCategoryForm && !showQuantity && (
         <div className="space-y-2">
-          <Label htmlFor="quantity" className="text-xs font-black text-gray-400 uppercase tracking-widest">Quantité par défaut</Label>
+          <Label htmlFor="unit" className="text-xs font-black text-gray-400 uppercase tracking-widest">Unité par défaut</Label>
           <Input 
-            id="quantity" 
-            type="number" 
-            min="1" 
-            value={quantity} 
-            onChange={(e) => setQuantity(parseInt(e.target.value) || 1)} 
+            id="unit" 
+            value={unit} 
+            onChange={(e) => setUnit(e.target.value)} 
+            placeholder="Ex: brique, pack de 6..."
             className="text-lg font-bold text-[#1A365D] border-gray-200 focus-visible:ring-[#FF6B35]"
-            required
           />
         </div>
       )}
