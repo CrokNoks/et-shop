@@ -3,6 +3,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PlusIcon, MicrophoneIcon, QrCodeIcon } from '@heroicons/react/24/outline';
 import { fetchApi } from '@/lib/api';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+  SheetClose,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface Suggestion {
   name: string;
@@ -20,6 +32,13 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  
+  // Sheet state for new product creation
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [newProductName, setNewProductName] = useState('');
+  const [newProductQuantity, setNewProductQuantity] = useState(1);
+  const [newProductBarcode, setNewProductBarcode] = useState('');
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -28,7 +47,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
         try {
           const data = await fetchApi(`/shopping-lists/suggest/${inputValue}`);
           setSuggestions(data);
-          setShowSuggestions(data.length > 0);
+          setShowSuggestions(true);
         } catch (error) {
           console.error('Failed to fetch suggestions:', error);
         }
@@ -41,16 +60,27 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
     return () => clearTimeout(timer);
   }, [inputValue]);
 
-  const handleAdd = async (name: string) => {
+  const handleAdd = async (name: string, quantity = 1, barcode?: string) => {
     if (!name || isAdding) return;
     setIsAdding(true);
     try {
       await fetchApi(`/shopping-lists/${listId}/items`, {
         method: 'POST',
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name, quantity, barcode }),
       });
+      
+      // Reset main input
       setInputValue('');
       setShowSuggestions(false);
+      
+      // Reset sheet form if open
+      if (isSheetOpen) {
+        setIsSheetOpen(false);
+        setNewProductName('');
+        setNewProductQuantity(1);
+        setNewProductBarcode('');
+      }
+
       onItemAdded?.();
       inputRef.current?.focus();
     } catch (error) {
@@ -96,6 +126,19 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
 
     recognition.onerror = () => setIsListening(false);
     recognition.onend = () => setIsListening(false);
+  };
+
+  const openCreateSheet = () => {
+    setNewProductName(inputValue);
+    setNewProductQuantity(1);
+    setNewProductBarcode('');
+    setShowSuggestions(false);
+    setIsSheetOpen(true);
+  };
+
+  const handleSheetSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleAdd(newProductName, newProductQuantity, newProductBarcode || undefined);
   };
 
   return (
@@ -147,7 +190,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
             <button
               key={index}
               onClick={() => handleAdd(item.name)}
-              className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 text-left border-b border-gray-50 last:border-0 group/item"
+              className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 text-left border-b border-gray-50 group/item"
             >
               <span className="font-medium text-[#1A365D] group-hover/item:text-[#FF6B35] transition-colors">
                 {item.name}
@@ -157,8 +200,80 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
               </span>
             </button>
           ))}
+          
+          {/* Ligne "+ Créer le produit" toujours visible à la fin */}
+          <button
+            onClick={openCreateSheet}
+            className="w-full flex items-center gap-2 px-4 py-3 bg-gray-50 hover:bg-[#FF6B35]/10 text-[#FF6B35] text-left transition-colors font-bold"
+          >
+            <PlusIcon className="w-5 h-5" strokeWidth={2.5} />
+            <span>Créer le produit "{inputValue}"</span>
+          </button>
         </div>
       )}
+
+      {/* Sheet Shadcn pour la création avancée */}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent side="bottom" className="sm:max-w-[425px] sm:mx-auto sm:side-right sm:bottom-auto sm:top-0 sm:h-full rounded-t-3xl sm:rounded-none">
+          <SheetHeader className="mb-6">
+            <SheetTitle className="text-2xl font-black text-[#1A365D]">Créer un produit</SheetTitle>
+            <SheetDescription>
+              Ajoutez les détails du produit pour l'enregistrer dans votre catalogue de manière permanente.
+            </SheetDescription>
+          </SheetHeader>
+          
+          <form onSubmit={handleSheetSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-xs font-black text-gray-400 uppercase tracking-widest">Nom du produit</Label>
+              <Input 
+                id="name" 
+                value={newProductName} 
+                onChange={(e) => setNewProductName(e.target.value)} 
+                className="text-lg font-bold text-[#1A365D] border-gray-200 focus-visible:ring-[#FF6B35]"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="quantity" className="text-xs font-black text-gray-400 uppercase tracking-widest">Quantité par défaut</Label>
+              <Input 
+                id="quantity" 
+                type="number" 
+                min="1" 
+                value={newProductQuantity} 
+                onChange={(e) => setNewProductQuantity(parseInt(e.target.value) || 1)} 
+                className="text-lg font-bold text-[#1A365D] border-gray-200 focus-visible:ring-[#FF6B35]"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="barcode" className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center justify-between">
+                Code-barres (Optionnel)
+                <button type="button" className="text-[#FF6B35] hover:underline flex items-center gap-1" onClick={() => {
+                  const bc = prompt("Scannez le code (Simulation) :");
+                  if(bc) setNewProductBarcode(bc);
+                }}>
+                  <QrCodeIcon className="w-3 h-3" /> Scanner
+                </button>
+              </Label>
+              <Input 
+                id="barcode" 
+                value={newProductBarcode} 
+                onChange={(e) => setNewProductBarcode(e.target.value)} 
+                placeholder="Ex: 3017620422003"
+                className="font-mono text-[#1A365D] border-gray-200 focus-visible:ring-[#FF6B35]"
+              />
+            </div>
+
+            <SheetFooter className="mt-8 pt-4 sm:justify-start">
+              <Button type="submit" disabled={isAdding} className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl">
+                {isAdding ? 'Ajout...' : 'Créer et ajouter'}
+              </Button>
+            </SheetFooter>
+          </form>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };

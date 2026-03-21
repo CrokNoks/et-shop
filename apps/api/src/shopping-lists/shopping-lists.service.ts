@@ -56,20 +56,40 @@ export class ShoppingListsService {
     return data;
   }
 
-  async addItem(listId: string, name: string) {
+  async addItem(listId: string, payload: { name: string; quantity?: number; barcode?: string }) {
     const client = this.supabaseService.getClient();
+    const { name, quantity = 1, barcode } = payload;
+
     const { data: catalogItem } = await client
       .from('items_catalog')
-      .select('category_id, barcode')
+      .select('id, category_id, barcode')
       .ilike('name', name)
       .maybeSingle();
 
-    const categoryId = catalogItem?.category_id || null;
-    const barcode = catalogItem?.barcode || null;
+    let finalCategoryId = catalogItem?.category_id || null;
+    let finalBarcode = barcode || catalogItem?.barcode || null;
+
+    if (!catalogItem) {
+      // Create new catalog item
+      await client.from('items_catalog').insert({ 
+        name, 
+        category_id: null, 
+        barcode: finalBarcode 
+      });
+    } else if (barcode && !catalogItem.barcode) {
+      // Update existing catalog item with new barcode
+      await client.from('items_catalog').update({ barcode }).eq('id', catalogItem.id);
+    }
 
     const { data, error } = await client
       .from('shopping_list_items')
-      .insert({ list_id: listId, name, category_id: categoryId, barcode })
+      .insert({ 
+        list_id: listId, 
+        name, 
+        category_id: finalCategoryId, 
+        barcode: finalBarcode,
+        quantity
+      })
       .select()
       .single();
 

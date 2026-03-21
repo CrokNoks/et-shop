@@ -47,11 +47,11 @@ export class ShoppingListsController {
   @Post(':id/items')
   async addItem(
     @Param('id') listId: string,
-    @Body('name') name: string,
+    @Body() payload: { name: string; quantity?: number; barcode?: string },
   ) {
     try {
-      this.logger.log(`Adding item ${name} to list ${listId}`);
-      return await this.shoppingListsService.addItem(listId, name);
+      this.logger.log(`Adding item ${payload.name} to list ${listId}`);
+      return await this.shoppingListsService.addItem(listId, payload);
     } catch (error) {
       this.logger.error(`Error adding item to list ${listId}:`, error.message);
       throw error;
