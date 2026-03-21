@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { CheckCircleIcon, ShoppingCartIcon, TagIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, ShoppingCartIcon, TagIcon, ChevronRightIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolidIcon } from '@heroicons/react/24/solid';
 import { fetchApi } from '@/lib/api';
 
@@ -51,6 +51,41 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
       });
     } catch (error) {
       console.error('Failed to toggle item:', error);
+      fetchItems();
+    }
+  };
+
+  const handlePriceUpdate = async (id: string, newPrice: string) => {
+    const price = parseFloat(newPrice) || 0;
+    try {
+      setItems(prev => prev.map(item => 
+        item.id === id ? { ...item, price } : item
+      ));
+      await fetchApi(`/shopping-lists/items/${id}/price`, {
+        method: 'PATCH',
+        body: JSON.stringify({ price }),
+      });
+    } catch (error) {
+      console.error('Failed to update price:', error);
+      fetchItems();
+    }
+  };
+
+  const handleQuantityUpdate = async (id: string, currentQuantity: number, delta: number) => {
+    const newQuantity = Math.max(1, currentQuantity + delta);
+    if (newQuantity === currentQuantity) return;
+
+    try {
+      setItems(prev => prev.map(item => 
+        item.id === id ? { ...item, quantity: newQuantity } : item
+      ));
+
+      await fetchApi(`/shopping-lists/items/${id}/quantity`, {
+        method: 'PATCH',
+        body: JSON.stringify({ quantity: newQuantity }),
+      });
+    } catch (error) {
+      console.error('Failed to update quantity:', error);
       fetchItems();
     }
   };
@@ -128,7 +163,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
                     onClick={() => toggleCheck(item.id, item.is_checked)}
                     className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
                       item.is_checked 
-                        ? 'bg-gray-50 border-transparent opacity-60' 
+                        ? 'bg-gray-50/50 border-transparent' 
                         : 'bg-white border-gray-100 shadow-sm hover:shadow-md'
                     } ${isShoppingMode ? 'p-6' : ''}`}
                   >
@@ -140,16 +175,56 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
                       )}
                     </button>
                     
-                    <div className="flex-1 min-w-0">
-                      <p className={`font-bold truncate ${isShoppingMode ? 'text-xl' : 'text-base'} ${item.is_checked ? 'line-through' : 'text-[#1A365D]'}`}>
+                    <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                      <p className={`font-bold truncate ${isShoppingMode ? 'text-xl' : 'text-base'} ${item.is_checked ? 'line-through text-gray-400' : 'text-[#1A365D]'}`}>
                         {item.name}
-                        {(item.quantity > 1) && <span className="ml-2 text-sm opacity-60">x{item.quantity}</span>}
                       </p>
+                      
+                      {/* Sélecteur de Quantité */}
+                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        <button 
+                          onClick={() => handleQuantityUpdate(item.id, item.quantity, -1)}
+                          className="p-1 hover:bg-gray-100 rounded-md text-gray-400"
+                        >
+                          <MinusIcon className="w-3 h-3" />
+                        </button>
+                        <span className="text-sm font-black text-[#1A365D] min-w-[20px] text-center">
+                          {item.quantity || 1}
+                        </span>
+                        <button 
+                          onClick={() => handleQuantityUpdate(item.id, item.quantity, 1)}
+                          className="p-1 hover:bg-gray-100 rounded-md text-gray-400"
+                        >
+                          <PlusIcon className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="text-sm font-bold text-gray-400">
-                      {Number(item.price).toFixed(2)} €
-                    </div>
+                    {!isShoppingMode && (
+                      <div className="flex items-center gap-2 bg-gray-50 px-2 py-1 rounded-lg border border-gray-100" onClick={(e) => e.stopPropagation()}>
+                        <input 
+                          type="number"
+                          step="0.01"
+                          defaultValue={item.price || ''}
+                          onBlur={(e) => handlePriceUpdate(item.id, e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handlePriceUpdate(item.id, (e.target as HTMLInputElement).value);
+                              (e.target as HTMLInputElement).blur();
+                            }
+                          }}
+                          placeholder="0.00"
+                          className="w-16 bg-transparent text-right font-bold text-[#1A365D] outline-none text-sm"
+                        />
+                        <span className="text-xs font-bold text-gray-400">€</span>
+                      </div>
+                    )}
+
+                    {isShoppingMode && (
+                      <div className={`text-xl font-bold ${item.is_checked ? 'text-gray-300' : 'text-[#1A365D]'}`}>
+                        {(Number(item.price) * (item.quantity || 1)).toFixed(2)} €
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

@@ -1,17 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
 export class ShoppingListsService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
+  private handleError(error: any) {
+    if (error.code === 'PGRST116') throw new NotFoundException('Resource not found');
+    if (error.code === '42501') throw new UnauthorizedException('You do not have permission (RLS)');
+    throw new InternalServerErrorException(error.message || 'Supabase error');
+  }
+
   async findAll() {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('shopping_lists')
       .select('*, list_members(*)');
-    if (error) throw error;
-    return data;
+    if (error) this.handleError(error);
+    return data || [];
   }
 
   async findOne(id: string) {
@@ -21,7 +27,8 @@ export class ShoppingListsService {
       .select('*, shopping_list_items(*, categories(name))')
       .eq('id', id)
       .single();
-    if (error || !data) throw new NotFoundException('Shopping list not found');
+    if (error) this.handleError(error);
+    if (!data) throw new NotFoundException('Shopping list not found');
     return data;
   }
 
@@ -32,12 +39,11 @@ export class ShoppingListsService {
       .select('name, category_id, categories(name)')
       .ilike('name', `%${query}%`)
       .limit(5);
-    if (error) throw error;
+    if (error) this.handleError(error);
     return data;
   }
 
   async create(name: string) {
-    // Le owner_id est automatiquement géré par la valeur par défaut 'auth.uid()' sur la table
     const { data, error } = await this.supabaseService
       .getClient()
       .from('shopping_lists')
@@ -45,7 +51,7 @@ export class ShoppingListsService {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) this.handleError(error);
     return data;
   }
 
@@ -61,11 +67,11 @@ export class ShoppingListsService {
 
     const { data, error } = await client
       .from('shopping_list_items')
-      .insert({ list_id: listId, name, category_id: categoryId, added_by: null }) // added_by peut aussi être auth.uid()
+      .insert({ list_id: listId, name, category_id: categoryId })
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) this.handleError(error);
     return data;
   }
 
@@ -77,7 +83,31 @@ export class ShoppingListsService {
       .eq('id', itemId)
       .select()
       .single();
-    if (error) throw error;
+    if (error) this.handleError(error);
+    return data;
+  }
+
+  async updatePrice(itemId: string, price: number) {
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('shopping_list_items')
+      .update({ price })
+      .eq('id', itemId)
+      .select()
+      .single();
+    if (error) this.handleError(error);
+    return data;
+  }
+
+  async updateQuantity(itemId: string, quantity: number) {
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('shopping_list_items')
+      .update({ quantity })
+      .eq('id', itemId)
+      .select()
+      .single();
+    if (error) this.handleError(error);
     return data;
   }
 }

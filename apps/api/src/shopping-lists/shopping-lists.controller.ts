@@ -67,4 +67,26 @@ export class ShoppingListsController {
       throw error;
     }
   }
+
+  @Patch('items/:id/price')
+  async updatePrice(@Param('id') itemId: string, @Body('price') price: number) {
+    try {
+      this.logger.log(`Updating price for item ${itemId} to ${price}`);
+      return await this.shoppingListsService.updatePrice(itemId, price);
+    } catch (error) {
+      this.logger.error(`Error updating price for item ${itemId}:`, error.message);
+      throw error;
+    }
+  }
+
+  @Patch('items/:id/quantity')
+  async updateQuantity(@Param('id') itemId: string, @Body('quantity') quantity: number) {
+    try {
+      this.logger.log(`Updating quantity for item ${itemId} to ${quantity}`);
+      return await this.shoppingListsService.updateQuantity(itemId, quantity);
+    } catch (error) {
+      this.logger.error(`Error updating quantity for item ${itemId}:`, error.message);
+      throw error;
+    }
+  }
 }
