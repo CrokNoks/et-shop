@@ -22,6 +22,16 @@ export class ShoppingListsService {
     return data || [];
   }
 
+  async findAllCatalog() {
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('items_catalog')
+      .select('*, categories(name)')
+      .order('name', { ascending: true });
+    if (error) this.handleError(error);
+    return data || [];
+  }
+
   async findOne(id: string) {
     const { data, error } = await this.supabaseService
       .getClient()

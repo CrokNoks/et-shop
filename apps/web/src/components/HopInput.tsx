@@ -214,15 +214,15 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
 
       {/* Sheet Shadcn pour la création avancée */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent side="bottom" className="sm:max-w-[425px] sm:mx-auto sm:side-right sm:bottom-auto sm:top-0 sm:h-full rounded-t-3xl sm:rounded-none">
-          <SheetHeader className="mb-6">
-            <SheetTitle className="text-2xl font-black text-[#1A365D]">Créer un produit</SheetTitle>
-            <SheetDescription>
+        <SheetContent side="right" className="w-full sm:max-w-[450px] p-10">
+          <SheetHeader className="mb-10 text-left">
+            <SheetTitle className="text-3xl font-black text-[#1A365D]">Créer un produit</SheetTitle>
+            <SheetDescription className="text-base text-gray-500 mt-2">
               Ajoutez les détails du produit pour l'enregistrer dans votre catalogue de manière permanente.
             </SheetDescription>
           </SheetHeader>
           
-          <form onSubmit={handleSheetSubmit} className="space-y-6">
+          <form onSubmit={handleSheetSubmit} className="space-y-8">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-xs font-black text-gray-400 uppercase tracking-widest">Nom du produit</Label>
               <Input 

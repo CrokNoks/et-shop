@@ -18,6 +18,17 @@ export class ShoppingListsController {
     }
   }
 
+  @Get('catalog')
+  async getCatalog() {
+    try {
+      this.logger.log('Fetching all products from catalog...');
+      return await this.shoppingListsService.findAllCatalog();
+    } catch (error) {
+      this.logger.error('Error fetching catalog:', error.message);
+      throw error;
+    }
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {

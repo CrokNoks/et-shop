@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { PlusIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, UsersIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 import { fetchApi } from '@/lib/api';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface List {
   id: string;
@@ -18,6 +20,7 @@ interface ListSidebarProps {
 }
 
 export const ListSidebar: React.FC<ListSidebarProps> = ({ activeListId, onListSelect }) => {
+  const pathname = usePathname();
   const [lists, setLists] = useState<List[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -60,6 +63,23 @@ export const ListSidebar: React.FC<ListSidebarProps> = ({ activeListId, onListSe
 
   return (
     <div className="w-full sm:w-64 flex flex-col gap-6">
+      {/* Catalogue Link */}
+      <div className="px-2">
+        <Link 
+          href="/catalog" 
+          className={`flex items-center gap-3 p-3 rounded-xl transition-all group ${
+            pathname === '/catalog' 
+              ? 'bg-white shadow-md border-l-4 border-[#FF6B35]' 
+              : 'hover:bg-gray-50 border-l-4 border-transparent text-gray-500'
+          }`}
+        >
+          <BookOpenIcon className={`w-5 h-5 ${pathname === '/catalog' ? 'text-[#FF6B35]' : 'text-gray-400'}`} strokeWidth={2} />
+          <span className={`font-bold ${pathname === '/catalog' ? 'text-[#1A365D]' : ''}`}>
+            Catalogue Produits
+          </span>
+        </Link>
+      </div>
+
       <div className="flex items-center justify-between px-2">
         <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Mes Listes</h3>
         <button 
