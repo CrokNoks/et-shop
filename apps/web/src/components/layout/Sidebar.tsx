@@ -32,6 +32,12 @@ export const Sidebar: React.FC<ListSidebarProps> = ({ activeListId, onListSelect
   const [newListName, setNewListName] = useState('');
 
   const loadLists = async () => {
+    const householdId = typeof window !== 'undefined' ? localStorage.getItem('active_household_id') : null;
+    if (!householdId) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const data = await fetchApi('/shopping-lists');
       setLists(data || []);
@@ -45,10 +51,9 @@ export const Sidebar: React.FC<ListSidebarProps> = ({ activeListId, onListSelect
   useEffect(() => {
     loadLists();
 
-    const householdId = localStorage.getItem('active_household_id');
+    const householdId = typeof window !== 'undefined' ? localStorage.getItem('active_household_id') : null;
     if (!householdId) return;
 
-    // Abonnement Realtime pour les listes du foyer
     const channel = supabase
       .channel('sidebar_lists')
       .on(
@@ -172,10 +177,6 @@ export const Sidebar: React.FC<ListSidebarProps> = ({ activeListId, onListSelect
                   <span className={`font-bold truncate ${activeListId === list.id ? 'text-[#1A365D]' : ''}`}>
                     {list.name}
                   </span>
-                </div>
-                
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {list.isShared && <UsersIcon className="w-4 h-4 text-gray-300" />}
                 </div>
               </Link>
             ))

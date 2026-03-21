@@ -6,6 +6,7 @@ import { fetchApi } from '@/lib/api';
 import { CatalogSearch } from '@/components/catalog/CatalogSearch';
 import { CatalogItemCard } from '@/components/catalog/CatalogItemCard';
 import { ProductForm } from '@/components/shopping/ProductForm';
+import { PlusIcon } from '@heroicons/react/24/outline';
 import {
   Sheet,
   SheetContent,
@@ -13,6 +14,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 interface Category {
   id: string;
@@ -35,13 +37,14 @@ export default function CatalogPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Edit state
+  // Form state (Edit & Create)
   const [editingItem, setEditingItem] = useState<CatalogItem | null>(null);
-  const [editName, setEditName] = useState('');
-  const [editBarcode, setEditBarcode] = useState('');
-  const [editUnit, setEditUnit] = useState('');
-  const [editCategoryId, setEditCategoryId] = useState('');
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [barcode, setBarcode] = useState('');
+  const [unit, setUnit] = useState('pcs');
+  const [categoryId, setCategoryId] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -62,6 +65,56 @@ export default function CatalogPage() {
     fetchData();
   }, []);
 
+  const handleOpenCreate = () => {
+    setEditingItem(null);
+    setName('');
+    setBarcode('');
+    setUnit('pcs');
+    setCategoryId('');
+    setIsSheetOpen(true);
+  };
+
+  const openEditSheet = (item: CatalogItem) => {
+    setEditingItem(item);
+    setName(item.name);
+    setBarcode(item.barcode || '');
+    setUnit(item.unit || 'pcs');
+    setCategoryId(item.category_id || '');
+    setIsSheetOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        name,
+        barcode: barcode || null,
+        unit,
+        category_id: categoryId || null,
+      };
+
+      if (editingItem) {
+        await fetchApi(`/shopping-lists/catalog/${editingItem.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload),
+        });
+      } else {
+        await fetchApi('/shopping-lists/catalog', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+      }
+
+      fetchData();
+      setIsSheetOpen(false);
+    } catch (error) {
+      alert("Erreur lors de l'enregistrement.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Êtes-vous sûr de vouloir supprimer "${name}" du catalogue ?`)) return;
 
@@ -70,39 +123,6 @@ export default function CatalogPage() {
       setItems(items.filter(item => item.id !== id));
     } catch (error) {
       alert("Erreur lors de la suppression.");
-    }
-  };
-
-  const openEditSheet = (item: CatalogItem) => {
-    setEditingItem(item);
-    setEditName(item.name);
-    setEditBarcode(item.barcode || '');
-    setEditUnit(item.unit || 'pcs');
-    setEditCategoryId(item.category_id || '');
-  };
-
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingItem || isUpdating) return;
-
-    setIsUpdating(true);
-    try {
-      await fetchApi(`/shopping-lists/catalog/${editingItem.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          name: editName,
-          barcode: editBarcode || null,
-          unit: editUnit,
-          category_id: editCategoryId || null,
-        }),
-      });
-
-      fetchData();
-      setEditingItem(null);
-    } catch (error) {
-      alert("Erreur lors de la mise à jour.");
-    } finally {
-      setIsUpdating(false);
     }
   };
 
@@ -118,9 +138,18 @@ export default function CatalogPage() {
       <main className="flex-1 p-6 sm:p-12 flex justify-center text-left">
         <div className="w-full max-w-4xl flex flex-col gap-10">
           
-          <div className="flex flex-col gap-2">
-            <h1 className="text-4xl font-black">Catalogue Produits</h1>
-            <p className="text-gray-500">Gérez le référentiel global de vos articles.</p>
+          <div className="flex justify-between items-end">
+            <div className="flex flex-col gap-2">
+              <h1 className="text-4xl font-black">Catalogue Produits</h1>
+              <p className="text-gray-500">Gérez le référentiel global de vos articles.</p>
+            </div>
+            <Button 
+              onClick={handleOpenCreate}
+              className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold rounded-2xl px-6 py-6 shadow-lg transition-all border-none"
+            >
+              <PlusIcon className="w-5 h-5 mr-2" strokeWidth={3} />
+              Nouveau Produit
+            </Button>
           </div>
 
           <CatalogSearch value={searchQuery} onChange={setSearchQuery} />
@@ -142,28 +171,32 @@ export default function CatalogPage() {
             )}
           </div>
 
-          <Sheet open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetContent side="right" className="w-full sm:max-w-[450px] p-10 text-[#1A365D]">
               <SheetHeader className="mb-10 text-left">
-                <SheetTitle className="text-3xl font-black">Modifier le produit</SheetTitle>
+                <SheetTitle className="text-3xl font-black">
+                  {editingItem ? 'Modifier le produit' : 'Nouveau produit'}
+                </SheetTitle>
                 <SheetDescription className="text-base text-gray-500 mt-2">
-                  Mettez à jour les informations globales de cet article dans le catalogue.
+                  {editingItem 
+                    ? 'Mettez à jour les informations globales de cet article.' 
+                    : 'Créez un nouvel article dans le catalogue de votre foyer.'}
                 </SheetDescription>
               </SheetHeader>
               
               <ProductForm 
-                name={editName}
-                setName={setEditName}
-                unit={editUnit}
-                setUnit={setEditUnit}
-                barcode={editBarcode}
-                setBarcode={setEditBarcode}
-                categoryId={editCategoryId}
-                setCategoryId={setEditCategoryId}
+                name={name}
+                setName={setName}
+                unit={unit}
+                setUnit={setUnit}
+                barcode={barcode}
+                setBarcode={setBarcode}
+                categoryId={categoryId}
+                setCategoryId={setCategoryId}
                 categories={categories}
-                isSubmitting={isUpdating}
-                submitLabel="Enregistrer les modifications"
-                onSubmit={handleUpdate}
+                isSubmitting={isSubmitting}
+                submitLabel={editingItem ? "Enregistrer les modifications" : "Créer le produit"}
+                onSubmit={handleSubmit}
               />
             </SheetContent>
           </Sheet>

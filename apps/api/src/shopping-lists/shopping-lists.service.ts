@@ -42,6 +42,18 @@ export class ShoppingListsService {
     return data || [];
   }
 
+  async createCatalogItem(payload: { name: string; barcode?: string; category_id?: string; unit?: string }) {
+    const householdId = this.getHouseholdIdOrThrow();
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('items_catalog')
+      .insert({ ...payload, household_id: householdId })
+      .select()
+      .single();
+    if (error) this.handleError(error);
+    return data;
+  }
+
   async findAllCategories() {
     const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService
@@ -60,7 +72,16 @@ export class ShoppingListsService {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('shopping_lists')
-      .select('*, shopping_list_items(*, items_catalog(*, categories(name, sort_order)))')
+      .select(`
+        *,
+        shopping_list_items (
+          *,
+          items_catalog (
+            *,
+            categories (*)
+          )
+        )
+      `)
       .eq('id', id)
       .eq('household_id', householdId)
       .single();
@@ -82,6 +103,34 @@ export class ShoppingListsService {
     return data;
   }
 
+  async update(id: string, name: string) {
+    const householdId = this.getHouseholdIdOrThrow();
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('shopping_lists')
+      .update({ name })
+      .eq('id', id)
+      .eq('household_id', householdId)
+      .select()
+      .single();
+
+    if (error) this.handleError(error);
+    return data;
+  }
+
+  async remove(id: string) {
+    const householdId = this.getHouseholdIdOrThrow();
+    const { error } = await this.supabaseService
+      .getClient()
+      .from('shopping_lists')
+      .delete()
+      .eq('id', id)
+      .eq('household_id', householdId);
+
+    if (error) this.handleError(error);
+    return { success: true };
+  }
+
   async createCategory(payload: { name: string; icon?: string; sort_order?: number }) {
     const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService
@@ -99,7 +148,6 @@ export class ShoppingListsService {
     const householdId = this.getHouseholdIdOrThrow();
     const { name, quantity = 1, barcode, category_id, unit } = payload;
 
-    // 1. Chercher ou Créer dans le catalogue du foyer
     let { data: catalogItem } = await client
       .from('items_catalog')
       .select('id, unit, category_id, barcode')
@@ -126,7 +174,6 @@ export class ShoppingListsService {
       if (cError) this.handleError(cError);
       catalogItem = newItem;
     } else {
-      // Mettre à jour si de nouvelles infos sont fournies
       const updates: any = {};
       if (unit && !catalogItem.unit) updates.unit = unit;
       if (category_id && !catalogItem.category_id) updates.category_id = category_id;
@@ -137,7 +184,8 @@ export class ShoppingListsService {
       }
     }
 
-    // 2. Ajouter l'article à la liste (liaison)
+    if (!catalogItem) throw new InternalServerErrorException('Failed to resolve catalog item');
+
     const { data, error } = await client
       .from('shopping_list_items')
       .insert({ 
@@ -146,6 +194,37 @@ export class ShoppingListsService {
         quantity,
         is_checked: false,
         unit: finalUnit
+      })
+      .select()
+      .single();
+
+    if (error) this.handleError(error);
+    return data;
+  }
+
+  async addItemByBarcode(listId: string, barcode: string) {
+    const householdId = this.getHouseholdIdOrThrow();
+    const client = this.supabaseService.getClient();
+    const { data: catalogItem, error: cError } = await client
+      .from('items_catalog')
+      .select('id, name, category_id, unit')
+      .eq('barcode', barcode)
+      .eq('household_id', householdId)
+      .maybeSingle();
+
+    if (cError || !catalogItem) {
+      throw new NotFoundException('Product not found in catalog.');
+    }
+
+    const { data, error } = await client
+      .from('shopping_list_items')
+      .insert({ 
+        list_id: listId, 
+        catalog_item_id: catalogItem.id,
+        quantity: 1,
+        is_checked: false,
+        unit: catalogItem.unit,
+        barcode
       })
       .select()
       .single();

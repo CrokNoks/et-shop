@@ -7,17 +7,7 @@ export class ShoppingListsController {
 
   constructor(private readonly shoppingListsService: ShoppingListsService) {}
 
-  @Get()
-  async findAll() {
-    try {
-      this.logger.log('Fetching all shopping lists...');
-      return await this.shoppingListsService.findAll();
-    } catch (error) {
-      this.logger.error('Error fetching shopping lists:', error.message);
-      throw error;
-    }
-  }
-
+  // 1. Routes Statiques (Prioritaires)
   @Get('catalog')
   async getCatalog() {
     try {
@@ -27,6 +17,11 @@ export class ShoppingListsController {
       this.logger.error('Error fetching catalog:', error.message);
       throw error;
     }
+  }
+
+  @Post('catalog')
+  async createCatalogItem(@Body() payload: { name: string; barcode?: string; category_id?: string; unit?: string }) {
+    return this.shoppingListsService.createCatalogItem(payload);
   }
 
   @Get('categories')
@@ -45,6 +40,7 @@ export class ShoppingListsController {
     return this.shoppingListsService.createCategory(payload);
   }
 
+  // 2. Routes de Ressources Globales (Patches/Deletes)
   @Patch('categories/:id')
   async updateCategory(
     @Param('id') id: string,
@@ -71,25 +67,40 @@ export class ShoppingListsController {
     return this.shoppingListsService.deleteCatalogItem(id);
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    try {
-      this.logger.log(`Fetching shopping list items for list: ${id}`);
-      return await this.shoppingListsService.findOne(id);
-    } catch (error) {
-      this.logger.error(`Error fetching shopping list items for list ${id}:`, error.message);
-      throw error;
-    }
+  @Patch('items/:id/toggle')
+  async toggleItem(@Param('id') itemId: string, @Body('isChecked') isChecked: boolean) {
+    return this.shoppingListsService.toggleItem(itemId, isChecked);
+  }
+
+  @Patch('items/:id/price')
+  async updatePrice(@Param('id') itemId: string, @Body('price') price: number) {
+    return this.shoppingListsService.updatePrice(itemId, price);
+  }
+
+  @Patch('items/:id/quantity')
+  async updateQuantity(@Param('id') itemId: string, @Body('quantity') quantity: number) {
+    return this.shoppingListsService.updateQuantity(itemId, quantity);
+  }
+
+  @Patch('items/:id/unit')
+  async updateUnit(@Param('id') itemId: string, @Body('unit') unit: string) {
+    return this.shoppingListsService.updateUnit(itemId, unit);
+  }
+
+  @Patch('items/:id/barcode')
+  async updateBarcode(@Param('id') itemId: string, @Body('barcode') barcode: string) {
+    return this.shoppingListsService.updateBarcode(itemId, barcode);
   }
 
   @Get('suggest/:query')
   async suggest(@Param('query') query: string) {
-    try {
-      return await this.shoppingListsService.suggestItems(query);
-    } catch (error) {
-      this.logger.error(`Error suggesting items for query ${query}:`, error.message);
-      throw error;
-    }
+    return this.shoppingListsService.suggestItems(query);
+  }
+
+  // 3. Routes de Collection (Shopping Lists)
+  @Get()
+  async findAll() {
+    return this.shoppingListsService.findAll();
   }
 
   @Post()
@@ -97,18 +108,28 @@ export class ShoppingListsController {
     return this.shoppingListsService.create(name);
   }
 
+  // 4. Routes d'Instance Unique (toujours à la fin)
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return this.shoppingListsService.findOne(id);
+  }
+
+  @Patch(':id')
+  async update(@Param('id') id: string, @Body('name') name: string) {
+    return this.shoppingListsService.update(id, name);
+  }
+
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    return this.shoppingListsService.remove(id);
+  }
+
   @Post(':id/items')
   async addItem(
     @Param('id') listId: string,
     @Body() payload: { name: string; quantity?: number; barcode?: string; category_id?: string; unit?: string },
   ) {
-    try {
-      this.logger.log(`Adding item ${payload.name} to list ${listId}`);
-      return await this.shoppingListsService.addItem(listId, payload);
-    } catch (error) {
-      this.logger.error(`Error adding item to list ${listId}:`, error.message);
-      throw error;
-    }
+    return this.shoppingListsService.addItem(listId, payload);
   }
 
   @Post(':id/barcode')
@@ -117,53 +138,5 @@ export class ShoppingListsController {
     @Body('barcode') barcode: string,
   ) {
     return this.shoppingListsService.addItemByBarcode(listId, barcode);
-  }
-
-  @Patch('items/:id/toggle')
-  async toggleItem(@Param('id') itemId: string, @Body('isChecked') isChecked: boolean) {
-    try {
-      return await this.shoppingListsService.toggleItem(itemId, isChecked);
-    } catch (error) {
-      this.logger.error(`Error toggling item ${itemId}:`, error.message);
-      throw error;
-    }
-  }
-
-  @Patch('items/:id/price')
-  async updatePrice(@Param('id') itemId: string, @Body('price') price: number) {
-    try {
-      this.logger.log(`Updating price for item ${itemId} to ${price}`);
-      return await this.shoppingListsService.updatePrice(itemId, price);
-    } catch (error) {
-      this.logger.error(`Error updating price for item ${itemId}:`, error.message);
-      throw error;
-    }
-  }
-
-  @Patch('items/:id/quantity')
-  async updateQuantity(@Param('id') itemId: string, @Body('quantity') quantity: number) {
-    try {
-      this.logger.log(`Updating quantity for item ${itemId} to ${quantity}`);
-      return await this.shoppingListsService.updateQuantity(itemId, quantity);
-    } catch (error) {
-      this.logger.error(`Error updating quantity for item ${itemId}:`, error.message);
-      throw error;
-    }
-  }
-
-  @Patch('items/:id/unit')
-  async updateUnit(@Param('id') itemId: string, @Body('unit') unit: string) {
-    try {
-      this.logger.log(`Updating unit for item ${itemId} to ${unit}`);
-      return await this.shoppingListsService.updateUnit(itemId, unit);
-    } catch (error) {
-      this.logger.error(`Error updating unit for item ${itemId}:`, error.message);
-      throw error;
-    }
-  }
-
-  @Patch('items/:id/barcode')
-  async updateBarcode(@Param('id') itemId: string, @Body('barcode') barcode: string) {
-    return this.shoppingListsService.updateBarcode(itemId, barcode);
   }
 }

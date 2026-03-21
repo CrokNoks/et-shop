@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
@@ -18,6 +18,10 @@ export class HouseholdsService {
   async create(name: string) {
     const client = this.supabaseService.getClient();
     
+    // Récupérer l'utilisateur de manière sécurisée
+    const { data: { user }, error: uError } = await client.auth.getUser();
+    if (uError || !user) throw new UnauthorizedException('User not found');
+
     // 1. Créer le foyer
     const { data: household, error: hError } = await client
       .from('households')
@@ -32,7 +36,7 @@ export class HouseholdsService {
       .from('household_members')
       .insert({ 
         household_id: household.id, 
-        user_id: (await client.auth.getUser()).data.user.id,
+        user_id: user.id,
         role: 'admin' 
       });
 

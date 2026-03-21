@@ -183,13 +183,6 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
           >
             <QrCodeIcon className="w-6 h-6" />
           </button>
-          <button 
-            onClick={() => handleAdd(inputValue)}
-            disabled={!inputValue || isAdding}
-            className="p-2 bg-[#FF6B35] text-white rounded-xl hover:bg-[#e55a2b] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ml-1"
-          >
-            <PlusIcon className={`w-6 h-6 ${isAdding ? 'animate-spin' : ''}`} strokeWidth={3} />
-          </button>
         </div>
       </div>
 
