@@ -1,69 +1,90 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
-import { CheckCircleIcon, ShoppingCartIcon, TagIcon, ChevronRightIcon, BeakerIcon } from '@heroicons/react/24/outline';
+import React, { useState, useMemo, useEffect } from 'react';
+import { CheckCircleIcon, ShoppingCartIcon, TagIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolidIcon } from '@heroicons/react/24/solid';
+import { fetchApi } from '@/lib/api';
 
 interface ListItem {
   id: string;
   name: string;
-  category: string;
+  category_id?: string;
   price: number;
   is_checked: boolean;
   quantity: number;
 }
 
-const MOCK_ITEMS: ListItem[] = [
-  { id: '1', name: 'Lait demi-écrémé', category: 'Produits Laitiers', price: 1.2, is_checked: false, quantity: 2 },
-  { id: '2', name: 'Beurre doux', category: 'Produits Laitiers', price: 2.5, is_checked: true, quantity: 1 },
-  { id: '3', name: 'Pommes Gala', category: 'Fruits & Légumes', price: 3.5, is_checked: false, quantity: 1 },
-  { id: '4', name: 'Laitue', category: 'Fruits & Légumes', price: 1.1, is_checked: false, quantity: 1 },
-  { id: '5', name: 'Eau minérale 6x1.5L', category: 'Boissons', price: 4.8, is_checked: false, quantity: 2 },
-  { id: '6', name: 'Pâtes Penne', category: 'Épicerie', price: 0.9, is_checked: false, quantity: 3 },
-];
+interface ShoppingListProps {
+  listId: string;
+}
 
-export const ShoppingList: React.FC = () => {
-  const [items, setItems] = useState<ListItem[]>(MOCK_ITEMS);
+export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
+  const [items, setItems] = useState<ListItem[]>([]);
   const [isShoppingMode, setIsShoppingMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const toggleCheck = (id: string) => {
-    setItems(items.map(item => 
-      item.id === id ? { ...item, is_checked: !item.is_checked } : item
-    ));
+  const fetchItems = async () => {
+    try {
+      const data = await fetchApi(`/shopping-lists/${listId}`);
+      setItems(data.shopping_list_items || []);
+    } catch (error) {
+      console.error('Failed to fetch items:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const updatePrice = (id: string, price: string) => {
-    const newPrice = parseFloat(price) || 0;
-    setItems(items.map(item => 
-      item.id === id ? { ...item, price: newPrice } : item
-    ));
+  useEffect(() => {
+    fetchItems();
+    const interval = setInterval(fetchItems, 3000); // Polling simple toutes les 3s
+    return () => clearInterval(interval);
+  }, [listId]);
+
+  const toggleCheck = async (id: string, currentChecked: boolean) => {
+    try {
+      // Optimistic update
+      setItems(prev => prev.map(item => 
+        item.id === id ? { ...item, is_checked: !currentChecked } : item
+      ));
+
+      await fetchApi(`/shopping-lists/items/${id}/toggle`, {
+        method: 'PATCH',
+        body: JSON.stringify({ isChecked: !currentChecked }),
+      });
+    } catch (error) {
+      console.error('Failed to toggle item:', error);
+      fetchItems(); // Rollback en cas d'erreur
+    }
   };
 
-  // Tri intelligent par rayon
   const groupedItems = useMemo(() => {
     const groups: Record<string, ListItem[]> = {};
     items.forEach(item => {
-      if (!groups[item.category]) groups[item.category] = [];
-      groups[item.category].push(item);
+      const category = item.category_id || 'Autre'; // Simplifié pour l'instant
+      if (!groups[category]) groups[category] = [];
+      groups[category].push(item);
     });
     return groups;
   }, [items]);
 
   const totalBudget = useMemo(() => {
-    return items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    return items.reduce((acc, item) => acc + (Number(item.price) * (item.quantity || 1)), 0);
   }, [items]);
 
   const checkedTotal = useMemo(() => {
-    return items.filter(i => i.is_checked).reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    return items.filter(i => i.is_checked).reduce((acc, item) => acc + (Number(item.price) * (item.quantity || 1)), 0);
   }, [items]);
+
+  if (isLoading && items.length === 0) {
+    return <div className="p-8 text-center text-[#1A365D] animate-pulse">Chargement de votre liste...</div>;
+  }
 
   return (
     <div className={`w-full max-w-2xl transition-all duration-300 ${isShoppingMode ? 'fixed inset-0 bg-white z-[100] p-6 overflow-y-auto' : 'mt-8'}`}>
       
-      {/* Header Mode Shopping */}
       <div className="flex items-center justify-between mb-6">
         <h2 className={`font-bold text-[#1A365D] ${isShoppingMode ? 'text-3xl' : 'text-xl'}`}>
-          Ma liste "Hop!"
+          Ma liste active
         </h2>
         <button 
           onClick={() => setIsShoppingMode(!isShoppingMode)}
@@ -76,7 +97,6 @@ export const ShoppingList: React.FC = () => {
         </button>
       </div>
 
-      {/* Budget Express */}
       <div className="bg-gray-50 rounded-2xl p-4 mb-6 flex items-center justify-between border border-gray-100">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-[#FF6B35]/10 rounded-xl">
@@ -93,61 +113,53 @@ export const ShoppingList: React.FC = () => {
         </div>
       </div>
 
-      {/* Rendu des articles par rayon */}
       <div className="space-y-8">
-        {Object.entries(groupedItems).map(([category, categoryItems]) => (
-          <div key={category} className="space-y-3">
-            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest px-2 flex items-center gap-2">
-              <span className="w-8 h-[2px] bg-gray-200" />
-              {category}
-            </h3>
-            <div className="space-y-2">
-              {categoryItems.map((item) => (
-                <div 
-                  key={item.id}
-                  onClick={() => toggleCheck(item.id)}
-                  className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
-                    item.is_checked 
-                      ? 'bg-gray-50 border-transparent opacity-60' 
-                      : 'bg-white border-gray-100 shadow-sm hover:shadow-md'
-                  } ${isShoppingMode ? 'p-6' : ''}`}
-                >
-                  <button className="flex-shrink-0">
-                    {item.is_checked ? (
-                      <CheckCircleSolidIcon className="w-8 h-8 text-[#FF6B35]" />
-                    ) : (
-                      <CheckCircleIcon className="w-8 h-8 text-gray-300" />
-                    )}
-                  </button>
-                  
-                  <div className="flex-1 min-w-0">
-                    <p className={`font-bold truncate ${isShoppingMode ? 'text-xl' : 'text-base'} ${item.is_checked ? 'line-through' : 'text-[#1A365D]'}`}>
-                      {item.name}
-                      {item.quantity > 1 && <span className="ml-2 text-sm opacity-60">x{item.quantity}</span>}
-                    </p>
-                  </div>
-
-                  {!isShoppingMode && (
-                    <div className="flex items-center gap-2 bg-gray-50 px-2 py-1 rounded-lg border border-gray-100" onClick={(e) => e.stopPropagation()}>
-                      <input 
-                        type="number"
-                        step="0.01"
-                        value={item.price || ''}
-                        onChange={(e) => updatePrice(item.id, e.target.value)}
-                        placeholder="0.00"
-                        className="w-16 bg-transparent text-right font-bold text-[#1A365D] outline-none text-sm"
-                      />
-                      <span className="text-xs font-bold text-gray-400">€</span>
+        {items.length === 0 ? (
+          <div className="text-center py-12 opacity-40 italic">Votre liste est vide. Ajoutez un article ci-dessus ! 🚀</div>
+        ) : (
+          Object.entries(groupedItems).map(([category, categoryItems]) => (
+            <div key={category} className="space-y-3">
+              <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest px-2 flex items-center gap-2">
+                <span className="w-8 h-[2px] bg-gray-200" />
+                Rayon : {category}
+              </h3>
+              <div className="space-y-2">
+                {categoryItems.map((item) => (
+                  <div 
+                    key={item.id}
+                    onClick={() => toggleCheck(item.id, item.is_checked)}
+                    className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
+                      item.is_checked 
+                        ? 'bg-gray-50 border-transparent opacity-60' 
+                        : 'bg-white border-gray-100 shadow-sm hover:shadow-md'
+                    } ${isShoppingMode ? 'p-6' : ''}`}
+                  >
+                    <button className="flex-shrink-0">
+                      {item.is_checked ? (
+                        <CheckCircleSolidIcon className="w-8 h-8 text-[#FF6B35]" />
+                      ) : (
+                        <CheckCircleIcon className="w-8 h-8 text-gray-300" />
+                      )}
+                    </button>
+                    
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-bold truncate ${isShoppingMode ? 'text-xl' : 'text-base'} ${item.is_checked ? 'line-through' : 'text-[#1A365D]'}`}>
+                        {item.name}
+                        {(item.quantity > 1) && <span className="ml-2 text-sm opacity-60">x{item.quantity}</span>}
+                      </p>
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    <div className="text-sm font-bold text-gray-400">
+                      {Number(item.price).toFixed(2)} €
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
-      {/* Mode Shopping : Bouton de fin */}
       {isShoppingMode && (
         <div className="fixed bottom-6 left-6 right-6">
           <button 

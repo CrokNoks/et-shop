@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { PlusIcon, MicrophoneIcon, QrCodeIcon } from '@heroicons/react/24/outline';
+import { fetchApi } from '@/lib/api';
 
 interface Suggestion {
   id: string;
@@ -9,20 +10,24 @@ interface Suggestion {
   category?: string;
 }
 
-export const HopInput: React.FC = () => {
+interface HopInputProps {
+  listId: string;
+  onItemAdded?: () => void;
+}
+
+export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
   const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Simulation d'autocomplétion (à lier à Supabase plus tard)
+  // TODO: Fetch suggestions from items_catalog in Supabase
   const allItems: Suggestion[] = [
     { id: '1', name: 'Lait demi-écrémé', category: 'Produits Laitiers' },
     { id: '2', name: 'Lait d\'amande', category: 'Boissons' },
     { id: '3', name: 'Laitue', category: 'Fruits & Légumes' },
     { id: '4', name: 'Pain de mie', category: 'Boulangerie' },
-    { id: '5', name: 'Beurre doux', category: 'Produits Laitiers' },
-    { id: '6', name: 'Pommes', category: 'Fruits & Légumes' },
   ];
 
   useEffect(() => {
@@ -37,12 +42,25 @@ export const HopInput: React.FC = () => {
     }
   }, [inputValue]);
 
-  const handleAdd = (name: string) => {
-    console.log('Ajout de l\'article :', name);
-    // Logique d'ajout ici
-    setInputValue('');
-    setShowSuggestions(false);
-    inputRef.current?.focus();
+  const handleAdd = async (name: string) => {
+    if (!name || isAdding) return;
+    
+    setIsAdding(true);
+    try {
+      await fetchApi(`/shopping-lists/${listId}/items`, {
+        method: 'POST',
+        body: JSON.stringify({ name }),
+      });
+      
+      setInputValue('');
+      setShowSuggestions(false);
+      onItemAdded?.();
+      inputRef.current?.focus();
+    } catch (error) {
+      console.error('Failed to add item:', error);
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   return (
@@ -58,6 +76,7 @@ export const HopInput: React.FC = () => {
           onKeyDown={(e) => {
             if (e.key === 'Enter' && inputValue) handleAdd(inputValue);
           }}
+          disabled={isAdding}
         />
         
         <div className="flex items-center gap-1 pr-1">
@@ -69,15 +88,14 @@ export const HopInput: React.FC = () => {
           </button>
           <button 
             onClick={() => handleAdd(inputValue)}
-            disabled={!inputValue}
+            disabled={!inputValue || isAdding}
             className="p-2 bg-[#FF6B35] text-white rounded-xl hover:bg-[#e55a2b] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ml-1"
           >
-            <PlusIcon className="w-6 h-6" strokeWidth={3} />
+            <PlusIcon className={`w-6 h-6 ${isAdding ? 'animate-spin' : ''}`} strokeWidth={3} />
           </button>
         </div>
       </div>
 
-      {/* Liste d'autocomplétion "Hop!" */}
       {showSuggestions && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50">
           {suggestions.map((item) => (
@@ -96,11 +114,6 @@ export const HopInput: React.FC = () => {
           ))}
         </div>
       )}
-
-      <p className="mt-3 text-sm text-[#1A365D] opacity-60 flex items-center gap-2 px-2 italic">
-        <span className="inline-block w-2 h-2 bg-[#FF6B35] rounded-full animate-pulse" />
-        Saisie ultra-rapide activée. Tapez, c'est ajouté !
-      </p>
     </div>
   );
 };
