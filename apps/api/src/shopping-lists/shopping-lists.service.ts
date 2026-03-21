@@ -36,6 +36,19 @@ export class ShoppingListsService {
     return data;
   }
 
+  async create(name: string) {
+    // Le owner_id est automatiquement géré par la valeur par défaut 'auth.uid()' sur la table
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('shopping_lists')
+      .insert({ name })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
   async addItem(listId: string, name: string) {
     const client = this.supabaseService.getClient();
     const { data: catalogItem } = await client
@@ -48,15 +61,11 @@ export class ShoppingListsService {
 
     const { data, error } = await client
       .from('shopping_list_items')
-      .insert({ list_id: listId, name, category_id: categoryId })
+      .insert({ list_id: listId, name, category_id: categoryId, added_by: null }) // added_by peut aussi être auth.uid()
       .select()
       .single();
 
     if (error) throw error;
-
-    if (!catalogItem) {
-      client.from('items_catalog').insert({ name, category_id: null }).then();
-    }
     return data;
   }
 
