@@ -32,6 +32,28 @@ export class ShoppingListsService {
     return data || [];
   }
 
+  async updateCatalogItem(id: string, payload: { name?: string; barcode?: string; category_id?: string }) {
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('items_catalog')
+      .update(payload)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) this.handleError(error);
+    return data;
+  }
+
+  async deleteCatalogItem(id: string) {
+    const { error } = await this.supabaseService
+      .getClient()
+      .from('items_catalog')
+      .delete()
+      .eq('id', id);
+    if (error) this.handleError(error);
+    return { success: true };
+  }
+
   async findOne(id: string) {
     const { data, error } = await this.supabaseService
       .getClient()

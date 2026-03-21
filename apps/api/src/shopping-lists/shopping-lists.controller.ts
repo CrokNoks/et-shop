@@ -29,6 +29,19 @@ export class ShoppingListsController {
     }
   }
 
+  @Patch('catalog/:id')
+  async updateCatalog(
+    @Param('id') id: string,
+    @Body() payload: { name?: string; barcode?: string; category_id?: string },
+  ) {
+    return this.shoppingListsService.updateCatalogItem(id, payload);
+  }
+
+  @Delete('catalog/:id')
+  async deleteCatalog(@Param('id') id: string) {
+    return this.shoppingListsService.deleteCatalogItem(id);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {
