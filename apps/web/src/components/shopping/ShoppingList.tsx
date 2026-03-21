@@ -233,49 +233,49 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
                     <div 
                       key={item.id}
                       onClick={() => toggleCheck(item.id, item.is_checked)}
-                      className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer group/item ${
-                        isShoppingMode ? 'p-6 bg-white border-gray-100 shadow-sm hover:border-[#FF6B35]' : 'bg-white border-gray-100'
+                      className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer group/item ${
+                        isShoppingMode ? 'p-5 sm:p-6 bg-white border-gray-100 shadow-sm hover:border-[#FF6B35]' : 'bg-white border-gray-100'
                       }`}
                     >
                       <button className="flex-shrink-0">
                         {item.is_checked ? (
-                          <CheckCircleSolidIcon className="w-10 h-10 text-[#FF6B35]" />
+                          <CheckCircleSolidIcon className="w-8 h-8 sm:w-10 sm:h-10 text-[#FF6B35]" />
                         ) : (
-                          <CheckCircleIcon className="w-10 h-10 text-gray-200 group-hover/item:text-[#FF6B35]/30 transition-colors" />
+                          <CheckCircleIcon className="w-8 h-8 sm:w-10 sm:h-10 text-gray-200 group-hover/item:text-[#FF6B35]/30 transition-colors" />
                         )}
                       </button>
                       
-                      <div className="flex-1 min-w-0 flex flex-col gap-1 text-left">
-                        <p className={`font-bold truncate ${isShoppingMode ? 'text-2xl' : 'text-base'} ${item.is_checked ? 'line-through text-gray-400' : 'text-[#1A365D]'}`}>
+                      <div className="flex-1 min-w-0 flex flex-col gap-0.5 text-left">
+                        <p className={`font-bold truncate ${isShoppingMode ? 'text-xl sm:text-2xl' : 'text-sm sm:text-base'} ${item.is_checked ? 'line-through text-gray-400' : 'text-[#1A365D]'}`}>
                           {name}
                         </p>
                         <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-1 bg-gray-100/50 px-2 py-0.5 rounded-lg border border-gray-100" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-1 bg-gray-100/50 px-1.5 py-0.5 rounded-lg border border-gray-100" onClick={(e) => e.stopPropagation()}>
                             <button 
                               onClick={() => handleQuantityUpdate(item.id, item.quantity, -1)}
-                              className="p-1 hover:bg-white rounded-md text-gray-400 transition-colors"
+                              className="p-0.5 sm:p-1 hover:bg-white rounded-md text-gray-400 transition-colors"
                             >
                               <MinusIcon className="w-3 h-3" />
                             </button>
-                            <span className={`text-sm font-black min-w-[20px] text-center ${isShoppingMode ? 'text-lg' : ''}`}>
+                            <span className={`text-xs sm:text-sm font-black min-w-[16px] sm:min-w-[20px] text-center ${isShoppingMode ? 'text-base sm:text-lg' : ''}`}>
                               {item.quantity}
                             </span>
                             <button 
                               onClick={() => handleQuantityUpdate(item.id, item.quantity, 1)}
-                              className="p-1 hover:bg-white rounded-md text-gray-400 transition-colors"
+                              className="p-0.5 sm:p-1 hover:bg-white rounded-md text-gray-400 transition-colors"
                             >
                               <PlusIcon className="w-3 h-3" />
                             </button>
                           </div>
-                          <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider">
+                          <span className="text-[9px] sm:text-[10px] font-black uppercase text-gray-400 tracking-wider truncate max-w-[60px] sm:max-w-none">
                             {unit}
                           </span>
                         </div>
                       </div>
 
                       {!isShoppingMode && (
-                        <div className="flex items-center gap-4" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center gap-2 bg-gray-50 px-2 py-1 rounded-lg border border-gray-100">
+                        <div className="flex items-center gap-2 sm:gap-4" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-1 sm:gap-2 bg-gray-50 px-1.5 sm:px-2 py-1 rounded-lg border border-gray-100">
                             <input 
                               type="number"
                               step="0.01"
@@ -288,17 +288,17 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
                                 }
                               }}
                               placeholder="0.00"
-                              className="w-16 bg-transparent text-right font-bold outline-none text-sm"
+                              className="w-12 sm:w-16 bg-transparent text-right font-bold outline-none text-xs sm:text-sm"
                             />
-                            <span className="text-xs font-bold text-gray-400">€</span>
+                            <span className="text-[10px] sm:text-xs font-bold text-gray-400">€</span>
                           </div>
                           
                           <button 
                             onClick={() => handleDeleteItem(item.id)}
-                            className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover/item:opacity-100"
+                            className="p-1.5 sm:p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 sm:group-hover/item:opacity-100 group-active/item:opacity-100"
                             title="Supprimer de la liste"
                           >
-                            <TrashIcon className="w-5 h-5" />
+                            <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                           </button>
                         </div>
                       )}
@@ -311,7 +311,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
                             if (p !== null) handlePriceUpdate(item.id, p);
                           }
                         }}
-                        className={`text-xl font-bold ${item.is_checked ? 'text-gray-300' : 'text-[#FF6B35] bg-[#FF6B35]/5 px-2 py-1 rounded-lg border border-[#FF6B35]/10'}`}
+                        className={`text-base sm:text-xl font-bold whitespace-nowrap ${item.is_checked ? 'text-gray-300' : 'text-[#FF6B35] bg-[#FF6B35]/5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg border border-[#FF6B35]/10'}`}
                       >
                         {(Number(item.price) * (item.quantity || 1)).toFixed(2)} €
                       </div>

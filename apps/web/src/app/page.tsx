@@ -49,7 +49,7 @@ export default function Home() {
       
       <Sidebar activeListId={activeListId || ''} onListSelect={handleListSelect} />
 
-      <main className="flex-1 p-6 sm:p-12 flex justify-center">
+      <main className="flex-1 p-6 pt-24 sm:p-12 flex justify-center">
         <div className="w-full max-w-2xl flex flex-col gap-10">
           
           {activeListId ? (
