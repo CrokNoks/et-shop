@@ -40,6 +40,24 @@ export class ShoppingListsController {
     }
   }
 
+  @Post('categories')
+  async createCategory(@Body() payload: { name: string; icon?: string; sort_order?: number }) {
+    return this.shoppingListsService.createCategory(payload);
+  }
+
+  @Patch('categories/:id')
+  async updateCategory(
+    @Param('id') id: string,
+    @Body() payload: { name?: string; icon?: string; sort_order?: number },
+  ) {
+    return this.shoppingListsService.updateCategory(id, payload);
+  }
+
+  @Delete('categories/:id')
+  async deleteCategory(@Param('id') id: string) {
+    return this.shoppingListsService.deleteCategory(id);
+  }
+
   @Patch('catalog/:id')
   async updateCatalog(
     @Param('id') id: string,

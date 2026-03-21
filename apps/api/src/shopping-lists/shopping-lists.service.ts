@@ -42,6 +42,39 @@ export class ShoppingListsService {
     return data || [];
   }
 
+  async createCategory(payload: { name: string; icon?: string; sort_order?: number }) {
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('categories')
+      .insert(payload)
+      .select()
+      .single();
+    if (error) this.handleError(error);
+    return data;
+  }
+
+  async updateCategory(id: string, payload: { name?: string; icon?: string; sort_order?: number }) {
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('categories')
+      .update(payload)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) this.handleError(error);
+    return data;
+  }
+
+  async deleteCategory(id: string) {
+    const { error } = await this.supabaseService
+      .getClient()
+      .from('categories')
+      .delete()
+      .eq('id', id);
+    if (error) this.handleError(error);
+    return { success: true };
+  }
+
   async updateCatalogItem(id: string, payload: { name?: string; barcode?: string; category_id?: string }) {
     const { data, error } = await this.supabaseService
       .getClient()
