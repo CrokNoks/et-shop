@@ -1,5 +1,6 @@
 import { Logo } from "@/components/Logo";
 import { HopInput } from "@/components/HopInput";
+import { ShoppingList } from "@/components/ShoppingList";
 
 export default function Home() {
   return (
@@ -14,13 +15,21 @@ export default function Home() {
 
         {/* Section de saisie rapide "Hop!" */}
         <div className="w-full flex flex-col gap-4">
-          <h2 className="text-lg font-semibold text-[#1A365D] px-2 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-[#1A365D] px-2 flex items-center gap-2 text-balance">
             🚀 Saisie rapide
           </h2>
           <HopInput />
         </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
+        {/* Liste intelligente par rayons */}
+        <div className="w-full flex flex-col gap-2">
+          <h2 className="text-lg font-semibold text-[#1A365D] px-2 flex items-center gap-2">
+            🛒 Ma Liste Intelligente
+          </h2>
+          <ShoppingList />
+        </div>
+
+        <div className="flex gap-4 items-center flex-col sm:flex-row pb-12">
           <button className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-[#FF6B35] text-white gap-2 hover:bg-[#e55a2b] text-sm sm:text-base h-10 sm:h-12 px-6 sm:px-8 font-bold shadow-md">
             Créer une nouvelle liste
           </button>
