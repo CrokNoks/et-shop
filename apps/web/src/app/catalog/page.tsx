@@ -1,21 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Logo } from "@/components/Logo";
-import { ListSidebar } from "@/components/ListSidebar";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { fetchApi } from '@/lib/api';
-import { MagnifyingGlassIcon, QrCodeIcon, TagIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { CatalogSearch } from '@/components/catalog/CatalogSearch';
+import { CatalogItemCard } from '@/components/catalog/CatalogItemCard';
+import { ProductForm } from '@/components/shopping/ProductForm';
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetFooter,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 interface CatalogItem {
   id: string;
@@ -99,37 +96,18 @@ export default function CatalogPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-[family-name:var(--font-geist-sans)]">
-      
-      {/* Sidebar */}
-      <aside className="w-full sm:w-80 bg-white border-r border-gray-100 p-8 flex flex-col gap-8 sm:h-screen sm:sticky sm:top-0">
-        <Logo width={200} height={60} />
-        <ListSidebar activeListId="" onListSelect={() => {}} />
-      </aside>
+      <Sidebar activeListId="" onListSelect={() => {}} />
 
-      {/* Main Content */}
       <main className="flex-1 p-6 sm:p-12 flex justify-center">
         <div className="w-full max-w-4xl flex flex-col gap-10">
           
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 text-left">
             <h1 className="text-4xl font-black text-[#1A365D]">Catalogue Produits</h1>
             <p className="text-gray-500">Gérez le référentiel global de vos articles.</p>
           </div>
 
-          {/* Barre de recherche */}
-          <div className="relative group max-w-md">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 group-focus-within:text-[#FF6B35] transition-colors" />
-            </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Rechercher par nom ou code-barres..."
-              className="block w-full pl-12 pr-4 py-4 bg-white border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] shadow-sm text-[#1A365D] font-medium transition-all"
-            />
-          </div>
+          <CatalogSearch value={searchQuery} onChange={setSearchQuery} />
 
-          {/* Liste des produits */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {isLoading ? (
               <p className="col-span-full text-center py-20 text-gray-400 italic animate-pulse">Chargement du catalogue...</p>
@@ -137,51 +115,16 @@ export default function CatalogPage() {
               <p className="col-span-full text-center py-20 text-gray-400 italic">Aucun produit trouvé.</p>
             ) : (
               filteredItems.map((item) => (
-                <div key={item.id} className="bg-white p-6 rounded-3xl border border-gray-50 shadow-sm hover:shadow-md transition-all flex flex-col gap-4 group">
-                  <div className="flex justify-between items-start">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-[#FF6B35] bg-[#FF6B35]/10 px-2 py-0.5 rounded-full w-fit">
-                        {item.categories?.name || 'Sans Rayon'}
-                      </span>
-                      <h3 className="text-xl font-bold text-[#1A365D]">{item.name}</h3>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => openEditSheet(item)}
-                        className="p-2 text-gray-300 hover:text-[#1A365D] hover:bg-gray-50 rounded-xl transition-all"
-                        title="Modifier"
-                      >
-                        <PencilIcon className="w-5 h-5" />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(item.id, item.name)}
-                        className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                        title="Supprimer"
-                      >
-                        <TrashIcon className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center mt-auto">
-                    {item.barcode ? (
-                      <div className="flex items-center gap-2 text-gray-400 font-mono text-sm bg-gray-50 p-2 rounded-xl border border-gray-100 w-fit">
-                        <QrCodeIcon className="w-4 h-4" />
-                        {item.barcode}
-                      </div>
-                    ) : <div />}
-                    
-                    <div className="flex items-center gap-1 text-gray-300">
-                      <TagIcon className="w-4 h-4" />
-                      <span className="text-xs font-bold">{item.usage_count}</span>
-                    </div>
-                  </div>
-                </div>
+                <CatalogItemCard 
+                  key={item.id} 
+                  item={item} 
+                  onEdit={openEditSheet} 
+                  onDelete={handleDelete} 
+                />
               ))
             )}
           </div>
 
-          {/* Edit Sheet */}
           <Sheet open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
             <SheetContent side="right" className="w-full sm:max-w-[450px] p-10">
               <SheetHeader className="mb-10 text-left">
@@ -191,43 +134,15 @@ export default function CatalogPage() {
                 </SheetDescription>
               </SheetHeader>
               
-              <form onSubmit={handleUpdate} className="space-y-8">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-name" className="text-xs font-black text-gray-400 uppercase tracking-widest">Nom du produit</Label>
-                  <Input 
-                    id="edit-name" 
-                    value={editName} 
-                    onChange={(e) => setEditName(e.target.value)} 
-                    className="text-lg font-bold text-[#1A365D] border-gray-200 focus-visible:ring-[#FF6B35]"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="edit-barcode" className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center justify-between">
-                    Code-barres
-                    <button type="button" className="text-[#FF6B35] hover:underline flex items-center gap-1" onClick={() => {
-                      const bc = prompt("Scannez le code (Simulation) :");
-                      if(bc) setEditBarcode(bc);
-                    }}>
-                      <QrCodeIcon className="w-3 h-3" /> Scanner
-                    </button>
-                  </Label>
-                  <Input 
-                    id="edit-barcode" 
-                    value={editBarcode} 
-                    onChange={(e) => setEditBarcode(e.target.value)} 
-                    placeholder="Ex: 3017620422003"
-                    className="font-mono text-[#1A365D] border-gray-200 focus-visible:ring-[#FF6B35]"
-                  />
-                </div>
-
-                <SheetFooter className="mt-8 pt-4 sm:justify-start">
-                  <Button type="submit" disabled={isUpdating} className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl">
-                    {isUpdating ? 'Mise à jour...' : 'Enregistrer les modifications'}
-                  </Button>
-                </SheetFooter>
-              </form>
+              <ProductForm 
+                name={editName}
+                setName={setEditName}
+                barcode={editBarcode}
+                setBarcode={setEditBarcode}
+                isSubmitting={isUpdating}
+                submitLabel="Enregistrer les modifications"
+                onSubmit={handleUpdate}
+              />
             </SheetContent>
           </Sheet>
 
