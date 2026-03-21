@@ -190,6 +190,18 @@ export class ShoppingListsService {
     return data;
   }
 
+  async updateUnit(itemId: string, unit: string) {
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('shopping_list_items')
+      .update({ unit })
+      .eq('id', itemId)
+      .select()
+      .single();
+    if (error) this.handleError(error);
+    return data;
+  }
+
   async updateCatalogItem(id: string, payload: { name?: string; barcode?: string; category_id?: string; unit?: string }) {
     const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService
@@ -252,6 +264,24 @@ export class ShoppingListsService {
       .ilike('name', `%${query}%`)
       .limit(5);
     if (error) this.handleError(error);
+    return data;
+  }
+
+  async updateBarcode(itemId: string, barcode: string) {
+    const client = this.supabaseService.getClient();
+    const { data, error } = await client
+      .from('shopping_list_items')
+      .update({ barcode })
+      .eq('id', itemId)
+      .select()
+      .single();
+    if (error) this.handleError(error);
+    if (data) {
+      await client
+        .from('items_catalog')
+        .update({ barcode })
+        .ilike('name', data.name);
+    }
     return data;
   }
 }

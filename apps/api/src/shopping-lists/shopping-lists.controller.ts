@@ -151,6 +151,17 @@ export class ShoppingListsController {
     }
   }
 
+  @Patch('items/:id/unit')
+  async updateUnit(@Param('id') itemId: string, @Body('unit') unit: string) {
+    try {
+      this.logger.log(`Updating unit for item ${itemId} to ${unit}`);
+      return await this.shoppingListsService.updateUnit(itemId, unit);
+    } catch (error) {
+      this.logger.error(`Error updating unit for item ${itemId}:`, error.message);
+      throw error;
+    }
+  }
+
   @Patch('items/:id/barcode')
   async updateBarcode(@Param('id') itemId: string, @Body('barcode') barcode: string) {
     return this.shoppingListsService.updateBarcode(itemId, barcode);

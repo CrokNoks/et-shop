@@ -119,11 +119,32 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
     }
   };
 
+  const handleUnitUpdate = async (id: string, currentUnit: string) => {
+    const newUnit = prompt("Modifier l'unité (ex: brique, pack de 6, kg) :", currentUnit);
+    if (newUnit === null || newUnit === currentUnit) return;
+
+    try {
+      setItems(prev => prev.map(item => 
+        item.id === id ? { ...item, unit: newUnit } : item
+      ));
+      await fetchApi(`/shopping-lists/items/${id}/unit`, {
+        method: 'PATCH',
+        body: JSON.stringify({ unit: newUnit }),
+      });
+    } catch (error) {
+      console.error('Failed to update unit:', error);
+      fetchItems();
+    }
+  };
+
   const handleBarcodeUpdate = async (id: string) => {
     const barcode = prompt("Scannez ou entrez le code-barres pour cet article :");
     if (barcode === null) return;
 
     try {
+      setItems(prev => prev.map(item => 
+        item.id === id ? { ...item, barcode } : item
+      ));
       await fetchApi(`/shopping-lists/items/${id}/barcode`, {
         method: 'PATCH',
         body: JSON.stringify({ barcode }),
@@ -181,12 +202,12 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
         </button>
       </div>
 
-      <div className="bg-gray-50 rounded-2xl p-4 mb-6 flex items-center justify-between border border-gray-100">
+      <div className="bg-gray-50 rounded-2xl p-4 mb-6 flex items-center justify-between border border-gray-100 text-[#1A365D]">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-[#FF6B35]/10 rounded-xl">
             <TagIcon className="w-6 h-6 text-[#FF6B35]" />
           </div>
-          <div className="text-[#1A365D]">
+          <div>
             <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Budget estimé</p>
             <p className="text-xl font-black">{totalBudget.toFixed(2)} €</p>
           </div>
@@ -258,9 +279,12 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
                               <PlusIcon className="w-3 h-3" />
                             </button>
                           </div>
-                          <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider">
+                          <button 
+                            onClick={() => handleUnitUpdate(item.id, unit)}
+                            className="text-[10px] font-black uppercase text-gray-400 tracking-wider hover:text-[#FF6B35] transition-colors"
+                          >
                             {unit}
-                          </span>
+                          </button>
                         </div>
                       </div>
 
