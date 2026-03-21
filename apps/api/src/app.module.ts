@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SupabaseModule } from './supabase/supabase.module';
 import { ShoppingListsModule } from './shopping-lists/shopping-lists.module';
+import { HouseholdsModule } from './households/households.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ShoppingListsModule } from './shopping-lists/shopping-lists.module';
     }),
     SupabaseModule,
     ShoppingListsModule,
+    HouseholdsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

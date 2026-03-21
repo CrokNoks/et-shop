@@ -17,6 +17,14 @@ export async function fetchApi(path: string, options: RequestInit = {}) {
     headers.set('Authorization', `Bearer ${session.access_token}`);
   }
 
+  // Ajouter le household_id actif s'il existe
+  if (typeof window !== 'undefined') {
+    const householdId = localStorage.getItem('active_household_id');
+    if (householdId) {
+      headers.set('x-household-id', householdId);
+    }
+  }
+
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
     headers,

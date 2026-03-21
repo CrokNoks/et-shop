@@ -1,130 +1,93 @@
-import { Injectable, NotFoundException, UnauthorizedException, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
 export class ShoppingListsService {
-  private readonly logger = new Logger(ShoppingListsService.name);
-
   constructor(private readonly supabaseService: SupabaseService) {}
 
   private handleError(error: any) {
     if (error.code === 'PGRST116') throw new NotFoundException('Resource not found');
-    if (error.code === '42501') throw new UnauthorizedException('You do not have permission (RLS)');
+    if (error.code === '42501') throw new UnauthorizedException('You do not have permission');
     throw new InternalServerErrorException(error.message || 'Supabase error');
   }
 
+  private getHouseholdIdOrThrow(): string {
+    const id = this.supabaseService.getHouseholdId();
+    if (!id) throw new BadRequestException('Active household (x-household-id) is required');
+    return id;
+  }
+
   async findAll() {
+    const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService
       .getClient()
       .from('shopping_lists')
-      .select('*, list_members(*)');
+      .select('*')
+      .eq('household_id', householdId);
+    
     if (error) this.handleError(error);
     return data || [];
   }
 
   async findAllCatalog() {
+    const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService
       .getClient()
       .from('items_catalog')
       .select('*, categories(name)')
+      .eq('household_id', householdId)
       .order('name', { ascending: true });
+    
     if (error) this.handleError(error);
     return data || [];
   }
 
   async findAllCategories() {
+    const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService
       .getClient()
       .from('categories')
       .select('*')
+      .eq('household_id', householdId)
       .order('sort_order', { ascending: true });
+    
     if (error) this.handleError(error);
     return data || [];
   }
 
-  async createCategory(payload: { name: string; icon?: string; sort_order?: number }) {
-    const { data, error } = await this.supabaseService
-      .getClient()
-      .from('categories')
-      .insert(payload)
-      .select()
-      .single();
-    if (error) this.handleError(error);
-    return data;
-  }
-
-  async updateCategory(id: string, payload: { name?: string; icon?: string; sort_order?: number }) {
-    const { data, error } = await this.supabaseService
-      .getClient()
-      .from('categories')
-      .update(payload)
-      .eq('id', id)
-      .select()
-      .single();
-    if (error) this.handleError(error);
-    return data;
-  }
-
-  async deleteCategory(id: string) {
-    const { error } = await this.supabaseService
-      .getClient()
-      .from('categories')
-      .delete()
-      .eq('id', id);
-    if (error) this.handleError(error);
-    return { success: true };
-  }
-
-  async updateCatalogItem(id: string, payload: { name?: string; barcode?: string; category_id?: string }) {
-    const { data, error } = await this.supabaseService
-      .getClient()
-      .from('items_catalog')
-      .update(payload)
-      .eq('id', id)
-      .select()
-      .single();
-    if (error) this.handleError(error);
-    return data;
-  }
-
-  async deleteCatalogItem(id: string) {
-    const { error } = await this.supabaseService
-      .getClient()
-      .from('items_catalog')
-      .delete()
-      .eq('id', id);
-    if (error) this.handleError(error);
-    return { success: true };
-  }
-
   async findOne(id: string) {
+    const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService
       .getClient()
       .from('shopping_lists')
-      .select('*, shopping_list_items(*, categories(name, sort_order))')
+      .select('*, shopping_list_items(*, items_catalog(*, categories(name, sort_order)))')
       .eq('id', id)
+      .eq('household_id', householdId)
       .single();
-    if (error) this.handleError(error);
-    if (!data) throw new NotFoundException('Shopping list not found');
-    return data;
-  }
-
-  async suggestItems(query: string) {
-    const { data, error } = await this.supabaseService
-      .getClient()
-      .from('items_catalog')
-      .select('name, category_id, categories(name)')
-      .ilike('name', `%${query}%`)
-      .limit(5);
+    
     if (error) this.handleError(error);
     return data;
   }
 
   async create(name: string) {
+    const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService
       .getClient()
       .from('shopping_lists')
-      .insert({ name })
+      .insert({ name, household_id: householdId })
+      .select()
+      .single();
+
+    if (error) this.handleError(error);
+    return data;
+  }
+
+  async createCategory(payload: { name: string; icon?: string; sort_order?: number }) {
+    const householdId = this.getHouseholdIdOrThrow();
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('categories')
+      .insert({ ...payload, household_id: householdId })
       .select()
       .single();
     if (error) this.handleError(error);
@@ -133,99 +96,45 @@ export class ShoppingListsService {
 
   async addItem(listId: string, payload: { name: string; quantity?: number; barcode?: string; category_id?: string }) {
     const client = this.supabaseService.getClient();
+    const householdId = this.getHouseholdIdOrThrow();
     const { name, quantity = 1, barcode, category_id } = payload;
 
-    const { data: catalogItem } = await client
+    // 1. Chercher ou Créer dans le catalogue du foyer
+    let { data: catalogItem } = await client
       .from('items_catalog')
-      .select('id, category_id, barcode')
+      .select('id')
       .ilike('name', name)
-      .maybeSingle();
-
-    let finalCategoryId = category_id || catalogItem?.category_id || null;
-    let finalBarcode = barcode || catalogItem?.barcode || null;
-
-    if (!catalogItem) {
-      // Create new catalog item
-      await client.from('items_catalog').insert({ 
-        name, 
-        category_id: finalCategoryId, 
-        barcode: finalBarcode 
-      });
-    } else {
-      // Update existing catalog item if new info provided
-      const updates: any = {};
-      if (category_id && !catalogItem.category_id) updates.category_id = category_id;
-      if (barcode && !catalogItem.barcode) updates.barcode = barcode;
-      
-      if (Object.keys(updates).length > 0) {
-        await client.from('items_catalog').update(updates).eq('id', catalogItem.id);
-      }
-    }
-
-    const { data, error } = await client
-      .from('shopping_list_items')
-      .insert({ 
-        list_id: listId, 
-        name, 
-        category_id: finalCategoryId, 
-        barcode: finalBarcode,
-        quantity
-      })
-      .select()
-      .single();
-
-    if (error) this.handleError(error);
-    return data;
-  }
-
-  async addItemByBarcode(listId: string, barcode: string) {
-    const client = this.supabaseService.getClient();
-    const { data: catalogItem } = await client
-      .from('items_catalog')
-      .select('name, category_id')
-      .eq('barcode', barcode)
+      .eq('household_id', householdId)
       .maybeSingle();
 
     if (!catalogItem) {
-      throw new NotFoundException('Product not found in catalog.');
-    }
-
-    const { data, error } = await client
-      .from('shopping_list_items')
-      .insert({ 
-        list_id: listId, 
-        name: catalogItem.name, 
-        category_id: catalogItem.category_id,
-        barcode
-      })
-      .select()
-      .single();
-
-    if (error) this.handleError(error);
-    return data;
-  }
-
-  async updateBarcode(itemId: string, barcode: string) {
-    const client = this.supabaseService.getClient();
-    
-    // 1. Mettre à jour l'item dans la liste
-    const { data, error } = await client
-      .from('shopping_list_items')
-      .update({ barcode })
-      .eq('id', itemId)
-      .select()
-      .single();
-
-    if (error) this.handleError(error);
-
-    // 2. Mettre à jour le catalogue (apprentissage)
-    if (data) {
-      await client
+      const { data: newItem, error: cError } = await client
         .from('items_catalog')
-        .update({ barcode })
-        .ilike('name', data.name);
+        .insert({ 
+          name, 
+          household_id: householdId, 
+          category_id: category_id || null, 
+          barcode: barcode || null 
+        })
+        .select()
+        .single();
+      if (cError) this.handleError(cError);
+      catalogItem = newItem;
     }
 
+    // 2. Ajouter l'article à la liste (liaison)
+    const { data, error } = await client
+      .from('shopping_list_items')
+      .insert({ 
+        list_id: listId, 
+        catalog_item_id: catalogItem.id,
+        quantity,
+        is_checked: false
+      })
+      .select()
+      .single();
+
+    if (error) this.handleError(error);
     return data;
   }
 
@@ -261,6 +170,71 @@ export class ShoppingListsService {
       .eq('id', itemId)
       .select()
       .single();
+    if (error) this.handleError(error);
+    return data;
+  }
+
+  async updateCatalogItem(id: string, payload: { name?: string; barcode?: string; category_id?: string }) {
+    const householdId = this.getHouseholdIdOrThrow();
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('items_catalog')
+      .update(payload)
+      .eq('id', id)
+      .eq('household_id', householdId)
+      .select()
+      .single();
+    if (error) this.handleError(error);
+    return data;
+  }
+
+  async deleteCatalogItem(id: string) {
+    const householdId = this.getHouseholdIdOrThrow();
+    const { error } = await this.supabaseService
+      .getClient()
+      .from('items_catalog')
+      .delete()
+      .eq('id', id)
+      .eq('household_id', householdId);
+    if (error) this.handleError(error);
+    return { success: true };
+  }
+
+  async updateCategory(id: string, payload: { name?: string; icon?: string; sort_order?: number }) {
+    const householdId = this.getHouseholdIdOrThrow();
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('categories')
+      .update(payload)
+      .eq('id', id)
+      .eq('household_id', householdId)
+      .select()
+      .single();
+    if (error) this.handleError(error);
+    return data;
+  }
+
+  async deleteCategory(id: string) {
+    const householdId = this.getHouseholdIdOrThrow();
+    const { error } = await this.supabaseService
+      .getClient()
+      .from('categories')
+      .delete()
+      .eq('id', id)
+      .eq('household_id', householdId);
+    if (error) this.handleError(error);
+    return { success: true };
+  }
+
+  async suggestItems(query: string) {
+    const householdId = this.getHouseholdIdOrThrow();
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('items_catalog')
+      .select('name, category_id, categories(name)')
+      .eq('household_id', householdId)
+      .ilike('name', `%${query}%`)
+      .limit(5);
     if (error) this.handleError(error);
     return data;
   }

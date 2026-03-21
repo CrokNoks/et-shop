@@ -21,24 +21,26 @@ export class SupabaseService {
     const supabaseKey = this.configService.get<string>('SUPABASE_KEY');
     
     if (!supabaseUrl || !supabaseKey) {
-      this.logger.error('Critical: SUPABASE_URL or SUPABASE_KEY is missing in environment variables');
-      throw new Error('Server configuration error: Supabase keys missing');
+      this.logger.error('Critical: SUPABASE_URL or SUPABASE_KEY is missing');
+      throw new Error('Server configuration error');
     }
 
-    // Récupérer le token de l'utilisateur depuis la requête
     const authHeader = this.request.headers['authorization'];
     const token = authHeader?.split(' ')[1];
 
     if (token) {
-      this.logger.log('Initializing Supabase client with User Token (RLS active)');
       this.supabase = createClient(supabaseUrl, supabaseKey, {
         global: { headers: { Authorization: `Bearer ${token}` } },
       });
     } else {
-      this.logger.log('Initializing Supabase client with Service Key (Admin access)');
       this.supabase = createClient(supabaseUrl, supabaseKey);
     }
 
     return this.supabase;
+  }
+
+  // Utilitaire pour récupérer le foyer actif depuis les headers
+  getHouseholdId(): string | null {
+    return (this.request.headers['x-household-id'] as string) || null;
   }
 }
