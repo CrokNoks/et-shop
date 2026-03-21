@@ -63,8 +63,8 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
         try {
           const lock = await (navigator as any).wakeLock.request('screen');
           setWakeLock(lock);
-        } catch (err) {
-          console.error(`${err.name}, ${err.message}`);
+        } catch (err: any) {
+          console.error(`${err?.name}, ${err?.message}`);
         }
       }
     };
