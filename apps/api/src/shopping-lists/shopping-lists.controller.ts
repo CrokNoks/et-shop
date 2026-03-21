@@ -58,6 +58,14 @@ export class ShoppingListsController {
     }
   }
 
+  @Post(':id/barcode')
+  async addItemByBarcode(
+    @Param('id') listId: string,
+    @Body('barcode') barcode: string,
+  ) {
+    return this.shoppingListsService.addItemByBarcode(listId, barcode);
+  }
+
   @Patch('items/:id/toggle')
   async toggleItem(@Param('id') itemId: string, @Body('isChecked') isChecked: boolean) {
     try {
@@ -88,5 +96,10 @@ export class ShoppingListsController {
       this.logger.error(`Error updating quantity for item ${itemId}:`, error.message);
       throw error;
     }
+  }
+
+  @Patch('items/:id/barcode')
+  async updateBarcode(@Param('id') itemId: string, @Body('barcode') barcode: string) {
+    return this.shoppingListsService.updateBarcode(itemId, barcode);
   }
 }

@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException, UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
 export class ShoppingListsService {
+  private readonly logger = new Logger(ShoppingListsService.name);
+
   constructor(private readonly supabaseService: SupabaseService) {}
 
   private handleError(error: any) {
@@ -50,7 +52,6 @@ export class ShoppingListsService {
       .insert({ name })
       .select()
       .single();
-
     if (error) this.handleError(error);
     return data;
   }
@@ -59,19 +60,71 @@ export class ShoppingListsService {
     const client = this.supabaseService.getClient();
     const { data: catalogItem } = await client
       .from('items_catalog')
-      .select('category_id')
+      .select('category_id, barcode')
       .ilike('name', name)
       .maybeSingle();
 
     const categoryId = catalogItem?.category_id || null;
+    const barcode = catalogItem?.barcode || null;
 
     const { data, error } = await client
       .from('shopping_list_items')
-      .insert({ list_id: listId, name, category_id: categoryId })
+      .insert({ list_id: listId, name, category_id: categoryId, barcode })
       .select()
       .single();
 
     if (error) this.handleError(error);
+    return data;
+  }
+
+  async addItemByBarcode(listId: string, barcode: string) {
+    const client = this.supabaseService.getClient();
+    const { data: catalogItem } = await client
+      .from('items_catalog')
+      .select('name, category_id')
+      .eq('barcode', barcode)
+      .maybeSingle();
+
+    if (!catalogItem) {
+      throw new NotFoundException('Product not found in catalog.');
+    }
+
+    const { data, error } = await client
+      .from('shopping_list_items')
+      .insert({ 
+        list_id: listId, 
+        name: catalogItem.name, 
+        category_id: catalogItem.category_id,
+        barcode
+      })
+      .select()
+      .single();
+
+    if (error) this.handleError(error);
+    return data;
+  }
+
+  async updateBarcode(itemId: string, barcode: string) {
+    const client = this.supabaseService.getClient();
+    
+    // 1. Mettre à jour l'item dans la liste
+    const { data, error } = await client
+      .from('shopping_list_items')
+      .update({ barcode })
+      .eq('id', itemId)
+      .select()
+      .single();
+
+    if (error) this.handleError(error);
+
+    // 2. Mettre à jour le catalogue (apprentissage)
+    if (data) {
+      await client
+        .from('items_catalog')
+        .update({ barcode })
+        .ilike('name', data.name);
+    }
+
     return data;
   }
 

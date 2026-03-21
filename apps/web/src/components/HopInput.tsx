@@ -60,6 +60,25 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
     }
   };
 
+  const handleBarcodeScan = async () => {
+    const barcode = prompt("Entrez un code-barres (Simulation de scan) :");
+    if (!barcode) return;
+
+    setIsAdding(true);
+    try {
+      await fetchApi(`/shopping-lists/${listId}/barcode`, {
+        method: 'POST',
+        body: JSON.stringify({ barcode }),
+      });
+      alert("Produit ajouté via code-barres !");
+      onItemAdded?.();
+    } catch (error: any) {
+      alert(error.message || "Code-barres inconnu dans le catalogue.");
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
   const startVoiceDictation = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) return alert("Votre navigateur ne supporte pas la dictée vocale.");
@@ -105,7 +124,11 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
           >
             <MicrophoneIcon className="w-6 h-6" />
           </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500" title="Scanner">
+          <button 
+            onClick={handleBarcodeScan}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500" 
+            title="Scanner un code-barres"
+          >
             <QrCodeIcon className="w-6 h-6" />
           </button>
           <button 

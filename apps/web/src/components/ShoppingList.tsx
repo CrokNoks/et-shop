@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { CheckCircleIcon, ShoppingCartIcon, TagIcon, ChevronRightIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
-import { CheckCircleIcon as CheckCircleSolidIcon } from '@heroicons/react/24/solid';
+import { CheckCircleIcon, ShoppingCartIcon, TagIcon, ChevronRightIcon, MinusIcon, PlusIcon, QrCodeIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon as CheckCircleSolidIcon, QrCodeIcon as QrCodeSolidIcon } from '@heroicons/react/24/solid';
 import { fetchApi } from '@/lib/api';
 
 interface ListItem {
@@ -12,6 +12,7 @@ interface ListItem {
   price: number;
   is_checked: boolean;
   quantity: number;
+  barcode?: string;
 }
 
 interface ShoppingListProps {
@@ -74,18 +75,34 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
   const handleQuantityUpdate = async (id: string, currentQuantity: number, delta: number) => {
     const newQuantity = Math.max(1, currentQuantity + delta);
     if (newQuantity === currentQuantity) return;
-
     try {
       setItems(prev => prev.map(item => 
         item.id === id ? { ...item, quantity: newQuantity } : item
       ));
-
       await fetchApi(`/shopping-lists/items/${id}/quantity`, {
         method: 'PATCH',
         body: JSON.stringify({ quantity: newQuantity }),
       });
     } catch (error) {
       console.error('Failed to update quantity:', error);
+      fetchItems();
+    }
+  };
+
+  const handleBarcodeUpdate = async (id: string) => {
+    const barcode = prompt("Scannez ou entrez le code-barres pour cet article :");
+    if (barcode === null) return;
+
+    try {
+      setItems(prev => prev.map(item => 
+        item.id === id ? { ...item, barcode } : item
+      ));
+      await fetchApi(`/shopping-lists/items/${id}/barcode`, {
+        method: 'PATCH',
+        body: JSON.stringify({ barcode }),
+      });
+    } catch (error) {
+      console.error('Failed to update barcode:', error);
       fetchItems();
     }
   };
@@ -175,12 +192,22 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
                       )}
                     </button>
                     
-                    <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                      <p className={`font-bold truncate ${isShoppingMode ? 'text-xl' : 'text-base'} ${item.is_checked ? 'line-through text-gray-400' : 'text-[#1A365D]'}`}>
-                        {item.name}
-                      </p>
+                    <div className="flex-1 min-w-0 flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <p className={`font-bold truncate ${isShoppingMode ? 'text-xl' : 'text-base'} ${item.is_checked ? 'line-through text-gray-400' : 'text-[#1A365D]'}`}>
+                          {item.name}
+                        </p>
+                        {!isShoppingMode && (
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleBarcodeUpdate(item.id); }}
+                            className={`p-1 rounded-md transition-colors ${item.barcode ? 'text-[#FF6B35] bg-[#FF6B35]/10' : 'text-gray-300 hover:bg-gray-100'}`}
+                            title={item.barcode ? `Code-barres : ${item.barcode}` : "Associer un code-barres"}
+                          >
+                            {item.barcode ? <QrCodeSolidIcon className="w-4 h-4" /> : <QrCodeIcon className="w-4 h-4" />}
+                          </button>
+                        )}
+                      </div>
                       
-                      {/* Sélecteur de Quantité */}
                       <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         <button 
                           onClick={() => handleQuantityUpdate(item.id, item.quantity, -1)}
