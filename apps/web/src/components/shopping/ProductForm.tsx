@@ -6,6 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SheetFooter } from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface Category {
+  id: string;
+  name: string;
+}
 
 interface ProductFormProps {
   name: string;
@@ -14,6 +26,9 @@ interface ProductFormProps {
   setQuantity?: (qty: number) => void;
   barcode: string;
   setBarcode: (bc: string) => void;
+  categoryId: string;
+  setCategoryId: (id: string) => void;
+  categories: Category[];
   onSubmit: (e: React.FormEvent) => void;
   isSubmitting: boolean;
   submitLabel: string;
@@ -24,6 +39,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   name, setName,
   quantity, setQuantity,
   barcode, setBarcode,
+  categoryId, setCategoryId,
+  categories,
   onSubmit,
   isSubmitting,
   submitLabel,
@@ -40,6 +57,22 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           className="text-lg font-bold text-[#1A365D] border-gray-200 focus-visible:ring-[#FF6B35]"
           required
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="category" className="text-xs font-black text-gray-400 uppercase tracking-widest">Rayon (Catégorie)</Label>
+        <Select value={categoryId} onValueChange={setCategoryId}>
+          <SelectTrigger className="w-full text-lg font-bold text-[#1A365D] border-gray-200 focus:ring-[#FF6B35]">
+            <SelectValue placeholder="Choisir un rayon..." />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id} className="font-bold text-[#1A365D]">
+                {cat.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       
       {showQuantity && setQuantity && (

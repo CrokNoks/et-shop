@@ -8,7 +8,7 @@ import { fetchApi } from '@/lib/api';
 interface ListItem {
   id: string;
   name: string;
-  categories?: { name: string };
+  categories?: { name: string; sort_order: number };
   price: number;
   is_checked: boolean;
   quantity: number;
@@ -108,13 +108,19 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
   };
 
   const groupedItems = useMemo(() => {
-    const groups: Record<string, ListItem[]> = {};
+    const groups: Record<string, { items: ListItem[]; order: number }> = {};
     items.forEach(item => {
-      const category = item.categories?.name || 'Inconnu';
-      if (!groups[category]) groups[category] = [];
-      groups[category].push(item);
+      const categoryName = item.categories?.name || 'Inconnu';
+      const categoryOrder = item.categories?.sort_order ?? 999;
+      
+      if (!groups[categoryName]) {
+        groups[categoryName] = { items: [], order: categoryOrder };
+      }
+      groups[categoryName].items.push(item);
     });
-    return groups;
+    
+    // Sort groups by order
+    return Object.entries(groups).sort((a, b) => a[1].order - b[1].order);
   }, [items]);
 
   const totalBudget = useMemo(() => {
@@ -167,7 +173,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
         {items.length === 0 ? (
           <div className="text-center py-12 opacity-40 italic">Votre liste est vide. Ajoutez un article ci-dessus ! 🚀</div>
         ) : (
-          Object.entries(groupedItems).sort().map(([category, categoryItems]) => (
+          groupedItems.map(([category, { items: categoryItems }]) => (
             <div key={category} className="space-y-3">
               <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest px-2 flex items-center gap-2">
                 <span className="w-8 h-[2px] bg-[#FF6B35]" />

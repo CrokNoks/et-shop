@@ -17,6 +17,11 @@ interface Suggestion {
   categories?: { name: string };
 }
 
+interface Category {
+  id: string;
+  name: string;
+}
+
 interface HopInputProps {
   listId: string;
   onItemAdded?: () => void;
@@ -29,13 +34,29 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [isListening, setIsListening] = useState(false);
   
+  // Categories state
+  const [categories, setCategories] = useState<Category[]>([]);
+
   // Sheet state for new product creation
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [newProductName, setNewProductName] = useState('');
   const [newProductQuantity, setNewProductQuantity] = useState(1);
   const [newProductBarcode, setNewProductBarcode] = useState('');
+  const [newProductCategoryId, setNewProductCategoryId] = useState('');
 
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await fetchApi('/shopping-lists/categories');
+        setCategories(data || []);
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -56,13 +77,13 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
     return () => clearTimeout(timer);
   }, [inputValue]);
 
-  const handleAdd = async (name: string, quantity = 1, barcode?: string) => {
+  const handleAdd = async (name: string, quantity = 1, barcode?: string, category_id?: string) => {
     if (!name || isAdding) return;
     setIsAdding(true);
     try {
       await fetchApi(`/shopping-lists/${listId}/items`, {
         method: 'POST',
-        body: JSON.stringify({ name, quantity, barcode }),
+        body: JSON.stringify({ name, quantity, barcode, category_id }),
       });
       
       setInputValue('');
@@ -122,6 +143,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
     setNewProductName(inputValue);
     setNewProductQuantity(1);
     setNewProductBarcode('');
+    setNewProductCategoryId('');
     setShowSuggestions(false);
     setIsSheetOpen(true);
   };
@@ -212,12 +234,15 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
             setQuantity={setNewProductQuantity}
             barcode={newProductBarcode}
             setBarcode={setNewProductBarcode}
+            categoryId={newProductCategoryId}
+            setCategoryId={setNewProductCategoryId}
+            categories={categories}
             isSubmitting={isAdding}
             submitLabel="Créer et ajouter"
             showQuantity={true}
             onSubmit={(e) => {
               e.preventDefault();
-              handleAdd(newProductName, newProductQuantity, newProductBarcode || undefined);
+              handleAdd(newProductName, newProductQuantity, newProductBarcode || undefined, newProductCategoryId || undefined);
             }}
           />
         </SheetContent>

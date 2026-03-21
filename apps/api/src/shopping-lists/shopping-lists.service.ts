@@ -32,6 +32,16 @@ export class ShoppingListsService {
     return data || [];
   }
 
+  async findAllCategories() {
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('categories')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    if (error) this.handleError(error);
+    return data || [];
+  }
+
   async updateCatalogItem(id: string, payload: { name?: string; barcode?: string; category_id?: string }) {
     const { data, error } = await this.supabaseService
       .getClient()
@@ -58,7 +68,7 @@ export class ShoppingListsService {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('shopping_lists')
-      .select('*, shopping_list_items(*, categories(name))')
+      .select('*, shopping_list_items(*, categories(name, sort_order))')
       .eq('id', id)
       .single();
     if (error) this.handleError(error);
@@ -88,9 +98,9 @@ export class ShoppingListsService {
     return data;
   }
 
-  async addItem(listId: string, payload: { name: string; quantity?: number; barcode?: string }) {
+  async addItem(listId: string, payload: { name: string; quantity?: number; barcode?: string; category_id?: string }) {
     const client = this.supabaseService.getClient();
-    const { name, quantity = 1, barcode } = payload;
+    const { name, quantity = 1, barcode, category_id } = payload;
 
     const { data: catalogItem } = await client
       .from('items_catalog')
@@ -98,19 +108,25 @@ export class ShoppingListsService {
       .ilike('name', name)
       .maybeSingle();
 
-    let finalCategoryId = catalogItem?.category_id || null;
+    let finalCategoryId = category_id || catalogItem?.category_id || null;
     let finalBarcode = barcode || catalogItem?.barcode || null;
 
     if (!catalogItem) {
       // Create new catalog item
       await client.from('items_catalog').insert({ 
         name, 
-        category_id: null, 
+        category_id: finalCategoryId, 
         barcode: finalBarcode 
       });
-    } else if (barcode && !catalogItem.barcode) {
-      // Update existing catalog item with new barcode
-      await client.from('items_catalog').update({ barcode }).eq('id', catalogItem.id);
+    } else {
+      // Update existing catalog item if new info provided
+      const updates: any = {};
+      if (category_id && !catalogItem.category_id) updates.category_id = category_id;
+      if (barcode && !catalogItem.barcode) updates.barcode = barcode;
+      
+      if (Object.keys(updates).length > 0) {
+        await client.from('items_catalog').update(updates).eq('id', catalogItem.id);
+      }
     }
 
     const { data, error } = await client

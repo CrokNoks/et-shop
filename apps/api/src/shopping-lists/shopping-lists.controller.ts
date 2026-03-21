@@ -29,6 +29,17 @@ export class ShoppingListsController {
     }
   }
 
+  @Get('categories')
+  async getCategories() {
+    try {
+      this.logger.log('Fetching all categories...');
+      return await this.shoppingListsService.findAllCategories();
+    } catch (error) {
+      this.logger.error('Error fetching categories:', error.message);
+      throw error;
+    }
+  }
+
   @Patch('catalog/:id')
   async updateCatalog(
     @Param('id') id: string,
@@ -71,7 +82,7 @@ export class ShoppingListsController {
   @Post(':id/items')
   async addItem(
     @Param('id') listId: string,
-    @Body() payload: { name: string; quantity?: number; barcode?: string },
+    @Body() payload: { name: string; quantity?: number; barcode?: string; category_id?: string },
   ) {
     try {
       this.logger.log(`Adding item ${payload.name} to list ${listId}`);

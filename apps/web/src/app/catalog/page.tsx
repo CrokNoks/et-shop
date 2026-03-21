@@ -14,6 +14,11 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
+interface Category {
+  id: string;
+  name: string;
+}
+
 interface CatalogItem {
   id: string;
   name: string;
@@ -25,6 +30,7 @@ interface CatalogItem {
 
 export default function CatalogPage() {
   const [items, setItems] = useState<CatalogItem[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -32,21 +38,26 @@ export default function CatalogPage() {
   const [editingItem, setEditingItem] = useState<CatalogItem | null>(null);
   const [editName, setEditName] = useState('');
   const [editBarcode, setEditBarcode] = useState('');
+  const [editCategoryId, setEditCategoryId] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const fetchCatalog = async () => {
+  const fetchData = async () => {
     try {
-      const data = await fetchApi('/shopping-lists/catalog');
-      setItems(data || []);
+      const [catalogData, categoriesData] = await Promise.all([
+        fetchApi('/shopping-lists/catalog'),
+        fetchApi('/shopping-lists/categories')
+      ]);
+      setItems(catalogData || []);
+      setCategories(categoriesData || []);
     } catch (error) {
-      console.error('Failed to fetch catalog:', error);
+      console.error('Failed to fetch catalog data:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCatalog();
+    fetchData();
   }, []);
 
   const handleDelete = async (id: string, name: string) => {
@@ -64,6 +75,7 @@ export default function CatalogPage() {
     setEditingItem(item);
     setEditName(item.name);
     setEditBarcode(item.barcode || '');
+    setEditCategoryId(item.category_id || '');
   };
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -77,10 +89,12 @@ export default function CatalogPage() {
         body: JSON.stringify({
           name: editName,
           barcode: editBarcode || null,
+          category_id: editCategoryId || null,
         }),
       });
 
-      setItems(items.map(item => item.id === editingItem.id ? { ...item, ...updated } : item));
+      // Refetch data to get updated category names correctly
+      fetchData();
       setEditingItem(null);
     } catch (error) {
       alert("Erreur lors de la mise à jour.");
@@ -139,6 +153,9 @@ export default function CatalogPage() {
                 setName={setEditName}
                 barcode={editBarcode}
                 setBarcode={setEditBarcode}
+                categoryId={editCategoryId}
+                setCategoryId={setEditCategoryId}
+                categories={categories}
                 isSubmitting={isUpdating}
                 submitLabel="Enregistrer les modifications"
                 onSubmit={handleUpdate}
