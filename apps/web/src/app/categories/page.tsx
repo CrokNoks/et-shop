@@ -10,11 +10,9 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetFooter,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { ProductForm } from '@/components/shopping/ProductForm';
 
 interface Category {
   id: string;
@@ -53,7 +51,7 @@ export default function CategoriesPage() {
   const handleOpenCreate = () => {
     setEditingCategory(null);
     setName('');
-    setIcon('');
+    setIcon('📦');
     setSortOrder(categories.length > 0 ? Math.max(...categories.map(c => c.sort_order)) + 1 : 1);
     setIsSheetOpen(true);
   };
@@ -61,7 +59,7 @@ export default function CategoriesPage() {
   const handleOpenEdit = (category: Category) => {
     setEditingCategory(category);
     setName(category.name);
-    setIcon(category.icon || '');
+    setIcon(category.icon || '📦');
     setSortOrder(category.sort_order);
     setIsSheetOpen(true);
   };
@@ -115,7 +113,7 @@ export default function CategoriesPage() {
             </div>
             <Button 
               onClick={handleOpenCreate}
-              className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold rounded-2xl px-6 py-6 shadow-lg transition-all"
+              className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold rounded-2xl px-6 py-6 shadow-lg transition-all border-none"
             >
               <PlusIcon className="w-5 h-5 mr-2" strokeWidth={3} />
               Nouveau Rayon
@@ -134,7 +132,7 @@ export default function CategoriesPage() {
                     <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-2xl">
                       {category.icon || '📦'}
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col text-left">
                       <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
                         Ordre : {category.sort_order}
                       </span>
@@ -175,49 +173,24 @@ export default function CategoriesPage() {
                 </SheetDescription>
               </SheetHeader>
               
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="space-y-2">
-                  <Label htmlFor="cat-name" className="text-xs font-black text-gray-400 uppercase tracking-widest">Nom du rayon</Label>
-                  <Input 
-                    id="cat-name" 
-                    value={name} 
-                    onChange={(e) => setName(e.target.value)} 
-                    placeholder="Ex: Surgelés, Fruits..."
-                    className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="cat-icon" className="text-xs font-black text-gray-400 uppercase tracking-widest">Icône (Emoji)</Label>
-                    <Input 
-                      id="cat-icon" 
-                      value={icon} 
-                      onChange={(e) => setIcon(e.target.value)} 
-                      placeholder="Ex: 🍎"
-                      className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35] text-center"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cat-order" className="text-xs font-black text-gray-400 uppercase tracking-widest">Ordre de tri</Label>
-                    <Input 
-                      id="cat-order" 
-                      type="number"
-                      value={sortOrder} 
-                      onChange={(e) => setSortOrder(parseInt(e.target.value) || 0)} 
-                      className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <SheetFooter className="mt-8 pt-4 sm:justify-start">
-                  <Button type="submit" disabled={isSubmitting} className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl">
-                    {isSubmitting ? 'Enregistrement...' : 'Enregistrer le rayon'}
-                  </Button>
-                </SheetFooter>
-              </form>
+              <ProductForm 
+                isCategoryForm={true}
+                name={name}
+                setName={setName}
+                icon={icon}
+                setIcon={setIcon}
+                sortOrder={sortOrder}
+                setSortOrder={setSortOrder}
+                isSubmitting={isSubmitting}
+                submitLabel={editingCategory ? "Mettre à jour" : "Créer le rayon"}
+                onSubmit={handleSubmit}
+                // Props requis par l'interface mais inutilisés ici
+                barcode=""
+                setBarcode={() => {}}
+                categoryId=""
+                setCategoryId={() => {}}
+                categories={[]}
+              />
             </SheetContent>
           </Sheet>
 
