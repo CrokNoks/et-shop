@@ -64,17 +64,17 @@ export class ShoppingListsController {
     return this.shoppingListsService.deleteCategory(id);
   }
 
+  @Patch('catalog/bulk-category')
+  async bulkUpdateCatalogCategory(@Body() payload: { ids: string[]; category_id: string }) {
+    return this.shoppingListsService.bulkUpdateCatalogItemsCategory(payload.ids, payload.category_id);
+  }
+
   @Patch('catalog/:id')
   async updateCatalog(
     @Param('id') id: string,
     @Body() payload: { name?: string; barcode?: string; category_id?: string; unit?: string },
   ) {
     return this.shoppingListsService.updateCatalogItem(id, payload);
-  }
-
-  @Delete('catalog/:id')
-  async deleteCatalog(@Param('id') id: string) {
-    return this.shoppingListsService.deleteCatalogItem(id);
   }
 
   @Patch('items/:id/toggle')
