@@ -383,6 +383,20 @@ export class ShoppingListsService {
     return { success: true };
   }
 
+  async bulkUpdateCatalogItemsCategory(ids: string[], categoryId: string) {
+    const householdId = this.getHouseholdIdOrThrow();
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('items_catalog')
+      .update({ category_id: categoryId })
+      .in('id', ids)
+      .eq('household_id', householdId)
+      .select();
+
+    if (error) this.handleError(error);
+    return data;
+  }
+
   async updateCategory(id: string, payload: { name?: string; icon?: string; sort_order?: number }) {
     const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService

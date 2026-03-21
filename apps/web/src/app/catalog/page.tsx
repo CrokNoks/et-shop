@@ -6,8 +6,7 @@ import { fetchApi } from '@/lib/api';
 import { CatalogSearch } from '@/components/catalog/CatalogSearch';
 import { CatalogItemCard } from '@/components/catalog/CatalogItemCard';
 import { ProductForm } from '@/components/shopping/ProductForm';
-import { PlusIcon } from '@heroicons/react/24/outline';
-import { CatalogImportWizard } from '@/components/catalog/CatalogImportWizard';
+import { PlusIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 import {
   Sheet,
   SheetContent,
@@ -16,6 +15,13 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Category {
   id: string;
@@ -37,6 +43,11 @@ export default function CatalogPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Selection state
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkCategoryId, setBulkCategoryId] = useState('');
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
   // Form state (Edit & Create)
   const [editingItem, setEditingItem] = useState<CatalogItem | null>(null);
@@ -122,8 +133,39 @@ export default function CatalogPage() {
     try {
       await fetchApi(`/shopping-lists/catalog/${id}`, { method: 'DELETE' });
       setItems(items.filter(item => item.id !== id));
+      setSelectedIds(selectedIds.filter(sid => sid !== id));
     } catch (error) {
       alert("Erreur lors de la suppression.");
+    }
+  };
+
+  const handleSelect = (id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedIds([...selectedIds, id]);
+    } else {
+      setSelectedIds(selectedIds.filter(selectedId => selectedId !== id));
+    }
+  };
+
+  const handleBulkUpdate = async () => {
+    if (!bulkCategoryId || isBulkUpdating) return;
+    setIsBulkUpdating(true);
+    try {
+      await fetchApi('/shopping-lists/catalog/bulk-category', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          ids: selectedIds,
+          category_id: bulkCategoryId,
+        }),
+      });
+      fetchData();
+      setSelectedIds([]);
+      setBulkCategoryId('');
+      alert(`${selectedIds.length} produits mis à jour !`);
+    } catch (error) {
+      alert("Erreur lors de la mise à jour groupée.");
+    } finally {
+      setIsBulkUpdating(false);
     }
   };
 
@@ -145,7 +187,6 @@ export default function CatalogPage() {
               <p className="text-gray-500">Gérez le référentiel global de vos articles.</p>
             </div>
             <div className="flex gap-3">
-              <CatalogImportWizard onSuccess={fetchData} />
               <Button 
                 onClick={handleOpenCreate}
                 className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold rounded-2xl px-6 py-6 shadow-lg transition-all border-none"
@@ -158,7 +199,7 @@ export default function CatalogPage() {
 
           <CatalogSearch value={searchQuery} onChange={setSearchQuery} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-32">
             {isLoading ? (
               <p className="col-span-full text-center py-20 text-gray-400 italic animate-pulse">Chargement du catalogue...</p>
             ) : filteredItems.length === 0 ? (
@@ -169,11 +210,58 @@ export default function CatalogPage() {
                   key={item.id} 
                   item={item} 
                   onEdit={openEditSheet} 
-                  onDelete={handleDelete} 
+                  onDelete={handleDelete}
+                  isSelected={selectedIds.includes(item.id)}
+                  onSelect={(checked) => handleSelect(item.id, checked)}
                 />
               ))
             )}
           </div>
+
+          {/* Bulk Action Bar */}
+          {selectedIds.length > 0 && (
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-full max-w-2xl px-6 animate-in slide-in-from-bottom-8 duration-300">
+              <div className="bg-[#1A365D] text-white p-4 rounded-3xl shadow-2xl flex items-center justify-between gap-6 border border-white/10 backdrop-blur-md">
+                <div className="flex items-center gap-4 pl-2">
+                  <div className="bg-[#FF6B35] text-white w-8 h-8 rounded-full flex items-center justify-center font-black text-sm">
+                    {selectedIds.length}
+                  </div>
+                  <p className="font-bold text-sm">produits sélectionnés</p>
+                </div>
+
+                <div className="flex items-center gap-3 flex-1 max-w-sm">
+                  <Select value={bulkCategoryId} onValueChange={setBulkCategoryId}>
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white font-bold rounded-xl h-12 focus:ring-[#FF6B35]">
+                      <SelectValue placeholder="Choisir un rayon...">
+                        {categories.find(c => c.id === bulkCategoryId)?.name}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id} className="font-bold text-[#1A365D]">
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button 
+                    onClick={handleBulkUpdate}
+                    disabled={!bulkCategoryId || isBulkUpdating}
+                    className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold h-12 rounded-xl px-6 disabled:opacity-50 transition-all border-none"
+                  >
+                    {isBulkUpdating ? '...' : 'Appliquer'}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => setSelectedIds([])}
+                    className="text-white/60 hover:text-white hover:bg-white/10 h-12 rounded-xl"
+                  >
+                    Annuler
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetContent side="right" className="w-full sm:max-w-[450px] p-10 text-[#1A365D]">
