@@ -26,9 +26,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col pb-20 sm:pb-0">
+      <body className="min-h-full flex flex-col">
         {children}
-        <MobileNav />
         <Toaster richColors position="top-right" />
       </body>
     </html>

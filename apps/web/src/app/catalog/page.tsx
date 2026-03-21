@@ -299,7 +299,7 @@ export default function CatalogPage() {
           )}
 
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetContent side="right" className="w-full sm:max-w-[450px] p-10 text-[#1A365D]">
+            <SheetContent side="right" className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]">
               <SheetHeader className="mb-10 text-left">
                 <SheetTitle className="text-3xl font-black">
                   {editingItem ? 'Modifier le produit' : 'Nouveau produit'}

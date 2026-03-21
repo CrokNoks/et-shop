@@ -21,7 +21,7 @@ interface List {
 interface SidebarContentProps {
   activeListId: string;
   onListSelect: (id: string) => void;
-  onClose?: () => void; // Pour fermer le tiroir sur mobile après sélection
+  onClose?: () => void;
 }
 
 export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, onListSelect, onClose }) => {
@@ -105,8 +105,8 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, on
       <Logo width={200} height={60} />
       
       <div className="w-full flex flex-col gap-6 text-[#1A365D]">
-        {/* Catalogue & Categories Links */}
-        <div className="px-2 flex flex-col gap-2">
+        {/* Catalogue & Categories Links - Hidden on mobile */}
+        <div className="px-2 hidden sm:flex flex-col gap-2">
           <Link 
             href="/catalog" 
             onClick={() => onClose?.()}
@@ -161,7 +161,7 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, on
           </form>
         )}
 
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 overflow-y-auto max-h-[40vh]">
           {isLoading && lists.length === 0 ? (
             <p className="text-xs text-center text-gray-400 italic py-4">Chargement...</p>
           ) : lists.length === 0 ? (

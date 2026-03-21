@@ -65,8 +65,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   isCategoryForm = false
 }) => {
   return (
-    <form onSubmit={onSubmit} className="space-y-8">
-      <div className="space-y-2">
+    <form onSubmit={onSubmit} className="space-y-8 text-[#1A365D]">
+      <div className="space-y-2 text-left">
         <Label htmlFor="name" className="text-xs font-black text-gray-400 uppercase tracking-widest">
           {isCategoryForm ? 'Nom du rayon' : 'Nom du produit'}
         </Label>
@@ -75,13 +75,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           value={name} 
           onChange={(e) => setName(e.target.value)} 
           placeholder={isCategoryForm ? "Ex: Surgelés, Fruits..." : "Nom du produit"}
-          className="text-lg font-bold text-[#1A365D] border-gray-200 focus-visible:ring-[#FF6B35]"
+          className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
           required
         />
       </div>
 
       {isCategoryForm && setIcon && (
-        <div className="space-y-3">
+        <div className="space-y-3 text-left">
           <Label className="text-xs font-black text-gray-400 uppercase tracking-widest">Icône du rayon</Label>
           <div className="grid grid-cols-6 gap-2 p-4 bg-gray-50 rounded-2xl border border-gray-100 max-h-[200px] overflow-y-auto">
             {EMOJI_OPTIONS.map((emoji) => (
@@ -103,27 +103,27 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       )}
 
       {isCategoryForm && setSortOrder && (
-        <div className="space-y-2">
+        <div className="space-y-2 text-left">
           <Label htmlFor="sortOrder" className="text-xs font-black text-gray-400 uppercase tracking-widest">Ordre de tri</Label>
           <Input 
             id="sortOrder" 
             type="number"
             value={sortOrder} 
             onChange={(e) => setSortOrder(parseInt(e.target.value) || 0)} 
-            className="text-lg font-bold text-[#1A365D] border-gray-200 focus-visible:ring-[#FF6B35]"
+            className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
             required
           />
         </div>
       )}
 
       {!isCategoryForm && (
-        <div className="space-y-2">
+        <div className="space-y-2 text-left">
           <Label htmlFor="category" className="text-xs font-black text-gray-400 uppercase tracking-widest">Rayon (Catégorie)</Label>
           <Select 
             value={categoryId || undefined} 
             onValueChange={setCategoryId}
           >
-            <SelectTrigger className="w-full text-lg font-bold text-[#1A365D] border-gray-200 focus:ring-[#FF6B35]">
+            <SelectTrigger className="w-full text-lg font-bold border-gray-200 focus:ring-[#FF6B35]">
               <SelectValue placeholder="Choisir un rayon...">
                 {categories.find(c => c.id === categoryId)?.name}
               </SelectValue>
@@ -140,7 +140,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       )}
       
       {!isCategoryForm && showQuantity && setQuantity && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 text-left">
           <div className="space-y-2">
             <Label htmlFor="quantity" className="text-xs font-black text-gray-400 uppercase tracking-widest">Quantité</Label>
             <Input 
@@ -149,7 +149,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               min="1" 
               value={quantity} 
               onChange={(e) => setQuantity(parseInt(e.target.value) || 1)} 
-              className="text-lg font-bold text-[#1A365D] border-gray-200 focus-visible:ring-[#FF6B35]"
+              className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
               required
             />
           </div>
@@ -160,36 +160,28 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               value={unit} 
               onChange={(e) => setUnit(e.target.value)} 
               placeholder="Ex: brique, pack de 6..."
-              className="text-lg font-bold text-[#1A365D] border-gray-200 focus-visible:ring-[#FF6B35]"
+              className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
             />
           </div>
         </div>
       )}
 
       {!isCategoryForm && !showQuantity && (
-        <div className="space-y-2">
+        <div className="space-y-2 text-left">
           <Label htmlFor="unit" className="text-xs font-black text-gray-400 uppercase tracking-widest">Unité par défaut</Label>
           <Input 
             id="unit" 
             value={unit} 
             onChange={(e) => setUnit(e.target.value)} 
             placeholder="Ex: brique, pack de 6..."
-            className="text-lg font-bold text-[#1A365D] border-gray-200 focus-visible:ring-[#FF6B35]"
+            className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
           />
         </div>
       )}
 
       {!isCategoryForm && (
-        <div className="space-y-2">
-          <Label htmlFor="barcode" className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center justify-between">
-            Code-barres (Optionnel)
-            <button type="button" className="text-[#FF6B35] hover:underline flex items-center gap-1" onClick={() => {
-              const bc = prompt("Scannez le code (Simulation) :");
-              if(bc) setBarcode(bc);
-            }}>
-              <QrCodeIcon className="w-3 h-3" /> Scanner
-            </button>
-          </Label>
+        <div className="space-y-2 text-left">
+          <Label htmlFor="barcode" className="text-xs font-black text-gray-400 uppercase tracking-widest">Code-barres (Optionnel)</Label>
           <Input 
             id="barcode" 
             value={barcode} 
