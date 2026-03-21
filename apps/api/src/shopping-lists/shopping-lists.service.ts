@@ -422,15 +422,32 @@ export class ShoppingListsService {
     return data;
   }
 
-  async updateBarcode(itemId: string, barcode: string) {
+  async importCatalogItems(items: { name: string; barcode?: string; unit?: string; category_name?: string }[]) {
+    const householdId = this.getHouseholdIdOrThrow();
     const client = this.supabaseService.getClient();
-    // ON NE MET PLUS À JOUR LE CATALOGUE ICI
+
+    // 1. Récupérer toutes les catégories du foyer pour le mapping par nom
+    const { data: categories } = await client
+      .from('categories')
+      .select('id, name')
+      .eq('household_id', householdId);
+
+    const categoryMap = new Map(categories?.map(c => [c.name.toLowerCase(), c.id]));
+
+    // 2. Préparer le payload
+    const payload = items.map(item => ({
+      name: item.name,
+      barcode: item.barcode || null,
+      unit: item.unit || 'pcs',
+      household_id: householdId,
+      category_id: item.category_name ? categoryMap.get(item.category_name.toLowerCase()) || null : null
+    }));
+
     const { data, error } = await client
-      .from('shopping_list_items')
-      .update({ barcode })
-      .eq('id', itemId)
-      .select()
-      .single();
+      .from('items_catalog')
+      .insert(payload)
+      .select();
+
     if (error) this.handleError(error);
     return data;
   }

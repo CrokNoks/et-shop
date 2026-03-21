@@ -24,6 +24,11 @@ export class ShoppingListsController {
     return this.shoppingListsService.createCatalogItem(payload);
   }
 
+  @Post('catalog/import')
+  async importCatalog(@Body('items') items: { name: string; barcode?: string; unit?: string; category_name?: string }[]) {
+    return this.shoppingListsService.importCatalogItems(items);
+  }
+
   @Get('categories')
   async getCategories() {
     try {

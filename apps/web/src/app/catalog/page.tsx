@@ -7,6 +7,7 @@ import { CatalogSearch } from '@/components/catalog/CatalogSearch';
 import { CatalogItemCard } from '@/components/catalog/CatalogItemCard';
 import { ProductForm } from '@/components/shopping/ProductForm';
 import { PlusIcon } from '@heroicons/react/24/outline';
+import { CatalogImportWizard } from '@/components/catalog/CatalogImportWizard';
 import {
   Sheet,
   SheetContent,
@@ -143,13 +144,16 @@ export default function CatalogPage() {
               <h1 className="text-4xl font-black">Catalogue Produits</h1>
               <p className="text-gray-500">Gérez le référentiel global de vos articles.</p>
             </div>
-            <Button 
-              onClick={handleOpenCreate}
-              className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold rounded-2xl px-6 py-6 shadow-lg transition-all border-none"
-            >
-              <PlusIcon className="w-5 h-5 mr-2" strokeWidth={3} />
-              Nouveau Produit
-            </Button>
+            <div className="flex gap-3">
+              <CatalogImportWizard onSuccess={fetchData} />
+              <Button 
+                onClick={handleOpenCreate}
+                className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold rounded-2xl px-6 py-6 shadow-lg transition-all border-none"
+              >
+                <PlusIcon className="w-5 h-5 mr-2" strokeWidth={3} />
+                Nouveau Produit
+              </Button>
+            </div>
           </div>
 
           <CatalogSearch value={searchQuery} onChange={setSearchQuery} />
