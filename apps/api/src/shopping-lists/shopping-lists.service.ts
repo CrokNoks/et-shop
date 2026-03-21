@@ -422,6 +422,18 @@ export class ShoppingListsService {
     return data;
   }
 
+  async updateBarcode(itemId: string, barcode: string) {
+    const client = this.supabaseService.getClient();
+    const { data, error } = await client
+      .from('shopping_list_items')
+      .update({ barcode })
+      .eq('id', itemId)
+      .select()
+      .single();
+    if (error) this.handleError(error);
+    return data;
+  }
+
   async importCatalogItems(items: { name: string; barcode?: string; unit?: string; category_name?: string }[]) {
     const householdId = this.getHouseholdIdOrThrow();
     const client = this.supabaseService.getClient();
@@ -445,7 +457,7 @@ export class ShoppingListsService {
 
     const { data, error } = await client
       .from('items_catalog')
-      .insert(payload)
+      .upsert(payload, { onConflict: 'name, household_id' })
       .select();
 
     if (error) this.handleError(error);

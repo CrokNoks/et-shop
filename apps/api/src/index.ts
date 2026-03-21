@@ -23,3 +23,17 @@ export const api = onRequest({ region: 'europe-west1' }, async (request, respons
   }
   return server(request, response);
 });
+
+// For local development
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  app.enableCors();
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+  console.log(`API is running on http://localhost:${port}`);
+}
+
+// Start local server if not running as a Firebase Function
+if (!process.env.FUNCTION_NAME && !process.env.K_SERVICE && !process.env.FUNCTIONS_EMULATOR) {
+  bootstrap();
+}

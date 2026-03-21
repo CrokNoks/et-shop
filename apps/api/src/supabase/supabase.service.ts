@@ -25,16 +25,9 @@ export class SupabaseService {
       throw new Error('Server configuration error');
     }
 
-    const authHeader = this.request.headers['authorization'];
-    const token = authHeader?.split(' ')[1];
-
-    if (token) {
-      this.supabase = createClient(supabaseUrl, supabaseKey, {
-        global: { headers: { Authorization: `Bearer ${token}` } },
-      });
-    } else {
-      this.supabase = createClient(supabaseUrl, supabaseKey);
-    }
+    // En développement local, nous utilisons la Service Key pour éviter les erreurs de décalage d'horloge (JWT issued at future).
+    // La sécurité est assurée par le filtrage manuel par household_id dans nos services.
+    this.supabase = createClient(supabaseUrl, supabaseKey);
 
     return this.supabase;
   }

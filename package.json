@@ -1,11 +1,18 @@
 {
   "name": "et-shop-monorepo",
+  "version": "0.1.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md,json}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
+    "release:patch": "node scripts/release.js patch",
+    "release:minor": "node scripts/release.js minor",
+    "release:major": "node scripts/release.js major",
+    "deploy": "firebase deploy",
+    "deploy:api": "firebase deploy --only functions"
   },
   "devDependencies": {
     "turbo": "latest",
