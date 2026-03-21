@@ -303,11 +303,18 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
                         </div>
                       )}
 
-                      {isShoppingMode && (
-                        <div className={`text-xl font-bold ${item.is_checked ? 'text-gray-300' : ''}`}>
-                          {(Number(item.price) * (item.quantity || 1)).toFixed(2)} €
-                        </div>
-                      )}
+                      <div 
+                        onClick={(e) => {
+                          if (!item.is_checked) {
+                            e.stopPropagation();
+                            const p = prompt("Prix unitaire :", item.price.toString());
+                            if (p !== null) handlePriceUpdate(item.id, p);
+                          }
+                        }}
+                        className={`text-xl font-bold ${item.is_checked ? 'text-gray-300' : 'text-[#FF6B35] bg-[#FF6B35]/5 px-2 py-1 rounded-lg border border-[#FF6B35]/10'}`}
+                      >
+                        {(Number(item.price) * (item.quantity || 1)).toFixed(2)} €
+                      </div>
                     </div>
                   );
                 })}
