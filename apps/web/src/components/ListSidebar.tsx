@@ -1,7 +1,8 @@
 "use client";
 
-import React from 'react';
-import { ListBulletIcon, PlusIcon, UsersIcon, HashtagIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from 'react';
+import { PlusIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { fetchApi } from '@/lib/api';
 
 interface List {
   id: string;
@@ -11,59 +12,112 @@ interface List {
   color: string;
 }
 
-const MOCK_LISTS: List[] = [
-  { id: '1', name: 'Courses Hebdo', itemCount: 12, isShared: true, color: '#1A365D' },
-  { id: '2', name: 'Apéro Samedi', itemCount: 5, isShared: true, color: '#FF6B35' },
-  { id: '3', name: 'Brico / Jardin', itemCount: 3, isShared: false, color: '#2D3748' },
-];
-
 interface ListSidebarProps {
   activeListId: string;
   onListSelect: (id: string) => void;
 }
 
 export const ListSidebar: React.FC<ListSidebarProps> = ({ activeListId, onListSelect }) => {
+  const [lists, setLists] = useState<List[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newListName, setNewListName] = useState('');
+
+  const loadLists = async () => {
+    try {
+      const data = await fetchApi('/shopping-lists');
+      setLists(data || []);
+    } catch (error) {
+      console.error('Failed to load lists:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadLists();
+    const interval = setInterval(loadLists, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleCreateList = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newListName.trim()) return;
+    
+    try {
+      const newList = await fetchApi('/shopping-lists', {
+        method: 'POST',
+        body: JSON.stringify({ name: newListName }),
+      });
+      setNewListName('');
+      setShowCreateForm(false);
+      loadLists();
+      onListSelect(newList.id);
+    } catch (error) {
+      console.error('Failed to create list:', error);
+    }
+  };
+
   return (
     <div className="w-full sm:w-64 flex flex-col gap-6">
       <div className="flex items-center justify-between px-2">
         <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Mes Listes</h3>
-        <button className="p-1 hover:bg-gray-100 rounded-lg text-[#FF6B35] transition-colors">
+        <button 
+          onClick={() => setShowCreateForm(!showCreateForm)}
+          className={`p-1 hover:bg-gray-100 rounded-lg transition-colors ${showCreateForm ? 'text-gray-400' : 'text-[#FF6B35]'}`}
+        >
           <PlusIcon className="w-5 h-5" strokeWidth={2.5} />
         </button>
       </div>
 
+      {/* Formulaire de création rapide */}
+      {showCreateForm && (
+        <form onSubmit={handleCreateList} className="px-2 mb-2 animate-in fade-in slide-in-from-top-2">
+          <input
+            autoFocus
+            type="text"
+            value={newListName}
+            onChange={(e) => setNewListName(e.target.value)}
+            placeholder="Nom de la liste..."
+            className="w-full p-3 bg-gray-50 border border-[#FF6B35]/30 rounded-xl outline-none focus:border-[#FF6B35] text-sm font-bold text-[#1A365D]"
+          />
+        </form>
+      )}
+
       <div className="flex flex-col gap-1">
-        {MOCK_LISTS.map((list) => (
-          <button
-            key={list.id}
-            onClick={() => onListSelect(list.id)}
-            className={`flex items-center justify-between p-3 rounded-xl transition-all group ${
-              activeListId === list.id 
-                ? 'bg-white shadow-md border-l-4 border-[#FF6B35]' 
-                : 'hover:bg-gray-50 border-l-4 border-transparent text-gray-500'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <div 
-                className="w-2 h-2 rounded-full" 
-                style={{ backgroundColor: list.color }} 
-              />
-              <span className={`font-bold ${activeListId === list.id ? 'text-[#1A365D]' : ''}`}>
-                {list.name}
-              </span>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              {list.isShared && <UsersIcon className="w-4 h-4 text-gray-300" />}
-              <span className="text-xs font-bold bg-gray-100 px-2 py-0.5 rounded-full text-gray-400 group-hover:bg-gray-200 transition-colors">
-                {list.itemCount}
-              </span>
-            </div>
-          </button>
-        ))}
+        {isLoading && lists.length === 0 ? (
+          <p className="text-xs text-center text-gray-400 italic py-4">Chargement...</p>
+        ) : lists.length === 0 ? (
+          <p className="text-xs text-center text-gray-400 italic py-4 px-2">Aucune liste. Cliquez sur + pour en créer une !</p>
+        ) : (
+          lists.map((list) => (
+            <button
+              key={list.id}
+              onClick={() => onListSelect(list.id)}
+              className={`flex items-center justify-between p-3 rounded-xl transition-all group ${
+                activeListId === list.id 
+                  ? 'bg-white shadow-md border-l-4 border-[#FF6B35]' 
+                  : 'hover:bg-gray-50 border-l-4 border-transparent text-gray-500'
+              }`}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div 
+                  className="w-2 h-2 rounded-full flex-shrink-0" 
+                  style={{ backgroundColor: list.color || '#1A365D' }} 
+                />
+                <span className={`font-bold truncate ${activeListId === list.id ? 'text-[#1A365D]' : ''}`}>
+                  {list.name}
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {list.isShared && <UsersIcon className="w-4 h-4 text-gray-300" />}
+              </div>
+            </button>
+          ))
+        )}
       </div>
 
-      {/* Section Organisation du foyer */}
       <div className="mt-4 p-4 bg-[#1A365D]/5 rounded-2xl border border-[#1A365D]/10">
         <div className="flex items-center gap-2 mb-2">
           <UsersIcon className="w-4 h-4 text-[#1A365D]" />
