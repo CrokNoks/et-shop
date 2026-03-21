@@ -8,15 +8,7 @@ import { usePathname } from 'next/navigation';
 import { Logo } from './Logo';
 import { UserBadge } from './UserBadge';
 import { useSupabase } from '@/hooks/useSupabase';
-
-interface List {
-  id: string;
-  name: string;
-  itemCount: number;
-  isShared: boolean;
-  color: string;
-  household_id: string;
-}
+import { ShoppingList } from '@/types';
 
 interface SidebarContentProps {
   activeListId: string;
@@ -27,7 +19,7 @@ interface SidebarContentProps {
 export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, onListSelect, onClose }) => {
   const pathname = usePathname();
   const supabase = useSupabase();
-  const [lists, setLists] = useState<List[]>([]);
+  const [lists, setLists] = useState<ShoppingList[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newListName, setNewListName] = useState('');

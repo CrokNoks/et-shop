@@ -15,13 +15,7 @@ import { Button } from "@/components/ui/button";
 import { ProductForm } from '@/components/shopping/ProductForm';
 import Papa from 'papaparse';
 import { toast } from 'sonner';
-
-interface Category {
-  id: string;
-  name: string;
-  icon?: string;
-  sort_order: number;
-}
+import { Category } from '@/types';
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -154,7 +148,7 @@ export default function CategoriesPage() {
         <div className="w-full max-w-4xl flex flex-col gap-10">
           
           <div className="flex justify-between items-end">
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 text-left">
               <h1 className="text-4xl font-black">Gestion des Rayons</h1>
               <p className="text-gray-500">Personnalisez l'ordre de passage en magasin.</p>
             </div>
@@ -225,6 +219,7 @@ export default function CategoriesPage() {
             )}
           </div>
 
+          {/* Create/Edit Sheet */}
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetContent side="right" className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]">
               <SheetHeader className="mb-10 text-left">
@@ -247,6 +242,7 @@ export default function CategoriesPage() {
                 isSubmitting={isSubmitting}
                 submitLabel={editingCategory ? "Mettre à jour" : "Créer le rayon"}
                 onSubmit={handleSubmit}
+                // Props requis par l'interface mais inutilisés ici
                 barcode=""
                 setBarcode={() => {}}
                 unit="pcs"

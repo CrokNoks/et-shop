@@ -3,14 +3,7 @@
 import React from 'react';
 import { QrCodeIcon, TagIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Checkbox } from "@/components/ui/checkbox";
-
-interface CatalogItem {
-  id: string;
-  name: string;
-  barcode?: string;
-  categories?: { name: string };
-  usage_count: number;
-}
+import { CatalogItem } from '@/types';
 
 interface CatalogItemCardProps {
   item: CatalogItem;
@@ -36,7 +29,7 @@ export const CatalogItemCard: React.FC<CatalogItemCardProps> = ({ item, onEdit, 
               className="w-5 h-5 border-gray-200 data-[state=checked]:bg-[#FF6B35] data-[state=checked]:border-[#FF6B35]"
             />
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 text-left">
             <span className="text-[10px] font-black uppercase tracking-widest text-[#FF6B35] bg-[#FF6B35]/10 px-2 py-0.5 rounded-full w-fit">
               {item.categories?.name || 'Sans Rayon'}
             </span>
@@ -62,12 +55,19 @@ export const CatalogItemCard: React.FC<CatalogItemCardProps> = ({ item, onEdit, 
       </div>
 
       <div className="flex justify-between items-center mt-auto ml-9">
-        {item.barcode ? (
-          <div className="flex items-center gap-2 text-gray-400 font-mono text-sm bg-gray-50 p-2 rounded-xl border border-gray-100 w-fit">
-            <QrCodeIcon className="w-4 h-4" />
-            {item.barcode}
-          </div>
-        ) : <div />}
+        <div className="flex flex-col gap-1 text-left">
+          {item.barcode && (
+            <div className="flex items-center gap-2 text-gray-400 font-mono text-sm bg-gray-50 p-2 rounded-xl border border-gray-100 w-fit">
+              <QrCodeIcon className="w-4 h-4" />
+              {item.barcode}
+            </div>
+          )}
+          {item.unit && (
+            <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider px-2">
+              Unité : {item.unit}
+            </span>
+          )}
+        </div>
         
         <div className="flex items-center gap-1 text-gray-300">
           <TagIcon className="w-4 h-4" />

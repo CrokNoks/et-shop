@@ -16,15 +16,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ProductForm } from './ProductForm';
 import { toast } from 'sonner';
+import { Category } from '@/types';
 
 interface Suggestion {
   name: string;
   categories?: { name: string };
-}
-
-interface Category {
-  id: string;
-  name: string;
 }
 
 interface HopInputProps {
@@ -48,7 +44,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
   const [newProductQuantity, setNewProductQuantity] = useState(1);
   const [newProductUnit, setNewProductUnit] = useState('pcs');
   const [newProductBarcode, setNewProductBarcode] = useState('');
-  const [newProductCategoryId, setNewProductCategoryId] = useState('');
+  const [newProductCategoryId, setNewProductCategoryId] = useState<string | null>(null);
 
   // Barcode Scan Sheet State
   const [isBarcodeSheetOpen, setIsBarcodeSheetOpen] = useState(false);
@@ -131,7 +127,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
     setNewProductQuantity(1);
     setNewProductUnit('pcs');
     setNewProductBarcode('');
-    setNewProductCategoryId('');
+    setNewProductCategoryId(null);
     setShowSuggestions(false);
     setIsSheetOpen(true);
   };
@@ -155,7 +151,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
 
       {/* Create Product Sheet */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent side="right" className="w-screen sm:max-w-[450px] w-screen p-10 text-[#1A365D]">
+        <SheetContent side="right" className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]">
           <SheetHeader className="mb-10 text-left"><SheetTitle className="text-3xl font-black">Créer un produit</SheetTitle><SheetDescription className="text-base text-gray-500 mt-2">Ajoutez les détails du produit pour l'enregistrer dans votre catalogue.</SheetDescription></SheetHeader>
           <ProductForm name={newProductName} setName={setNewProductName} quantity={newProductQuantity} setQuantity={setNewProductQuantity} unit={newProductUnit} setUnit={setNewProductUnit} barcode={newProductBarcode} setBarcode={setNewProductBarcode} categoryId={newProductCategoryId} setCategoryId={setNewProductCategoryId} categories={categories} isSubmitting={isAdding} submitLabel="Créer et ajouter" showQuantity={true} onSubmit={(e) => { e.preventDefault(); handleAdd(newProductName, newProductQuantity, newProductUnit, newProductBarcode || undefined, newProductCategoryId || undefined); }} />
         </SheetContent>
@@ -165,8 +161,8 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
       <Sheet open={isBarcodeSheetOpen} onOpenChange={setIsBarcodeSheetOpen}>
         <SheetContent side="right" className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]">
           <SheetHeader className="mb-10 text-left"><SheetTitle className="text-3xl font-black">Scanner un produit</SheetTitle><SheetDescription className="text-base text-gray-500 mt-2">Saisissez le code-barres pour ajouter instantanément l'article.</SheetDescription></SheetHeader>
-          <form onSubmit={handleBarcodeSubmit} className="space-y-8">
-            <div className="space-y-2">
+          <form onSubmit={handleBarcodeSubmit} className="space-y-8 text-[#1A365D]">
+            <div className="space-y-2 text-left">
               <Label htmlFor="scan-barcode" className="text-xs font-black text-gray-400 uppercase tracking-widest">Code-barres</Label>
               <Input id="scan-barcode" value={scannedBarcode} onChange={(e) => setScannedBarcode(e.target.value)} placeholder="Ex: 3017620422003" className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35] font-mono" required autoFocus />
             </div>

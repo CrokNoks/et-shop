@@ -23,22 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-interface Category {
-  id: string;
-  name: string;
-  sort_order: number;
-}
-
-interface CatalogItem {
-  id: string;
-  name: string;
-  barcode?: string;
-  unit?: string;
-  category_id?: string;
-  categories?: { name: string; sort_order: number };
-  usage_count: number;
-}
+import { Category, CatalogItem } from '@/types';
 
 export default function CatalogPage() {
   const [items, setItems] = useState<CatalogItem[]>([]);
@@ -48,7 +33,7 @@ export default function CatalogPage() {
 
   // Selection state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [bulkCategoryId, setBulkCategoryId] = useState('');
+  const [bulkCategoryId, setBulkCategoryId] = useState<string | null>(null);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
   // Form state (Edit & Create)
@@ -57,7 +42,7 @@ export default function CatalogPage() {
   const [name, setName] = useState('');
   const [barcode, setBarcode] = useState('');
   const [unit, setUnit] = useState('pcs');
-  const [categoryId, setCategoryId] = useState('');
+  const [categoryId, setCategoryId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchData = async () => {
@@ -84,7 +69,7 @@ export default function CatalogPage() {
     setName('');
     setBarcode('');
     setUnit('pcs');
-    setCategoryId('');
+    setCategoryId(null);
     setIsSheetOpen(true);
   };
 
@@ -93,7 +78,7 @@ export default function CatalogPage() {
     setName(item.name);
     setBarcode(item.barcode || '');
     setUnit(item.unit || 'pcs');
-    setCategoryId(item.category_id || '');
+    setCategoryId(item.category_id || null);
     setIsSheetOpen(true);
   };
 
@@ -164,7 +149,7 @@ export default function CatalogPage() {
       });
       fetchData();
       setSelectedIds([]);
-      setBulkCategoryId('');
+      setBulkCategoryId(null);
       toast.success(`${selectedIds.length} produits mis à jour !`);
     } catch (error) {
       toast.error("Erreur lors de la mise à jour groupée.");
@@ -180,13 +165,12 @@ export default function CatalogPage() {
     );
   }, [items, searchQuery]);
 
-  // Grouping logic: Sans Rayon first, then by sort_order
   const groupedItems = useMemo(() => {
     const groups: Record<string, { name: string; items: CatalogItem[]; order: number }> = {};
     
     filteredItems.forEach(item => {
       const categoryName = item.categories?.name || 'Sans Rayon';
-      const categoryOrder = item.categories?.sort_order ?? -1; // -1 to put them first
+      const categoryOrder = item.categories?.sort_order ?? -1;
       
       if (!groups[categoryName]) {
         groups[categoryName] = { name: categoryName, items: [], order: categoryOrder };
@@ -265,7 +249,7 @@ export default function CatalogPage() {
                 </div>
 
                 <div className="flex items-center gap-3 flex-1 max-w-sm">
-                  <Select value={bulkCategoryId} onValueChange={setBulkCategoryId}>
+                  <Select value={bulkCategoryId} onValueChange={(val) => setBulkCategoryId(val)}>
                     <SelectTrigger className="bg-white/10 border-white/20 text-white font-bold rounded-xl h-12 focus:ring-[#FF6B35]">
                       <SelectValue placeholder="Choisir un rayon...">
                         {categories.find(c => c.id === bulkCategoryId)?.name}

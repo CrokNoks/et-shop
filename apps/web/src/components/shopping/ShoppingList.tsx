@@ -17,17 +17,7 @@ import { Label } from "@/components/ui/label";
 import { fetchApi } from '@/lib/api';
 import { useSupabase } from '@/hooks/useSupabase';
 import { toast } from 'sonner';
-
-interface ListItem {
-  id: string;
-  is_checked: boolean;
-  quantity: number;
-  price: number;
-  unit?: string;
-  barcode?: string;
-  name?: string;
-  items_catalog: any;
-}
+import { ShoppingListItem } from '@/types';
 
 interface ShoppingListProps {
   listId: string;
@@ -35,13 +25,13 @@ interface ShoppingListProps {
 
 export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
   const supabase = useSupabase();
-  const [items, setItems] = useState<ListItem[]>([]);
+  const [items, setItems] = useState<ShoppingListItem[]>([]);
   const [isShoppingMode, setIsShoppingMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [wakeLock, setWakeLock] = useState<any>(null);
 
   // Edit Item Sheet State
-  const [editingItem, setEditingItem] = useState<ListItem | null>(null);
+  const [editingItem, setEditingItem] = useState<ShoppingListItem | null>(null);
   const [editPrice, setEditPrice] = useState('');
   const [editUnit, setEditUnit] = useState('');
   const [editBarcode, setEditBarcode] = useState('');
@@ -83,7 +73,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
     return () => { if (wakeLock) wakeLock.release(); };
   }, [isShoppingMode]);
 
-  const getCatalogInfo = (item: ListItem) => {
+  const getCatalogInfo = (item: ShoppingListItem) => {
     const catalog = Array.isArray(item.items_catalog) ? item.items_catalog[0] : item.items_catalog;
     return {
       name: catalog?.name || item.name || 'Inconnu',
@@ -111,7 +101,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
     } catch (error) { fetchItems(); }
   };
 
-  const openEditSheet = (item: ListItem) => {
+  const openEditSheet = (item: ShoppingListItem) => {
     const { unit, barcode } = getCatalogInfo(item);
     setEditingItem(item);
     setEditPrice(item.price.toString());
@@ -150,6 +140,14 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
     }
   };
 
+  const handlePriceUpdate = async (id: string, newPrice: string) => {
+    const price = parseFloat(newPrice) || 0;
+    try {
+      setItems(prev => prev.map(item => item.id === id ? { ...item, price } : item));
+      await fetchApi(`/shopping-lists/items/${id}/price`, { method: 'PATCH', body: JSON.stringify({ price }) });
+    } catch (error) { fetchItems(); }
+  };
+
   const handleQuantityUpdate = async (id: string, currentQuantity: number, delta: number) => {
     const newQuantity = Math.max(1, currentQuantity + delta);
     if (newQuantity === currentQuantity) return;
@@ -160,8 +158,8 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
   };
 
   const { todoGroups, doneItems } = useMemo(() => {
-    const todo: Record<string, { items: ListItem[]; order: number }> = {};
-    const done: ListItem[] = [];
+    const todo: Record<string, { items: ShoppingListItem[]; order: number }> = {};
+    const done: ShoppingListItem[] = [];
     items.forEach(item => {
       if (isShoppingMode && item.is_checked) done.push(item);
       else {

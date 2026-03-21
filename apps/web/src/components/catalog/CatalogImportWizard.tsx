@@ -167,7 +167,7 @@ export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({ onSucc
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Champ : Nom (Obligatoire)</label>
-                      <Select value={mapping.name} onValueChange={(v) => setMapping({ ...mapping, name: v })}>
+                      <Select value={mapping.name} onValueChange={(v) => setMapping({ ...mapping, name: v ?? '' })}>
                         <SelectTrigger className="font-bold border-gray-200">
                           <SelectValue placeholder="Choisir la colonne..." />
                         </SelectTrigger>
@@ -178,7 +178,7 @@ export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({ onSucc
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Champ : Code-barres</label>
-                      <Select value={mapping.barcode} onValueChange={(v) => setMapping({ ...mapping, barcode: v })}>
+                      <Select value={mapping.barcode} onValueChange={(v) => setMapping({ ...mapping, barcode: v ?? '' })}>
                         <SelectTrigger className="font-bold border-gray-200">
                           <SelectValue placeholder="Aucun" />
                         </SelectTrigger>
@@ -192,7 +192,7 @@ export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({ onSucc
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Champ : Unité</label>
-                      <Select value={mapping.unit} onValueChange={(v) => setMapping({ ...mapping, unit: v })}>
+                      <Select value={mapping.unit} onValueChange={(v) => setMapping({ ...mapping, unit: v ?? '' })}>
                         <SelectTrigger className="font-bold border-gray-200">
                           <SelectValue placeholder="Aucun" />
                         </SelectTrigger>
@@ -204,7 +204,7 @@ export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({ onSucc
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Champ : Rayon (Nom)</label>
-                      <Select value={mapping.category_name} onValueChange={(v) => setMapping({ ...mapping, category_name: v })}>
+                      <Select value={mapping.category_name} onValueChange={(v) => setMapping({ ...mapping, category_name: v ?? '' })}>
                         <SelectTrigger className="font-bold border-gray-200">
                           <SelectValue placeholder="Aucun" />
                         </SelectTrigger>

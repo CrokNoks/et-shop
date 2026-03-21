@@ -13,17 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Category } from '@/types';
 
 const EMOJI_OPTIONS = [
   '🍎', '🥦', '🥖', '🧀', '🥩', '🐟', '🍝', '🧂', '🥤', '🍷', 
   '🍺', '🍦', '🍩', '🍫', '☕', '🧼', '🧻', '💊', '🔋', '🐶', 
   '🐱', '🧹', '🕯️', '📦', '🛒', '🛍️', '🍓', '🍋', '🥚', '🥛'
 ];
-
-interface Category {
-  id: string;
-  name: string;
-}
 
 interface ProductFormProps {
   name: string;
@@ -34,8 +30,8 @@ interface ProductFormProps {
   setUnit: (unit: string) => void;
   barcode: string;
   setBarcode: (bc: string) => void;
-  categoryId: string;
-  setCategoryId: (id: string) => void;
+  categoryId: string | null;
+  setCategoryId: (id: string | null) => void;
   categories: Category[];
   onSubmit: (e: React.FormEvent) => void;
   isSubmitting: boolean;
@@ -120,8 +116,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         <div className="space-y-2 text-left">
           <Label htmlFor="category" className="text-xs font-black text-gray-400 uppercase tracking-widest">Rayon (Catégorie)</Label>
           <Select 
-            value={categoryId || undefined} 
-            onValueChange={setCategoryId}
+            value={categoryId} 
+            onValueChange={(val) => setCategoryId(val)}
           >
             <SelectTrigger className="w-full text-lg font-bold border-gray-200 focus:ring-[#FF6B35]">
               <SelectValue placeholder="Choisir un rayon...">
