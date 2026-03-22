@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/select";
 import { Category, CatalogItem } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 export default function CatalogPage() {
   const [items, setItems] = useState<CatalogItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);

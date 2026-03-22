@@ -17,6 +17,8 @@ import Papa from 'papaparse';
 import { toast } from 'sonner';
 import { Category } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);

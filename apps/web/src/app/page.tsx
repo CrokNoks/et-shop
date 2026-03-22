@@ -8,6 +8,8 @@ import { ListHeader } from "@/components/shopping/ListHeader";
 import { fetchApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export default function Home() {
   const [activeListId, setActiveListId] = useState<string | null>(null);
   const [activeListName, setActiveListName] = useState('Chargement...');
