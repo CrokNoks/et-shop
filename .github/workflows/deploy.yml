@@ -33,6 +33,12 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
+      - name: Prepare Firebase Web Build
+        run: |
+          # Copy monorepo config to sub-app to help Firebase SSR build
+          cp pnpm-lock.yaml apps/web/
+          cp .npmrc apps/web/
+
       - name: Deploy to Firebase
         run: |
           npx firebase experiments:enable webframeworks
