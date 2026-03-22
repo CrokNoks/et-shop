@@ -35,5 +35,5 @@ jobs:
 
       - name: Deploy to Firebase
         run: |
-          pnpm exec firebase experiments:enable webframeworks
-          pnpm exec firebase deploy --token "${{ secrets.FIREBASE_TOKEN }}"
+          npx firebase experiments:enable webframeworks
+          npx firebase deploy --token "${{ secrets.FIREBASE_TOKEN }}"
