@@ -1,6 +1,7 @@
 {
   "projects": {
-    "production": "et-shop-c83d6"
+    "production": "et-shop-c83d6",
+    "default": "et-shop-c83d6"
   },
   "targets": {},
   "etags": {}
