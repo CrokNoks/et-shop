@@ -8,7 +8,7 @@
   },
   "functions": {
     "source": "apps/api",
-    "codebase": "default",
+    "codebase": "api-nestjs",
     "ignore": [
       "node_modules",
       ".git",

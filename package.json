@@ -19,6 +19,7 @@
     "@img/sharp-linux-x64": "0.33.5",
     "esbuild": "^0.27.4",
     "firebase-tools": "^15.11.0",
+    "node-which": "^1.0.0",
     "prettier": "latest",
     "turbo": "latest",
     "typescript": "latest"

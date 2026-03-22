@@ -6,33 +6,37 @@ on:
       - 'v*'
 
 jobs:
-  # Job API désactivé temporairement pour test d'isolation du Frontend
-  # deploy-api:
-  #   name: Deploy API (NestJS)
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout Repo
-  #       uses: actions/checkout@v4
-  #     - name: Setup Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 22
-  #     - name: Setup pnpm
-  #       uses: pnpm/action-setup@v4
-  #     - name: Install dependencies
-  #       run: pnpm install --frozen-lockfile
-  #     - name: Build API
-  #       run: pnpm --filter api build
-  #     - name: Deploy API
-  #       run: npx firebase deploy --only functions:default --token "${{ secrets.FIREBASE_TOKEN }}" --force
-  #       env:
-  #         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-  #         SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+  deploy-api:
+    name: Deploy API (NestJS)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build API
+        run: pnpm --filter api build
+
+      - name: Deploy API
+        run: npx firebase deploy --only functions:api-nestjs --token "${{ secrets.FIREBASE_TOKEN }}" --force
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
   deploy-web:
     name: Deploy Web (Next.js)
     runs-on: ubuntu-latest
-    # needs: deploy-api # Désactivé car job API commenté
+    needs: deploy-api
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -55,13 +59,16 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
-      - name: Clean stale Firebase metadata
-        run: rm -rf .firebase/ apps/web/.firebase/
+      - name: Clean build artifacts
+        run: |
+          rm -rf .firebase/
+          rm -rf apps/web/.firebase/
+          rm -rf apps/web/.next/
 
       - name: Deploy Web
         run: |
           npx firebase experiments:enable webframeworks
-          npx firebase deploy --only hosting --token "${{ secrets.FIREBASE_TOKEN }}" --force
+          npx firebase deploy --only hosting --token "${{ secrets.FIREBASE_TOKEN }}" --force --non-interactive
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}

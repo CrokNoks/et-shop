@@ -20,6 +20,9 @@ importers:
       firebase-tools:
         specifier: ^15.11.0
         version: 15.11.0(@types/node@22.19.15)(typescript@5.9.3)
+      node-which:
+        specifier: ^1.0.0
+        version: 1.0.0
       prettier:
         specifier: latest
         version: 3.8.1
@@ -5147,6 +5150,10 @@ packages:
 
   node-releases@2.0.36:
     resolution: {integrity: sha512-TdC8FSgHz8Mwtw9g5L4gR/Sh9XhSP/0DEkQxfEFXOpiul5IiHgHan2VhYYb6agDSfp4KuvltmGApc8HMgUrIkA==}
+
+  node-which@1.0.0:
+    resolution: {integrity: sha512-PVVbv6DyDc3VkTizcd/7Xchn3NDh+OUnQkrHxgumQ+2lwoWE36KuQClfAVjTwEh3T0jzb1WHrbgCol5HbBZqdQ==}
+    deprecated: please use 'which'
 
   nopt@9.0.0:
     resolution: {integrity: sha512-Zhq3a+yFKrYwSBluL4H9XP3m3y5uvQkB/09CwDruCiRmR/UJYnn9W4R48ry0uGC70aeTPKLynBtscP9efFFcPw==}
@@ -12523,6 +12530,8 @@ snapshots:
   node-int64@0.4.0: {}
 
   node-releases@2.0.36: {}
+
+  node-which@1.0.0: {}
 
   nopt@9.0.0:
     dependencies:
