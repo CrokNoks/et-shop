@@ -33,7 +33,12 @@ async function bootstrap() {
   console.log(`API is running on http://localhost:${port}`);
 }
 
-// Start local server if not running as a Firebase Function
-if (!process.env.FUNCTION_NAME && !process.env.K_SERVICE && !process.env.FUNCTIONS_EMULATOR) {
+// Start local server only if NOT running in any Firebase environment (Cloud, Emulator, or CLI Discovery)
+if (
+  !process.env.FUNCTION_NAME &&
+  !process.env.K_SERVICE &&
+  !process.env.FUNCTIONS_EMULATOR &&
+  !process.env.FIREBASE_CONFIG
+) {
   bootstrap();
 }
