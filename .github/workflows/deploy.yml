@@ -33,19 +33,17 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
-      - name: Prepare Firebase Web Build
-        run: |
-          # Copy monorepo config to sub-app to help Firebase SSR build
-          cp pnpm-lock.yaml apps/web/
-          cp .npmrc apps/web/
+      - name: Deploy API (NestJS)
+        run: npx firebase deploy --only functions:default --token "${{ secrets.FIREBASE_TOKEN }}" --force
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
-      - name: Deploy to Firebase
+      - name: Deploy Web (Next.js)
         run: |
           npx firebase experiments:enable webframeworks
-          npx firebase deploy --token "${{ secrets.FIREBASE_TOKEN }}" --force
+          npx firebase deploy --only hosting --token "${{ secrets.FIREBASE_TOKEN }}" --force
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
