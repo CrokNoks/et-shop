@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, Logger } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, Logger, UseGuards } from '@nestjs/common';
 import { ShoppingListsService } from './shopping-lists.service';
+import { SupabaseAuthGuard } from '../supabase/supabase.guard';
 
 @Controller('shopping-lists')
+@UseGuards(SupabaseAuthGuard)
 export class ShoppingListsController {
   private readonly logger = new Logger(ShoppingListsController.name);
 

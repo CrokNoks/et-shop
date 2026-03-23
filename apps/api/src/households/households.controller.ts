@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import { HouseholdsService } from './households.service';
+import { SupabaseAuthGuard } from '../supabase/supabase.guard';
 
 @Controller('households')
+@UseGuards(SupabaseAuthGuard)
 export class HouseholdsController {
   constructor(private readonly householdsService: HouseholdsService) {}
 
