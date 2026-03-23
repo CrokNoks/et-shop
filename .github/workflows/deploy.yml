@@ -31,7 +31,10 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
       - name: Deploy API
-        run: npx firebase deploy --only functions:api-nestjs --token "${{ secrets.FIREBASE_TOKEN }}" --force
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > apps/api/.env
+          echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> apps/api/.env
+          npx firebase deploy --only functions:api-nestjs --token "${{ secrets.FIREBASE_TOKEN }}" --force
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
