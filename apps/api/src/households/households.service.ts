@@ -17,10 +17,9 @@ export class HouseholdsService {
 
   async create(name: string) {
     const client = this.supabaseService.getClient();
+    const user = this.supabaseService.getUser();
     
-    // Récupérer l'utilisateur de manière sécurisée
-    const { data: { user }, error: uError } = await client.auth.getUser();
-    if (uError || !user) throw new UnauthorizedException('User not found');
+    if (!user) throw new UnauthorizedException('User not found');
 
     // 1. Créer le foyer
     const { data: household, error: hError } = await client

@@ -32,6 +32,11 @@ export class SupabaseService {
     return this.supabase;
   }
 
+  // Récupérer l'utilisateur authentifié (injecté par le SupabaseAuthGuard)
+  getUser() {
+    return (this.request as any).user;
+  }
+
   // Utilitaire pour récupérer le foyer actif depuis les headers
   getHouseholdId(): string | null {
     return (this.request.headers['x-household-id'] as string) || null;
