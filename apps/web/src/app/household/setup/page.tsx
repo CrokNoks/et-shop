@@ -25,9 +25,14 @@ export default function HouseholdSetupPage() {
         } else {
           setChecking(false);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to check households:', error);
-        setChecking(false);
+        // Si l'erreur est liée à l'auth, on redirige vers login
+        if (error.message?.includes('auth') || error.status === 401) {
+          router.push('/login');
+        } else {
+          setChecking(false);
+        }
       }
     }
     checkHouseholds();

@@ -32,9 +32,13 @@ export default function Home() {
         setActiveListId(null);
         setActiveListName('Aucune liste trouvée');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load lists:', error);
-      setActiveListName('Erreur de connexion');
+      if (error.status === 401) {
+        router.push('/login');
+      } else {
+        setActiveListName('Erreur de connexion');
+      }
     }
   }, [activeListId, router]);
 
