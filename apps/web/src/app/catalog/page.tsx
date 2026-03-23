@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Category, CatalogItem } from '@/types';
+import { CatalogImportWizard } from '@/components/catalog/CatalogImportWizard';
 
 export const dynamic = 'force-dynamic';
 
@@ -196,6 +197,7 @@ export default function CatalogPage() {
               <p className="text-gray-500">Gérez le référentiel global de vos articles.</p>
             </div>
             <div className="flex gap-3">
+              <CatalogImportWizard onSuccess={fetchData} />
               <Button 
                 onClick={handleOpenCreate}
                 className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold rounded-2xl px-6 py-6 shadow-lg transition-all border-none"
