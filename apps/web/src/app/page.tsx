@@ -13,6 +13,7 @@ export const dynamic = 'force-dynamic';
 export default function Home() {
   const [activeListId, setActiveListId] = useState<string | null>(null);
   const [activeListName, setActiveListName] = useState('Chargement...');
+  const [activeStoreId, setActiveStoreId] = useState<string | null>(null);
   const router = useRouter();
 
   const loadInitialList = useCallback(async () => {
@@ -28,14 +29,20 @@ export default function Home() {
         const currentActive = lists.find((l: any) => l.id === activeListId) || lists[0];
         setActiveListId(currentActive.id);
         setActiveListName(currentActive.name);
+        setActiveStoreId(currentActive.store_id || null);
       } else {
         setActiveListId(null);
         setActiveListName('Aucune liste trouvée');
+        setActiveStoreId(null);
       }
     } catch (error: any) {
       console.error('Failed to load lists:', error);
       if (error.status === 401) {
         router.push('/login');
+      } else if (error.status === 400 || error.status === 403) {
+        // ID foyer manquant ou invalide, on renvoie vers le setup
+        localStorage.removeItem('active_household_id');
+        router.push('/household/setup');
       } else {
         setActiveListName('Erreur de connexion');
       }
@@ -62,8 +69,12 @@ export default function Home() {
             <ListHeader 
               id={activeListId}
               name={activeListName} 
+              storeId={activeStoreId}
               isSynced={true} 
-              onUpdate={(newName) => setActiveListName(newName)}
+              onUpdate={(newName, newStoreId) => {
+                setActiveListName(newName);
+                setActiveStoreId(newStoreId || null);
+              }}
               onDelete={() => {
                 setActiveListId(null);
                 loadInitialList();
@@ -80,7 +91,7 @@ export default function Home() {
               <div className="flex flex-col gap-4">
                 <HopInput listId={activeListId} />
               </div>
-              <ShoppingList listId={activeListId} />
+              <ShoppingList listId={activeListId} storeId={activeStoreId || undefined} />
             </>
           ) : (
             <div className="py-20 text-center text-[#1A365D]">

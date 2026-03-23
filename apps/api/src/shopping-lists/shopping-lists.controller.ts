@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, Logger, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, Logger, UseGuards, Query } from '@nestjs/common';
 import { ShoppingListsService } from './shopping-lists.service';
 import { SupabaseAuthGuard } from '../supabase/supabase.guard';
 
@@ -11,10 +11,10 @@ export class ShoppingListsController {
 
   // 1. Routes Statiques (Prioritaires)
   @Get('catalog')
-  async getCatalog() {
+  async getCatalog(@Query('storeId') storeId?: string) {
     try {
-      this.logger.log('Fetching all products from catalog...');
-      return await this.shoppingListsService.findAllCatalog();
+      this.logger.log(`Fetching all products from catalog for store: ${storeId || 'all'}...`);
+      return await this.shoppingListsService.findAllCatalog(storeId);
     } catch (error) {
       this.logger.error('Error fetching catalog:', error.message);
       throw error;
@@ -22,20 +22,20 @@ export class ShoppingListsController {
   }
 
   @Post('catalog')
-  async createCatalogItem(@Body() payload: { name: string; barcode?: string; category_id?: string; unit?: string }) {
+  async createCatalogItem(@Body() payload: { name: string; barcode?: string; category_id?: string; unit?: string; store_id: string }) {
     return this.shoppingListsService.createCatalogItem(payload);
   }
 
   @Post('catalog/import')
-  async importCatalog(@Body('items') items: { name: string; barcode?: string; unit?: string; category_name?: string }[]) {
-    return this.shoppingListsService.importCatalogItems(items);
+  async importCatalog(@Body('items') items: { name: string; barcode?: string; unit?: string; category_name?: string }[], @Body('store_id') storeId: string) {
+    return this.shoppingListsService.importCatalogItems(items, storeId);
   }
 
   @Get('categories')
-  async getCategories() {
+  async getCategories(@Query('storeId') storeId?: string) {
     try {
-      this.logger.log('Fetching all categories...');
-      return await this.shoppingListsService.findAllCategories();
+      this.logger.log(`Fetching all categories for store: ${storeId || 'all'}...`);
+      return await this.shoppingListsService.findAllCategories(storeId);
     } catch (error) {
       this.logger.error('Error fetching categories:', error.message);
       throw error;
@@ -43,13 +43,13 @@ export class ShoppingListsController {
   }
 
   @Post('categories')
-  async createCategory(@Body() payload: { name: string; icon?: string; sort_order?: number }) {
+  async createCategory(@Body() payload: { name: string; icon?: string; sort_order?: number; store_id: string }) {
     return this.shoppingListsService.createCategory(payload);
   }
 
   @Post('categories/import')
-  async importCategories(@Body('categories') categories: { name: string; icon?: string; sort_order?: number }[]) {
-    return this.shoppingListsService.importCategories(categories);
+  async importCategories(@Body('categories') categories: { name: string; icon?: string; sort_order?: number }[], @Body('store_id') storeId: string) {
+    return this.shoppingListsService.importCategories(categories, storeId);
   }
 
   // 2. Routes de Ressources Globales (Patches/Deletes)
@@ -132,8 +132,12 @@ export class ShoppingListsController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body('name') name: string) {
-    return this.shoppingListsService.update(id, name);
+  async update(
+    @Param('id') id: string, 
+    @Body('name') name?: string,
+    @Body('store_id') store_id?: string | null
+  ) {
+    return this.shoppingListsService.update(id, { name, store_id });
   }
 
   @Delete(':id')

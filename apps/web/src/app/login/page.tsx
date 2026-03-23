@@ -32,7 +32,21 @@ export default function LoginPage() {
       setError(error.message);
       setLoading(false);
     } else {
-      router.push('/');
+      try {
+        // Redirection intelligente : on vérifie si l'utilisateur a des foyers
+        const { fetchApi } = await import('@/lib/api');
+        const households = await fetchApi('/households/me');
+        
+        if (households && households.length > 0) {
+          localStorage.setItem('active_household_id', households[0].id);
+          router.push('/');
+        } else {
+          router.push('/household/setup');
+        }
+      } catch (err) {
+        // Si le fetch échoue (ex: pas encore de foyer), on va sur setup
+        router.push('/household/setup');
+      }
       router.refresh();
     }
   };

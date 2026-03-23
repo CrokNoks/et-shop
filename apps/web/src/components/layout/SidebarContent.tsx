@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { PlusIcon, UsersIcon, BookOpenIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
+import { PlusIcon, UsersIcon, BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 import { fetchApi } from '@/lib/api';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -97,35 +97,20 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, on
       <Logo width={200} height={60} />
       
       <div className="w-full flex flex-col gap-6 text-[#1A365D]">
-        {/* Catalogue & Categories Links - Hidden on mobile */}
+        {/* Magasins Link - Hidden on mobile */}
         <div className="px-2 hidden sm:flex flex-col gap-2">
           <Link 
-            href="/catalog" 
+            href="/stores" 
             onClick={() => onClose?.()}
             className={`flex items-center gap-3 p-3 rounded-xl transition-all group ${
-              pathname === '/catalog' 
+              pathname === '/stores' 
                 ? 'bg-white shadow-md border-l-4 border-[#FF6B35]' 
                 : 'hover:bg-gray-50 border-l-4 border-transparent text-gray-500'
             }`}
           >
-            <BookOpenIcon className={`w-5 h-5 ${pathname === '/catalog' ? 'text-[#FF6B35]' : 'text-gray-400'}`} strokeWidth={2} />
-            <span className={`font-bold ${pathname === '/catalog' ? 'text-[#1A365D]' : ''}`}>
-              Catalogue Produits
-            </span>
-          </Link>
-
-          <Link 
-            href="/categories" 
-            onClick={() => onClose?.()}
-            className={`flex items-center gap-3 p-3 rounded-xl transition-all group ${
-              pathname === '/categories' 
-                ? 'bg-white shadow-md border-l-4 border-[#FF6B35]' 
-                : 'hover:bg-gray-50 border-l-4 border-transparent text-gray-500'
-            }`}
-          >
-            <Squares2X2Icon className={`w-5 h-5 ${pathname === '/categories' ? 'text-[#FF6B35]' : 'text-gray-400'}`} strokeWidth={2} />
-            <span className={`font-bold ${pathname === '/categories' ? 'text-[#1A365D]' : ''}`}>
-              Gestion des Rayons
+            <BuildingStorefrontIcon className={`w-5 h-5 ${pathname === '/stores' ? 'text-[#FF6B35]' : 'text-gray-400'}`} strokeWidth={2} />
+            <span className={`font-bold ${pathname === '/stores' ? 'text-[#1A365D]' : ''}`}>
+              Mes Magasins
             </span>
           </Link>
         </div>

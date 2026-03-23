@@ -3,6 +3,7 @@ export interface Category {
   name: string;
   sort_order: number;
   icon?: string;
+  store_id: string;
 }
 
 export interface CatalogItem {
@@ -11,8 +12,23 @@ export interface CatalogItem {
   barcode?: string;
   unit?: string;
   category_id?: string;
+  store_id: string;
   categories?: { name: string; sort_order: number };
   usage_count: number;
+}
+
+export interface Store {
+  id: string;
+  name: string;
+  household_id: string;
+  created_at: string;
+}
+
+export interface StoreCategoryOrder {
+  store_id: string;
+  category_id: string;
+  sort_order: number;
+  category?: Category;
 }
 
 export interface ShoppingList {
@@ -22,6 +38,7 @@ export interface ShoppingList {
   isShared?: boolean;
   color?: string;
   household_id: string;
+  store_id?: string;
 }
 
 export interface ShoppingListItem {

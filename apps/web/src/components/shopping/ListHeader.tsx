@@ -23,37 +23,59 @@ import { Label } from "@/components/ui/label";
 import { fetchApi } from '@/lib/api';
 import { toast } from 'sonner';
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Store } from '@/types';
+
 interface ListHeaderProps {
   id: string;
   name: string;
+  storeId?: string | null;
   isSynced: boolean;
-  onUpdate: (newName: string) => void;
+  onUpdate: (newName: string, newStoreId?: string | null) => void;
   onDelete: () => void;
 }
 
-export const ListHeader: React.FC<ListHeaderProps> = ({ id, name, isSynced, onUpdate, onDelete }) => {
+export const ListHeader: React.FC<ListHeaderProps> = ({ id, name, storeId, isSynced, onUpdate, onDelete }) => {
   const [isRenameSheetOpen, setIsRenameSheetOpen] = useState(false);
   const [newName, setNewName] = useState(name);
+  const [selectedStoreId, setSelectedStoreId] = useState<string | undefined>(storeId || undefined);
+  const [stores, setStores] = useState<Store[]>([]);
   const [isRenaming, setIsRenaming] = useState(false);
+
+  const fetchStores = async () => {
+    try {
+      const data = await fetchApi('/stores');
+      setStores(data || []);
+    } catch (error) {
+      console.error('Failed to fetch stores:', error);
+    }
+  };
+
+  const handleOpenRename = () => {
+    setNewName(name);
+    setSelectedStoreId(storeId || "none");
+    fetchStores();
+    setIsRenameSheetOpen(true);
+  };
 
   const handleRename = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newName || newName === name) {
-      setIsRenameSheetOpen(false);
-      return;
-    }
-
+    
     setIsRenaming(true);
     try {
+      const finalStoreId = selectedStoreId === "none" ? null : selectedStoreId;
       await fetchApi(`/shopping-lists/${id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ name: newName }),
+        body: JSON.stringify({ 
+          name: newName,
+          store_id: finalStoreId
+        }),
       });
-      onUpdate(newName);
-      toast.success("Liste renommée !");
+      onUpdate(newName, finalStoreId);
+      toast.success("Liste mise à jour !");
       setIsRenameSheetOpen(false);
     } catch (error) {
-      toast.error("Erreur lors du renommage.");
+      toast.error("Erreur lors de la mise à jour.");
     } finally {
       setIsRenaming(false);
     }
@@ -80,6 +102,11 @@ export const ListHeader: React.FC<ListHeaderProps> = ({ id, name, isSynced, onUp
           <span className="text-[#FF6B35] font-black tracking-widest text-[10px] uppercase bg-[#FF6B35]/10 px-2 py-0.5 rounded-full">
             {isSynced ? 'En direct' : 'Hors ligne'}
           </span>
+          {storeId && (
+            <span className="text-[#1A365D] font-black tracking-widest text-[10px] uppercase bg-[#1A365D]/10 px-2 py-0.5 rounded-full">
+              {stores.find(s => s.id === storeId)?.name || 'Magasin lié'}
+            </span>
+          )}
         </div>
         <h1 className="text-3xl font-black">
           {name}
@@ -93,14 +120,11 @@ export const ListHeader: React.FC<ListHeaderProps> = ({ id, name, isSynced, onUp
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48 p-2 rounded-2xl shadow-xl border-gray-100 text-[#1A365D]">
             <DropdownMenuItem 
-              onClick={() => {
-                setNewName(name);
-                setIsRenameSheetOpen(true);
-              }} 
+              onClick={handleOpenRename} 
               className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-gray-50 focus:bg-gray-50 font-bold transition-colors"
             >
               <PencilIcon className="w-4 h-4 text-gray-400" />
-              Renommer
+              Modifier la liste
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-gray-50" />
             <DropdownMenuItem onClick={handleDelete} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer text-red-500 hover:bg-red-50 focus:bg-red-50 font-bold transition-colors">
@@ -115,9 +139,9 @@ export const ListHeader: React.FC<ListHeaderProps> = ({ id, name, isSynced, onUp
       <Sheet open={isRenameSheetOpen} onOpenChange={setIsRenameSheetOpen}>
         <SheetContent side="right" className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]">
           <SheetHeader className="mb-10 text-left">
-            <SheetTitle className="text-3xl font-black">Renommer la liste</SheetTitle>
+            <SheetTitle className="text-3xl font-black">Modifier la liste</SheetTitle>
             <SheetDescription className="text-base text-gray-500 mt-2">
-              Choisissez un nouveau nom pour votre liste de courses.
+              Modifiez le nom ou associez un magasin à votre liste.
             </SheetDescription>
           </SheetHeader>
           
@@ -132,6 +156,26 @@ export const ListHeader: React.FC<ListHeaderProps> = ({ id, name, isSynced, onUp
                 required
                 autoFocus
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="list-store" className="text-xs font-black text-gray-400 uppercase tracking-widest">Magasin associé</Label>
+              <Select value={selectedStoreId} onValueChange={setSelectedStoreId}>
+                <SelectTrigger className="w-full text-lg font-bold border-gray-200 focus:ring-[#FF6B35]">
+                  <SelectValue placeholder="Aucun magasin" />
+                </SelectTrigger>
+                <SelectContent className="text-[#1A365D]">
+                  <SelectItem value="none" className="font-bold">Aucun magasin</SelectItem>
+                  {stores.map((store) => (
+                    <SelectItem key={store.id} value={store.id} className="font-bold">
+                      {store.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-400 mt-1 italic">
+                Lier un magasin permet de trier automatiquement vos rayons selon vos habitudes dans ce magasin.
+              </p>
             </div>
 
             <SheetFooter className="mt-8 pt-4 sm:justify-start">

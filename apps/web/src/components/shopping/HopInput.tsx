@@ -21,6 +21,7 @@ import { Category } from '@/types';
 interface Suggestion {
   name: string;
   categories?: { name: string };
+  stores?: { name: string };
 }
 
 interface HopInputProps {
@@ -144,7 +145,15 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
 
       {showSuggestions && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50">
-          {suggestions.map((item, index) => (<button key={index} onClick={() => handleAdd(item.name)} className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 text-left border-b border-gray-50 group/item"><span className="font-medium text-[#1A365D] group-hover/item:text-[#FF6B35] transition-colors">{item.name}</span><span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full uppercase tracking-wider">{item.categories?.name || 'Inconnu'}</span></button>))}
+          {suggestions.map((item, index) => (
+            <button key={index} onClick={() => handleAdd(item.name)} className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 text-left border-b border-gray-50 group/item">
+              <div className="flex flex-col">
+                <span className="font-medium text-[#1A365D] group-hover/item:text-[#FF6B35] transition-colors">{item.name}</span>
+                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">{item.stores?.name || 'Sans magasin'}</span>
+              </div>
+              <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full uppercase tracking-wider">{item.categories?.name || 'Inconnu'}</span>
+            </button>
+          ))}
           <button onClick={openCreateSheet} className="w-full flex items-center gap-2 px-4 py-3 bg-gray-50 hover:bg-[#FF6B35]/10 text-[#FF6B35] text-left transition-colors font-bold"><PlusIcon className="w-5 h-5" strokeWidth={2.5} /><span>Créer le produit "{inputValue}"</span></button>
         </div>
       )}

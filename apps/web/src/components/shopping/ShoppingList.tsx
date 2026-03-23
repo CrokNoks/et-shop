@@ -17,13 +17,14 @@ import { Label } from "@/components/ui/label";
 import { fetchApi } from '@/lib/api';
 import { useSupabase } from '@/hooks/useSupabase';
 import { toast } from 'sonner';
-import { ShoppingListItem } from '@/types';
+import { ShoppingListItem, StoreCategoryOrder } from '@/types';
 
 interface ShoppingListProps {
   listId: string;
+  storeId?: string;
 }
 
-export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
+export const ShoppingList: React.FC<ShoppingListProps> = ({ listId, storeId }) => {
   const supabase = useSupabase();
   const [items, setItems] = useState<ShoppingListItem[]>([]);
   const [isShoppingMode, setIsShoppingMode] = useState(false);
@@ -79,6 +80,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
       name: catalog?.name || item.name || 'Inconnu',
       barcode: item.barcode || catalog?.barcode,
       category: catalog?.categories,
+      store: catalog?.stores,
       unit: item.unit || catalog?.unit || 'pcs'
     };
   };
@@ -158,19 +160,42 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
   };
 
   const { todoGroups, doneItems } = useMemo(() => {
-    const todo: Record<string, { items: ShoppingListItem[]; order: number }> = {};
+    const todo: Record<string, { 
+      name: string;
+      categories: Record<string, { items: ShoppingListItem[]; order: number }>
+    }> = {};
     const done: ShoppingListItem[] = [];
+    
     items.forEach(item => {
       if (isShoppingMode && item.is_checked) done.push(item);
       else {
-        const { category } = getCatalogInfo(item);
-        const name = category?.name || 'Inconnu';
+        const { category, store } = getCatalogInfo(item);
+        const storeName = store?.name || 'Sans magasin';
+        const storeId = store?.id || 'none';
+        const categoryName = category?.name || 'Inconnu';
+        
         const order = category?.sort_order ?? 999;
-        if (!todo[name]) todo[name] = { items: [], order };
-        todo[name].items.push(item);
+        
+        if (!todo[storeId]) {
+          todo[storeId] = { name: storeName, categories: {} };
+        }
+        
+        if (!todo[storeId].categories[categoryName]) {
+          todo[storeId].categories[categoryName] = { items: [], order };
+        }
+        todo[storeId].categories[categoryName].items.push(item);
       }
     });
-    return { todoGroups: Object.entries(todo).sort((a, b) => a[1].order - b[1].order), doneItems: done };
+
+    // Trier les magasins (alphabétique) puis les rayons par ordre
+    const sortedGroups = Object.entries(todo).map(([id, storeData]) => ({
+      id,
+      name: storeData.name,
+      categories: Object.entries(storeData.categories)
+        .sort((a, b) => a[1].order - b[1].order)
+    })).sort((a, b) => a.name.localeCompare(b.name));
+
+    return { todoGroups: sortedGroups, doneItems: done };
   }, [items, isShoppingMode]);
 
   const totalBudget = useMemo(() => items.reduce((acc, item) => acc + (Number(item.price) * (item.quantity || 1)), 0), [items]);
@@ -211,35 +236,51 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId }) => {
         <div className="text-right"><p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Dans le panier</p><p className="text-lg font-bold text-[#FF6B35]">{checkedTotal.toFixed(2)} €</p></div>
       </div>
 
-      <div className="space-y-8 text-[#1A365D]">
+      <div className="space-y-12 text-[#1A365D]">
         {items.length === 0 ? <div className="text-center py-12 opacity-40 italic">Votre liste est vide. Ajoutez un article ! 🚀</div> : (
-          todoGroups.map(([category, { items: categoryItems }]) => (
-            <div key={category} className="space-y-3 text-left">
-              <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest px-2 flex items-center gap-2"><span className="w-8 h-[2px] bg-[#FF6B35]" />{category}</h3>
-              <div className="space-y-2">
-                {categoryItems.map((item) => {
-                  const { name, barcode, unit } = getCatalogInfo(item);
-                  return (
-                    <div key={item.id} onClick={() => toggleCheck(item.id, item.is_checked)} className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer group/item ${isShoppingMode ? 'p-5 sm:p-6 bg-white border-gray-100 shadow-sm hover:border-[#FF6B35]' : 'bg-white border-gray-100'}`}>
-                      <button className="flex-shrink-0">{item.is_checked ? <CheckCircleSolidIcon className="w-8 h-8 sm:w-10 sm:h-10 text-[#FF6B35]" /> : <CheckCircleIcon className="w-8 h-8 sm:w-10 sm:h-10 text-gray-200 group-hover/item:text-[#FF6B35]/30 transition-colors" />}</button>
-                      <div className="flex-1 min-w-0 flex flex-col gap-0.5 text-left">
-                        <p className={`font-bold truncate ${isShoppingMode ? 'text-xl sm:text-2xl' : 'text-sm sm:text-base'} ${item.is_checked ? 'line-through text-gray-400' : ''}`}>{name}</p>
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-1 bg-gray-100/50 px-1.5 py-0.5 rounded-lg border border-gray-100" onClick={(e) => e.stopPropagation()}>
-                            <button onClick={() => handleQuantityUpdate(item.id, item.quantity, -1)} className="p-0.5 sm:p-1 hover:bg-white rounded-md text-gray-400 transition-colors"><MinusIcon className="w-3 h-3" /></button>
-                            <span className={`text-xs sm:text-sm font-black min-w-[16px] sm:min-w-[20px] text-center ${isShoppingMode ? 'text-base sm:text-lg' : ''}`}>{item.quantity}</span>
-                            <button onClick={() => handleQuantityUpdate(item.id, item.quantity, 1)} className="p-0.5 sm:p-1 hover:bg-white rounded-md text-gray-400 transition-colors"><PlusIcon className="w-3 h-3" /></button>
+          todoGroups.map((storeGroup) => (
+            <div key={storeGroup.id} className="space-y-8">
+              <div className="flex items-center gap-3 px-2">
+                <div className="w-10 h-10 rounded-2xl bg-[#FF6B35]/10 flex items-center justify-center text-[#FF6B35]">
+                  <TagIcon className="w-6 h-6" />
+                </div>
+                <h3 className="text-2xl font-black">{storeGroup.name}</h3>
+              </div>
+
+              <div className="space-y-8 pl-4 border-l-2 border-gray-100">
+                {storeGroup.categories.map(([category, { items: categoryItems }]) => (
+                  <div key={category} className="space-y-3 text-left">
+                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest px-2 flex items-center gap-2">
+                      <span className="w-4 h-[2px] bg-[#FF6B35]" />
+                      {category}
+                    </h4>
+                    <div className="space-y-2">
+                      {categoryItems.map((item) => {
+                        const { name, unit } = getCatalogInfo(item);
+                        return (
+                          <div key={item.id} onClick={() => toggleCheck(item.id, item.is_checked)} className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer group/item ${isShoppingMode ? 'p-5 sm:p-6 bg-white border-gray-100 shadow-sm hover:border-[#FF6B35]' : 'bg-white border-gray-100'}`}>
+                            <button className="flex-shrink-0">{item.is_checked ? <CheckCircleSolidIcon className="w-8 h-8 sm:w-10 sm:h-10 text-[#FF6B35]" /> : <CheckCircleIcon className="w-8 h-8 sm:w-10 sm:h-10 text-gray-200 group-hover/item:text-[#FF6B35]/30 transition-colors" />}</button>
+                            <div className="flex-1 min-w-0 flex flex-col gap-0.5 text-left">
+                              <p className={`font-bold truncate ${isShoppingMode ? 'text-xl sm:text-2xl' : 'text-sm sm:text-base'} ${item.is_checked ? 'line-through text-gray-400' : ''}`}>{name}</p>
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1 bg-gray-100/50 px-1.5 py-0.5 rounded-lg border border-gray-100" onClick={(e) => e.stopPropagation()}>
+                                  <button onClick={() => handleQuantityUpdate(item.id, item.quantity, -1)} className="p-0.5 sm:p-1 hover:bg-white rounded-md text-gray-400 transition-colors"><MinusIcon className="w-3 h-3" /></button>
+                                  <span className={`text-xs sm:text-sm font-black min-w-[16px] sm:min-w-[20px] text-center ${isShoppingMode ? 'text-base sm:text-lg' : ''}`}>{item.quantity}</span>
+                                  <button onClick={() => handleQuantityUpdate(item.id, item.quantity, 1)} className="p-0.5 sm:p-1 hover:bg-white rounded-md text-gray-400 transition-colors"><PlusIcon className="w-3 h-3" /></button>
+                                </div>
+                                <button onClick={(e) => { e.stopPropagation(); openEditSheet(item); }} className="text-[9px] sm:text-[10px] font-black uppercase text-gray-400 tracking-wider hover:text-[#FF6B35] transition-colors">{unit}</button>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 sm:gap-4" onClick={(e) => e.stopPropagation()}>
+                              {!isShoppingMode && <button onClick={() => handleDeleteItem(item.id)} className="p-1.5 sm:p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-100 sm:opacity-0 sm:group-hover/item:opacity-100"><TrashIcon className="w-4 h-4 sm:w-5 sm:h-5" /></button>}
+                              <div onClick={() => openEditSheet(item)} className={`text-base sm:text-xl font-bold whitespace-nowrap ${item.is_checked ? 'text-gray-300' : 'text-[#FF6B35] bg-[#FF6B35]/5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg border border-[#FF6B35]/10'}`}>{(Number(item.price) * (item.quantity || 1)).toFixed(2)} €</div>
+                            </div>
                           </div>
-                          <button onClick={(e) => { e.stopPropagation(); openEditSheet(item); }} className="text-[9px] sm:text-[10px] font-black uppercase text-gray-400 tracking-wider hover:text-[#FF6B35] transition-colors">{unit}</button>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 sm:gap-4" onClick={(e) => e.stopPropagation()}>
-                        {!isShoppingMode && <button onClick={() => handleDeleteItem(item.id)} className="p-1.5 sm:p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-100 sm:opacity-0 sm:group-hover/item:opacity-100"><TrashIcon className="w-4 h-4 sm:w-5 sm:h-5" /></button>}
-                        <div onClick={() => openEditSheet(item)} className={`text-base sm:text-xl font-bold whitespace-nowrap ${item.is_checked ? 'text-gray-300' : 'text-[#FF6B35] bg-[#FF6B35]/5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg border border-[#FF6B35]/10'}`}>{(Number(item.price) * (item.quantity || 1)).toFixed(2)} €</div>
-                      </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             </div>
           ))

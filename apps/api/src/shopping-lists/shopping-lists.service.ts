@@ -29,39 +29,51 @@ export class ShoppingListsService {
     return data || [];
   }
 
-  async findAllCatalog() {
+  async findAllCatalog(storeId?: string) {
     const householdId = this.getHouseholdIdOrThrow();
-    const { data, error } = await this.supabaseService
+    const query = this.supabaseService
       .getClient()
       .from('items_catalog')
-      .select('*, categories(name, sort_order)')
-      .eq('household_id', householdId)
-      .order('name', { ascending: true });
+      .select('*, categories(name, sort_order)');
+    
+    if (storeId) {
+      query.eq('store_id', storeId);
+    } else {
+      query.eq('household_id', householdId);
+    }
+
+    const { data, error } = await query.order('name', { ascending: true });
     
     if (error) this.handleError(error);
     return data || [];
   }
 
-  async createCatalogItem(payload: { name: string; barcode?: string; category_id?: string; unit?: string }) {
+  async createCatalogItem(payload: { name: string; barcode?: string; category_id?: string; unit?: string; store_id: string }) {
     const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService
       .getClient()
       .from('items_catalog')
-      .upsert({ ...payload, household_id: householdId }, { onConflict: 'name, household_id' })
+      .upsert({ ...payload, household_id: householdId }, { onConflict: 'name, store_id' })
       .select()
       .single();
     if (error) this.handleError(error);
     return data;
   }
 
-  async findAllCategories() {
+  async findAllCategories(storeId?: string) {
     const householdId = this.getHouseholdIdOrThrow();
-    const { data, error } = await this.supabaseService
+    const query = this.supabaseService
       .getClient()
       .from('categories')
-      .select('*')
-      .eq('household_id', householdId)
-      .order('sort_order', { ascending: true });
+      .select('*');
+    
+    if (storeId) {
+      query.eq('store_id', storeId);
+    } else {
+      query.eq('household_id', householdId);
+    }
+
+    const { data, error } = await query.order('sort_order', { ascending: true });
     
     if (error) this.handleError(error);
     return data || [];
@@ -78,7 +90,8 @@ export class ShoppingListsService {
           *,
           items_catalog (
             *,
-            categories (*)
+            categories (*),
+            stores (*)
           )
         )
       `)
@@ -103,12 +116,12 @@ export class ShoppingListsService {
     return data;
   }
 
-  async update(id: string, name: string) {
+  async update(id: string, payload: { name?: string; store_id?: string | null }) {
     const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService
       .getClient()
       .from('shopping_lists')
-      .update({ name })
+      .update(payload)
       .eq('id', id)
       .eq('household_id', householdId)
       .select()
@@ -131,7 +144,7 @@ export class ShoppingListsService {
     return { success: true };
   }
 
-  async createCategory(payload: { name: string; icon?: string; sort_order?: number }) {
+  async createCategory(payload: { name: string; icon?: string; sort_order?: number; store_id: string }) {
     const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService
       .getClient()
@@ -147,18 +160,19 @@ export class ShoppingListsService {
     return data;
   }
 
-  async importCategories(categories: { name: string; icon?: string; sort_order?: number }[]) {
+  async importCategories(categories: { name: string; icon?: string; sort_order?: number }[], storeId: string) {
     const householdId = this.getHouseholdIdOrThrow();
     const payload = categories.map(cat => ({
       ...cat,
       icon: cat.icon || '📦',
-      household_id: householdId
+      household_id: householdId,
+      store_id: storeId
     }));
 
     const { data, error } = await this.supabaseService
       .getClient()
       .from('categories')
-      .insert(payload)
+      .upsert(payload, { onConflict: 'name, store_id' })
       .select();
 
     if (error) this.handleError(error);
@@ -428,7 +442,7 @@ export class ShoppingListsService {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('items_catalog')
-      .select('name, category_id, categories(name), unit')
+      .select('name, category_id, categories(name), stores(name), unit')
       .eq('household_id', householdId)
       .ilike('name', `%${query}%`)
       .limit(5);
@@ -448,15 +462,15 @@ export class ShoppingListsService {
     return data;
   }
 
-  async importCatalogItems(items: { name: string; barcode?: string; unit?: string; category_name?: string }[]) {
+  async importCatalogItems(items: { name: string; barcode?: string; unit?: string; category_name?: string }[], storeId: string) {
     const householdId = this.getHouseholdIdOrThrow();
     const client = this.supabaseService.getClient();
 
-    // 1. Récupérer toutes les catégories du foyer pour le mapping par nom
+    // 1. Récupérer toutes les catégories du magasin pour le mapping par nom
     const { data: categories } = await client
       .from('categories')
       .select('id, name')
-      .eq('household_id', householdId);
+      .eq('store_id', storeId);
 
     const categoryMap = new Map(categories?.map(c => [c.name.toLowerCase(), c.id]));
 
@@ -466,12 +480,13 @@ export class ShoppingListsService {
       barcode: item.barcode || null,
       unit: item.unit || 'pcs',
       household_id: householdId,
+      store_id: storeId,
       category_id: item.category_name ? categoryMap.get(item.category_name.toLowerCase()) || null : null
     }));
 
     const { data, error } = await client
       .from('items_catalog')
-      .upsert(payload, { onConflict: 'name, household_id' })
+      .upsert(payload, { onConflict: 'name, store_id' })
       .select();
 
     if (error) this.handleError(error);

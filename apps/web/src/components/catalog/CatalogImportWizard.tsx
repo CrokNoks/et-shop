@@ -31,7 +31,8 @@ import { fetchApi } from '@/lib/api';
 import { toast } from 'sonner';
 
 interface CatalogImportWizardProps {
-  onSuccess: () => void;
+  onImported: () => void;
+  storeId: string;
 }
 
 type Mapping = {
@@ -41,7 +42,7 @@ type Mapping = {
   category_name: string;
 };
 
-export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({ onSuccess }) => {
+export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({ onImported, storeId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState<'upload' | 'mapping' | 'preview'>('upload');
   const [csvData, setCsvData] = useState<any[]>([]);
@@ -104,10 +105,13 @@ export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({ onSucc
 
       await fetchApi('/shopping-lists/catalog/import', {
         method: 'POST',
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({ 
+          items,
+          store_id: storeId
+        }),
       });
 
-      onSuccess();
+      onImported();
       setIsOpen(false);
       reset();
       toast.success("Importation terminée avec succès !");
