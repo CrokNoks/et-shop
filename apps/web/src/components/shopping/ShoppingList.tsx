@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { CheckCircleIcon, ShoppingCartIcon, TagIcon, ChevronRightIcon, MinusIcon, PlusIcon, QrCodeIcon, TrashIcon, ArchiveBoxIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolidIcon, QrCodeIcon as QrCodeSolidIcon } from '@heroicons/react/24/solid';
 import {
@@ -22,9 +22,10 @@ import { ShoppingListItem, StoreCategoryOrder } from '@/types';
 interface ShoppingListProps {
   listId: string;
   storeId?: string;
+  refreshKey?: number;
 }
 
-export const ShoppingList: React.FC<ShoppingListProps> = ({ listId, storeId }) => {
+export const ShoppingList: React.FC<ShoppingListProps> = ({ listId, storeId, refreshKey }) => {
   const supabase = useSupabase();
   const [items, setItems] = useState<ShoppingListItem[]>([]);
   const [isShoppingMode, setIsShoppingMode] = useState(false);
@@ -38,7 +39,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId, storeId }) =
   const [editBarcode, setEditBarcode] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     try {
       const data = await fetchApi(`/shopping-lists/${listId}`);
       setItems(data.shopping_list_items || []);
@@ -47,7 +48,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId, storeId }) =
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [listId]);
 
   useEffect(() => {
     fetchItems();
@@ -56,7 +57,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId, storeId }) =
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shopping_list_items', filter: `list_id=eq.${listId}` }, () => fetchItems())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [listId, supabase]);
+  }, [listId, refreshKey, supabase, fetchItems]);
 
   useEffect(() => {
     const requestWakeLock = async () => {

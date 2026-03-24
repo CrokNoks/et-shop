@@ -148,7 +148,7 @@ export class ShoppingListsController {
   @Post(':id/items')
   async addItem(
     @Param('id') listId: string,
-    @Body() payload: { name: string; quantity?: number; barcode?: string; category_id?: string; unit?: string },
+    @Body() payload: { name: string; quantity?: number; barcode?: string; category_id?: string; unit?: string; store_id?: string },
   ) {
     return this.shoppingListsService.addItem(listId, payload);
   }

@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Category } from '@/types';
+import { Category, Store } from '@/types';
 
 const EMOJI_OPTIONS = [
   '🍎', '🥦', '🥖', '🧀', '🥩', '🐟', '🍝', '🧂', '🥤', '🍷', 
@@ -33,6 +33,9 @@ interface ProductFormProps {
   categoryId: string | null;
   setCategoryId: (id: string | null) => void;
   categories: Category[];
+  stores?: Store[];
+  storeId?: string | null;
+  setStoreId?: (id: string | null) => void;
   onSubmit: (e: React.FormEvent) => void;
   isSubmitting: boolean;
   submitLabel: string;
@@ -52,6 +55,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   barcode, setBarcode,
   categoryId, setCategoryId,
   categories,
+  stores,
+  storeId,
+  setStoreId,
   onSubmit,
   isSubmitting,
   submitLabel,
@@ -112,24 +118,58 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         </div>
       )}
 
+      {!isCategoryForm && stores && setStoreId && (
+        <div className="space-y-2 text-left">
+          <Label htmlFor="store" className="text-xs font-black text-gray-400 uppercase tracking-widest">Magasin</Label>
+          <Select 
+            value={storeId || ""} 
+            onValueChange={(val) => setStoreId(val || null)}
+          >
+            <SelectTrigger className="w-full text-lg font-bold border-gray-200 focus:ring-[#FF6B35]">
+              <SelectValue placeholder="Choisir un magasin...">
+                {storeId && stores.find(s => s.id === storeId)?.name}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {stores.map((store) => (
+                <SelectItem key={store.id} value={store.id} className="font-bold text-[#1A365D]">
+                  {store.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {!isCategoryForm && (
         <div className="space-y-2 text-left">
           <Label htmlFor="category" className="text-xs font-black text-gray-400 uppercase tracking-widest">Rayon (Catégorie)</Label>
           <Select 
-            value={categoryId} 
-            onValueChange={(val) => setCategoryId(val)}
+            value={categoryId || ""} 
+            onValueChange={(val) => setCategoryId(val || null)}
+            disabled={stores && !storeId}
           >
-            <SelectTrigger className="w-full text-lg font-bold border-gray-200 focus:ring-[#FF6B35]">
-              <SelectValue placeholder="Choisir un rayon...">
-                {categories.find(c => c.id === categoryId)?.name}
+            <SelectTrigger className={`w-full text-lg font-bold border-gray-200 focus:ring-[#FF6B35] ${stores && !storeId ? 'opacity-50 grayscale cursor-not-allowed bg-gray-50' : ''}`}>
+              <SelectValue placeholder={stores && !storeId ? "Sélectionnez d'abord un magasin" : "Choisir un rayon..."}>
+                {categoryId && categories.find(c => c.id === categoryId) ? (
+                  <div className="flex items-center gap-2">
+                    <span>{categories.find(c => c.id === categoryId)?.icon}</span>
+                    <span>{categories.find(c => c.id === categoryId)?.name}</span>
+                  </div>
+                ) : null}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id} className="font-bold text-[#1A365D]">
-                  {cat.name}
-                </SelectItem>
-              ))}
+              {categories.length === 0 ? (
+                <div className="p-4 text-center text-sm text-gray-400 italic">Aucun rayon pour ce magasin</div>
+              ) : (
+                categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id} className="font-bold text-[#1A365D]">
+                    <span className="mr-2">{cat.icon}</span>
+                    {cat.name}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>

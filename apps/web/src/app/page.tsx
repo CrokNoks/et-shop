@@ -14,7 +14,12 @@ export default function Home() {
   const [activeListId, setActiveListId] = useState<string | null>(null);
   const [activeListName, setActiveListName] = useState('Chargement...');
   const [activeStoreId, setActiveStoreId] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const router = useRouter();
+
+  const handleItemAdded = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   const loadInitialList = useCallback(async () => {
     const householdId = typeof window !== 'undefined' ? localStorage.getItem('active_household_id') : null;
@@ -89,9 +94,9 @@ export default function Home() {
           {activeListId ? (
             <>
               <div className="flex flex-col gap-4">
-                <HopInput listId={activeListId} />
+                <HopInput listId={activeListId} onItemAdded={handleItemAdded} />
               </div>
-              <ShoppingList listId={activeListId} storeId={activeStoreId || undefined} />
+              <ShoppingList listId={activeListId} storeId={activeStoreId || undefined} refreshKey={refreshTrigger} />
             </>
           ) : (
             <div className="py-20 text-center text-[#1A365D]">

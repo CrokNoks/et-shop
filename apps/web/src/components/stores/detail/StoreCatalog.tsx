@@ -186,14 +186,22 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
               {selectedIds.length} article(s) sélectionné(s)
             </p>
             <div className="flex items-center gap-3 w-full md:w-auto">
-              <Select value={bulkCategoryId || ''} onValueChange={setBulkCategoryId}>
+              <Select value={bulkCategoryId || ""} onValueChange={(val) => setBulkCategoryId(val || null)}>
                 <SelectTrigger className="bg-white border-indigo-200 text-indigo-900 font-bold rounded-xl min-w-[200px]">
-                  <SelectValue placeholder="Assigner à un rayon..." />
+                  <SelectValue placeholder="Assigner à un rayon...">
+                    {bulkCategoryId && categories.find(c => c.id === bulkCategoryId) ? (
+                      <div className="flex items-center gap-2">
+                        <span>{categories.find(c => c.id === bulkCategoryId)?.icon}</span>
+                        <span>{categories.find(c => c.id === bulkCategoryId)?.name}</span>
+                      </div>
+                    ) : null}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="text-[#1A365D]">
                   {categories.map(cat => (
                     <SelectItem key={cat.id} value={cat.id} className="font-bold">
-                      {cat.icon} {cat.name}
+                      <span className="mr-2">{cat.icon}</span>
+                      {cat.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -216,7 +224,7 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {isLoading ? (
             <p className="col-span-full text-center py-20 text-gray-400 italic animate-pulse">Chargement...</p>
           ) : filteredItems.length === 0 ? (

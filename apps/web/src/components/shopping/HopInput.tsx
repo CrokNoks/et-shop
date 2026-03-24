@@ -16,10 +16,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ProductForm } from './ProductForm';
 import { toast } from 'sonner';
-import { Category } from '@/types';
+import { Category, Store } from '@/types';
 
 interface Suggestion {
   name: string;
+  category_id?: string;
+  store_id?: string;
   categories?: { name: string };
   stores?: { name: string };
 }
@@ -36,8 +38,10 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [isListening, setIsListening] = useState(false);
   
-  // Categories state
+  // Stores and Categories state
+  const [stores, setStores] = useState<Store[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [newProductStoreId, setNewProductStoreId] = useState<string | null>(null);
 
   // Sheet state for new product creation
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -54,12 +58,32 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    const fetchStores = async () => {
+      try {
+        const data = await fetchApi('/stores');
+        setStores(data || []);
+      } catch (error) {
+        console.error('Failed to fetch stores:', error);
+      }
+    };
+    fetchStores();
+  }, []);
+
+  useEffect(() => {
     const fetchCategories = async () => {
-      try { const data = await fetchApi('/shopping-lists/categories'); setCategories(data || []); }
-      catch (error) { console.error('Failed to fetch categories:', error); }
+      if (!newProductStoreId) {
+        setCategories([]);
+        return;
+      }
+      try {
+        const data = await fetchApi(`/shopping-lists/categories?storeId=${newProductStoreId}`);
+        setCategories(data || []);
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      }
     };
     fetchCategories();
-  }, []);
+  }, [newProductStoreId]);
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -75,13 +99,13 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
     return () => clearTimeout(timer);
   }, [inputValue]);
 
-  const handleAdd = async (name: string, quantity = 1, unit = 'pcs', barcode?: string, category_id?: string) => {
+  const handleAdd = async (name: string, quantity = 1, unit = 'pcs', barcode?: string, category_id?: string, store_id?: string) => {
     if (!name || isAdding) return;
     setIsAdding(true);
     try {
       await fetchApi(`/shopping-lists/${listId}/items`, {
         method: 'POST',
-        body: JSON.stringify({ name, quantity, unit, barcode, category_id }),
+        body: JSON.stringify({ name, quantity, unit, barcode, category_id, store_id }),
       });
       setInputValue('');
       setShowSuggestions(false);
@@ -129,6 +153,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
     setNewProductUnit('pcs');
     setNewProductBarcode('');
     setNewProductCategoryId(null);
+    setNewProductStoreId(null);
     setShowSuggestions(false);
     setIsSheetOpen(true);
   };
@@ -136,7 +161,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
   return (
     <div className="w-full max-w-lg relative group">
       <div className={`flex items-center flex-nowrap gap-1 p-1.5 sm:p-2 bg-white rounded-2xl shadow-lg border-2 transition-all duration-200 ${isListening ? 'border-[#FF6B35] animate-pulse' : 'border-transparent focus-within:border-[#FF6B35]'}`}>
-        <input ref={inputRef} type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} placeholder={isListening ? "Écoute..." : "Ajouter un article..."} className="flex-1 min-w-0 px-2 sm:px-3 py-2 text-base sm:text-lg outline-none text-[#1A365D] bg-transparent" onKeyDown={(e) => { if (e.key === 'Enter') { if (suggestions.length > 0) handleAdd(suggestions[0].name); else if (inputValue.trim()) openCreateSheet(); } }} disabled={isAdding} />
+        <input ref={inputRef} type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} placeholder={isListening ? "Écoute..." : "Ajouter un article..."} className="flex-1 min-w-0 px-2 sm:px-3 py-2 text-base sm:text-lg outline-none text-[#1A365D] bg-transparent" onKeyDown={(e) => { if (e.key === 'Enter') { if (suggestions.length > 0) handleAdd(suggestions[0].name, 1, 'pcs', undefined, suggestions[0].category_id, suggestions[0].store_id); else if (inputValue.trim()) openCreateSheet(); } }} disabled={isAdding} />
         <div className="flex items-center gap-0.5 sm:gap-1 pr-1">
           <button onClick={startVoiceDictation} className={`p-1.5 sm:p-2 rounded-full transition-colors ${isListening ? 'bg-[#FF6B35] text-white' : 'hover:bg-gray-100 text-gray-500'}`} title="Dictée Vocale"><MicrophoneIcon className="w-5 h-5 sm:w-6 sm:h-6" /></button>
           <button onClick={() => setIsBarcodeSheetOpen(true)} className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500" title="Scanner un code-barres"><QrCodeIcon className="w-5 h-5 sm:w-6 sm:h-6" /></button>
@@ -146,7 +171,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
       {showSuggestions && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50">
           {suggestions.map((item, index) => (
-            <button key={index} onClick={() => handleAdd(item.name)} className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 text-left border-b border-gray-50 group/item">
+            <button key={index} onClick={() => handleAdd(item.name, 1, 'pcs', undefined, item.category_id, item.store_id)} className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 text-left border-b border-gray-50 group/item">
               <div className="flex flex-col">
                 <span className="font-medium text-[#1A365D] group-hover/item:text-[#FF6B35] transition-colors">{item.name}</span>
                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">{item.stores?.name || 'Sans magasin'}</span>
@@ -161,15 +186,37 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
       {/* Create Product Sheet */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent side="right" className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]">
-          <SheetHeader className="mb-10 text-left"><SheetTitle className="text-3xl font-black">Créer un produit</SheetTitle><SheetDescription className="text-base text-gray-500 mt-2">Ajoutez les détails du produit pour l'enregistrer dans votre catalogue.</SheetDescription></SheetHeader>
-          <ProductForm name={newProductName} setName={setNewProductName} quantity={newProductQuantity} setQuantity={setNewProductQuantity} unit={newProductUnit} setUnit={setNewProductUnit} barcode={newProductBarcode} setBarcode={setNewProductBarcode} categoryId={newProductCategoryId} setCategoryId={setNewProductCategoryId} categories={categories} isSubmitting={isAdding} submitLabel="Créer et ajouter" showQuantity={true} onSubmit={(e) => { e.preventDefault(); handleAdd(newProductName, newProductQuantity, newProductUnit, newProductBarcode || undefined, newProductCategoryId || undefined); }} />
+          <SheetHeader className="mb-10 text-left"><SheetTitle className="text-3xl font-black">Créer un produit</SheetTitle><SheetDescription className="text-base text-gray-500 mt-2">Ajoutez les détails du produit pour l&apos;enregistrer dans votre catalogue.</SheetDescription></SheetHeader>
+          <ProductForm 
+            name={newProductName} 
+            setName={setNewProductName} 
+            quantity={newProductQuantity} 
+            setQuantity={setNewProductQuantity} 
+            unit={newProductUnit} 
+            setUnit={setNewProductUnit} 
+            barcode={newProductBarcode} 
+            setBarcode={setNewProductBarcode} 
+            categoryId={newProductCategoryId} 
+            setCategoryId={setNewProductCategoryId} 
+            categories={categories}
+            stores={stores}
+            storeId={newProductStoreId}
+            setStoreId={setNewProductStoreId}
+            isSubmitting={isAdding} 
+            submitLabel="Créer et ajouter" 
+            showQuantity={true} 
+            onSubmit={(e) => { 
+              e.preventDefault(); 
+              handleAdd(newProductName, newProductQuantity, newProductUnit, newProductBarcode || undefined, newProductCategoryId || undefined, newProductStoreId || undefined); 
+            }} 
+          />
         </SheetContent>
       </Sheet>
 
       {/* Barcode Scan Simulation Sheet */}
       <Sheet open={isBarcodeSheetOpen} onOpenChange={setIsBarcodeSheetOpen}>
         <SheetContent side="right" className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]">
-          <SheetHeader className="mb-10 text-left"><SheetTitle className="text-3xl font-black">Scanner un produit</SheetTitle><SheetDescription className="text-base text-gray-500 mt-2">Saisissez le code-barres pour ajouter instantanément l'article.</SheetDescription></SheetHeader>
+          <SheetHeader className="mb-10 text-left"><SheetTitle className="text-3xl font-black">Scanner un produit</SheetTitle><SheetDescription className="text-base text-gray-500 mt-2">Saisissez le code-barres pour ajouter instantanément l&apos;article.</SheetDescription></SheetHeader>
           <form onSubmit={handleBarcodeSubmit} className="space-y-8 text-[#1A365D]">
             <div className="space-y-2 text-left">
               <Label htmlFor="scan-barcode" className="text-xs font-black text-gray-400 uppercase tracking-widest">Code-barres</Label>
