@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { updateSession } from './src/shared/lib/supabase/middleware' // Path relative to apps/web
+import { updateSession } from './shared/lib/supabase/middleware' // Path relative to apps/web
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({
