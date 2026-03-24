@@ -141,7 +141,7 @@ export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({ onImpo
       </Button>
 
       <Dialog open={isOpen} onOpenChange={(open) => { setIsOpen(open); if (!open) reset(); }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col text-[#1A365D]">
+        <DialogContent className="sm:max-w-6xl max-h-[90vh] flex flex-col text-[#1A365D]">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black">Importation de produits</DialogTitle>
             <DialogDescription>
