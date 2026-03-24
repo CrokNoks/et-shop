@@ -469,6 +469,19 @@ export class ShoppingListsService {
     return data;
   }
 
+  async deleteCatalogItem(id: string) {
+    const householdId = this.getHouseholdIdOrThrow();
+    const { error } = await this.supabaseService
+      .getClient()
+      .from('items_catalog')
+      .delete()
+      .eq('id', id)
+      .eq('household_id', householdId);
+
+    if (error) this.handleError(error);
+    return { success: true };
+  }
+
   async bulkUpdateCatalogItemsCategory(ids: string[], category_id: string) {
     const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService

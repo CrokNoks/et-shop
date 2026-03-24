@@ -79,6 +79,11 @@ export class ShoppingListsController {
     return this.shoppingListsService.updateCatalogItem(id, payload);
   }
 
+  @Delete('catalog/:id')
+  async deleteCatalogItem(@Param('id') id: string) {
+    return this.shoppingListsService.deleteCatalogItem(id);
+  }
+
   @Patch('items/:id/toggle')
   async toggleItem(@Param('id') itemId: string, @Body('isChecked') isChecked: boolean) {
     return this.shoppingListsService.toggleItem(itemId, isChecked);
