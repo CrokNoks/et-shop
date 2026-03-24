@@ -16,4 +16,19 @@ export class HouseholdsController {
   async create(@Body('name') name: string) {
     return this.householdsService.create(name);
   }
+
+  @Get(':id/members')
+  async findMembers(@Param('id') id: string) {
+    return this.householdsService.findMembers(id);
+  }
+
+  @Post(':id/members')
+  async addMember(@Param('id') id: string, @Body('email') email: string) {
+    return this.householdsService.addMember(id, email);
+  }
+
+  @Delete(':id/members/:userId')
+  async removeMember(@Param('id') id: string, @Param('userId') userId: string) {
+    return this.householdsService.removeMember(id, userId);
+  }
 }

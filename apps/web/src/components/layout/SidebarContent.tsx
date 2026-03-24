@@ -9,6 +9,7 @@ import { Logo } from './Logo';
 import { UserBadge } from './UserBadge';
 import { useSupabase } from '@/hooks/useSupabase';
 import { ShoppingList } from '@/types';
+import { InviteMemberModal } from '../household/InviteMemberModal';
 
 interface SidebarContentProps {
   activeListId: string;
@@ -21,12 +22,15 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, on
   const supabase = useSupabase();
   const [lists, setLists] = useState<ShoppingList[]>([]);
   const [householdName, setHouseholdName] = useState<string | null>(null);
+  const [activeHouseholdId, setActiveHouseholdId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [newListName, setNewListName] = useState('');
 
   const loadData = async () => {
     const householdId = typeof window !== 'undefined' ? localStorage.getItem('active_household_id') : null;
+    setActiveHouseholdId(householdId);
     if (!householdId) {
       setIsLoading(false);
       return;
@@ -190,7 +194,10 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, on
           <p className="text-[10px] text-gray-500 leading-tight">
             Partagez vos listes avec vos proches pour une synchronisation en temps réel.
           </p>
-          <button className="mt-3 w-full py-2 bg-white text-[#1A365D] text-xs font-bold rounded-lg border border-[#1A365D]/10 hover:shadow-sm transition-all">
+          <button 
+            onClick={() => setShowInviteModal(true)}
+            className="mt-3 w-full py-2 bg-white text-[#1A365D] text-xs font-bold rounded-lg border border-[#1A365D]/10 hover:shadow-sm transition-all"
+          >
             Inviter un membre
           </button>
         </div>
@@ -199,6 +206,15 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, on
       <div className="mt-auto pt-8 border-t border-gray-100">
         <UserBadge initials="LG" name="Lucas Guerrier" plan="Compte Gratuit" />
       </div>
+
+      {activeHouseholdId && (
+        <InviteMemberModal 
+          isOpen={showInviteModal}
+          onClose={() => setShowInviteModal(false)}
+          householdId={activeHouseholdId}
+          householdName={householdName || 'Mon Foyer'}
+        />
+      )}
     </div>
   );
 };
