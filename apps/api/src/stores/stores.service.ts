@@ -68,21 +68,24 @@ export class StoresService {
     return data;
   }
 
-  async updateCategoryOrders(storeId: string, orders: { categoryId: string, sortOrder: number }[]) {
+  async updateCategoryOrders(
+    storeId: string,
+    orders: { categoryId: string; sortOrder: number }[],
+  ) {
     const client = this.supabaseService.getClient();
 
     // On met à jour le sort_order directement sur la table categories
-    const updates = orders.map(o => 
+    const updates = orders.map((o) =>
       client
         .from('categories')
         .update({ sort_order: o.sortOrder })
         .eq('id', o.categoryId)
-        .eq('store_id', storeId)
+        .eq('store_id', storeId),
     );
 
     const results = await Promise.all(updates);
-    const firstError = results.find(r => r.error)?.error;
-    
+    const firstError = results.find((r) => r.error)?.error;
+
     if (firstError) throw firstError;
     return { success: true };
   }

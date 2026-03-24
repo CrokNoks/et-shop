@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards, Headers, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Put,
+  UseGuards,
+  Headers,
+  BadRequestException,
+} from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { SupabaseAuthGuard } from '../supabase/supabase.guard';
@@ -19,7 +31,7 @@ export class StoresController {
   @Post()
   async create(
     @Headers('x-household-id') householdId: string,
-    @Body('name') name: string
+    @Body('name') name: string,
   ) {
     if (!householdId) {
       throw new BadRequestException('x-household-id header is required');
@@ -45,7 +57,7 @@ export class StoresController {
   @Put(':id/categories')
   async updateCategoryOrders(
     @Param('id') id: string,
-    @Body('orders') orders: { categoryId: string, sortOrder: number }[]
+    @Body('orders') orders: { categoryId: string; sortOrder: number }[],
   ) {
     return this.storesService.updateCategoryOrders(id, orders);
   }

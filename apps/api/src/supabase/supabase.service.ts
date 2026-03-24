@@ -11,7 +11,7 @@ export class SupabaseService {
 
   constructor(
     private configService: ConfigService,
-    @Inject(REQUEST) private readonly request: Request
+    @Inject(REQUEST) private readonly request: Request,
   ) {}
 
   getClient(): SupabaseClient {
@@ -19,7 +19,7 @@ export class SupabaseService {
 
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
     const supabaseKey = this.configService.get<string>('SUPABASE_KEY');
-    
+
     if (!supabaseUrl || !supabaseKey) {
       this.logger.error('Critical: SUPABASE_URL or SUPABASE_KEY is missing');
       throw new Error('Server configuration error');

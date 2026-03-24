@@ -24,7 +24,10 @@ export class SupabaseAuthGuard implements CanActivate {
     }
 
     const client = this.supabaseService.getClient();
-    const { data: { user }, error } = await client.auth.getUser(token);
+    const {
+      data: { user },
+      error,
+    } = await client.auth.getUser(token);
 
     if (error || !user) {
       throw new UnauthorizedException('Invalid token');

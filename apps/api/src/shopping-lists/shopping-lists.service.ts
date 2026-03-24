@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, UnauthorizedException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+  InternalServerErrorException,
+  BadRequestException,
+} from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
@@ -7,14 +13,19 @@ export class ShoppingListsService {
 
   private handleError(error: any) {
     console.error('Supabase Error Details:', error);
-    if (error.code === 'PGRST116') throw new NotFoundException('Resource not found');
-    if (error.code === '42501') throw new UnauthorizedException('You do not have permission');
+    if (error.code === 'PGRST116')
+      throw new NotFoundException('Resource not found');
+    if (error.code === '42501')
+      throw new UnauthorizedException('You do not have permission');
     throw new InternalServerErrorException(error.message || 'Supabase error');
   }
 
   private getHouseholdIdOrThrow(): string {
     const id = this.supabaseService.getHouseholdId();
-    if (!id) throw new BadRequestException('Active household (x-household-id) is required');
+    if (!id)
+      throw new BadRequestException(
+        'Active household (x-household-id) is required',
+      );
     return id;
   }
 
@@ -25,7 +36,7 @@ export class ShoppingListsService {
       .from('shopping_lists')
       .select('*')
       .eq('household_id', householdId);
-    
+
     if (error) this.handleError(error);
     return data || [];
   }
@@ -36,7 +47,7 @@ export class ShoppingListsService {
       .getClient()
       .from('items_catalog')
       .select('*, categories(name, sort_order)');
-    
+
     if (storeId) {
       query.eq('store_id', storeId);
     } else {
@@ -44,17 +55,26 @@ export class ShoppingListsService {
     }
 
     const { data, error } = await query.order('name', { ascending: true });
-    
+
     if (error) this.handleError(error);
     return data || [];
   }
 
-  async createCatalogItem(payload: { name: string; barcode?: string; category_id?: string; unit?: string; store_id: string }) {
+  async createCatalogItem(payload: {
+    name: string;
+    barcode?: string;
+    category_id?: string;
+    unit?: string;
+    store_id: string;
+  }) {
     const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService
       .getClient()
       .from('items_catalog')
-      .upsert({ ...payload, household_id: householdId }, { onConflict: 'name, store_id' })
+      .upsert(
+        { ...payload, household_id: householdId },
+        { onConflict: 'name, store_id' },
+      )
       .select()
       .single();
     if (error) this.handleError(error);
@@ -67,15 +87,17 @@ export class ShoppingListsService {
       .getClient()
       .from('categories')
       .select('*');
-    
+
     if (storeId) {
       query.eq('store_id', storeId);
     } else {
       query.eq('household_id', householdId);
     }
 
-    const { data, error } = await query.order('sort_order', { ascending: true });
-    
+    const { data, error } = await query.order('sort_order', {
+      ascending: true,
+    });
+
     if (error) this.handleError(error);
     return data || [];
   }
@@ -85,7 +107,8 @@ export class ShoppingListsService {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('shopping_lists')
-      .select(`
+      .select(
+        `
         *,
         shopping_list_items (
           *,
@@ -95,11 +118,12 @@ export class ShoppingListsService {
             stores (*)
           )
         )
-      `)
+      `,
+      )
       .eq('id', id)
       .eq('household_id', householdId)
       .single();
-    
+
     if (error) this.handleError(error);
     return data;
   }
@@ -117,7 +141,10 @@ export class ShoppingListsService {
     return data;
   }
 
-  async update(id: string, payload: { name?: string; store_id?: string | null }) {
+  async update(
+    id: string,
+    payload: { name?: string; store_id?: string | null },
+  ) {
     const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService
       .getClient()
@@ -145,15 +172,20 @@ export class ShoppingListsService {
     return { success: true };
   }
 
-  async createCategory(payload: { name: string; icon?: string; sort_order?: number; store_id: string }) {
+  async createCategory(payload: {
+    name: string;
+    icon?: string;
+    sort_order?: number;
+    store_id: string;
+  }) {
     const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService
       .getClient()
       .from('categories')
-      .insert({ 
-        ...payload, 
-        icon: payload.icon || '📦', 
-        household_id: householdId 
+      .insert({
+        ...payload,
+        icon: payload.icon || '📦',
+        household_id: householdId,
       })
       .select()
       .single();
@@ -161,13 +193,16 @@ export class ShoppingListsService {
     return data;
   }
 
-  async importCategories(categories: { name: string; icon?: string; sort_order?: number }[], storeId: string) {
+  async importCategories(
+    categories: { name: string; icon?: string; sort_order?: number }[],
+    storeId: string,
+  ) {
     const householdId = this.getHouseholdIdOrThrow();
-    const payload = categories.map(cat => ({
+    const payload = categories.map((cat) => ({
       ...cat,
       icon: cat.icon || '📦',
       household_id: householdId,
-      store_id: storeId
+      store_id: storeId,
     }));
 
     const { data, error } = await this.supabaseService
@@ -180,7 +215,10 @@ export class ShoppingListsService {
     return data;
   }
 
-  async updateCategory(id: string, payload: { name?: string; icon?: string; sort_order?: number }) {
+  async updateCategory(
+    id: string,
+    payload: { name?: string; icon?: string; sort_order?: number },
+  ) {
     const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService
       .getClient()
@@ -207,10 +245,27 @@ export class ShoppingListsService {
     return { success: true };
   }
 
-  async addItem(listId: string, payload: { name: string; quantity?: number; barcode?: string; category_id?: string; unit?: string; store_id?: string }) {
+  async addItem(
+    listId: string,
+    payload: {
+      name: string;
+      quantity?: number;
+      barcode?: string;
+      category_id?: string;
+      unit?: string;
+      store_id?: string;
+    },
+  ) {
     const client = this.supabaseService.getClient();
     const householdId = this.getHouseholdIdOrThrow();
-    const { name, quantity = 1, barcode, category_id, unit, store_id: payloadStoreId } = payload;
+    const {
+      name,
+      quantity = 1,
+      barcode,
+      category_id,
+      unit,
+      store_id: payloadStoreId,
+    } = payload;
 
     // 0. Récupérer le store_id de la liste si non précisé
     let finalStoreId = payloadStoreId;
@@ -235,7 +290,9 @@ export class ShoppingListsService {
     }
 
     if (!finalStoreId) {
-      throw new BadRequestException('Un magasin est requis pour ajouter un article (aucun magasin lié à la liste ou au foyer).');
+      throw new BadRequestException(
+        'Un magasin est requis pour ajouter un article (aucun magasin lié à la liste ou au foyer).',
+      );
     }
 
     // 1. Chercher dans le catalogue du magasin spécifique
@@ -248,7 +305,7 @@ export class ShoppingListsService {
 
     // L'unité par défaut est celle du catalogue, ou 'pcs'
     let finalUnit = catalogItem?.unit || unit || 'pcs';
-    
+
     if (unit && unit !== 'pcs') {
       finalUnit = unit;
     }
@@ -257,13 +314,13 @@ export class ShoppingListsService {
       // Produit inconnu : ON LE CRÉE dans le catalogue pour ce magasin
       const { data: newItem, error: cError } = await client
         .from('items_catalog')
-        .insert({ 
-          name, 
-          household_id: householdId, 
+        .insert({
+          name,
+          household_id: householdId,
           store_id: finalStoreId,
-          category_id: category_id || null, 
+          category_id: category_id || null,
           barcode: barcode || null,
-          unit: finalUnit
+          unit: finalUnit,
         })
         .select()
         .single();
@@ -271,7 +328,8 @@ export class ShoppingListsService {
       catalogItem = newItem;
     }
 
-    if (!catalogItem) throw new InternalServerErrorException('Failed to resolve catalog item');
+    if (!catalogItem)
+      throw new InternalServerErrorException('Failed to resolve catalog item');
 
     // 2. LOGIQUE DE RÉUTILISATION : Vérifier si l'article est déjà dans la liste
     const { data: existingListItem } = await client
@@ -284,10 +342,10 @@ export class ShoppingListsService {
     if (existingListItem) {
       const { data, error } = await client
         .from('shopping_list_items')
-        .update({ 
+        .update({
           quantity: Number(existingListItem.quantity) + Number(quantity),
           is_checked: false,
-          unit: finalUnit 
+          unit: finalUnit,
         })
         .eq('id', existingListItem.id)
         .select()
@@ -304,8 +362,8 @@ export class ShoppingListsService {
 
     const { data, error } = await client
       .from('shopping_list_items')
-      .insert({ 
-        list_id: listId, 
+      .insert({
+        list_id: listId,
         catalog_item_id: catalogItem.id,
         name: finalName,
         category_id: category_id || catalogItem.category_id || null,
@@ -313,7 +371,7 @@ export class ShoppingListsService {
         is_checked: false,
         unit: finalUnit,
         barcode: barcode || catalogItem.barcode || null,
-        price: 0
+        price: 0,
       })
       .select()
       .single();
@@ -332,10 +390,12 @@ export class ShoppingListsService {
       .select('store_id')
       .eq('id', listId)
       .single();
-    
+
     const storeId = list?.store_id;
     if (!storeId) {
-      throw new BadRequestException('Un magasin doit être lié à la liste pour ajouter par code-barres.');
+      throw new BadRequestException(
+        'Un magasin doit être lié à la liste pour ajouter par code-barres.',
+      );
     }
 
     const { data: catalogItem, error: cError } = await client
@@ -359,9 +419,9 @@ export class ShoppingListsService {
     if (existingListItem) {
       const { data, error } = await client
         .from('shopping_list_items')
-        .update({ 
+        .update({
           quantity: Number(existingListItem.quantity) + 1,
-          is_checked: false 
+          is_checked: false,
         })
         .eq('id', existingListItem.id)
         .select()
@@ -372,13 +432,15 @@ export class ShoppingListsService {
 
     const finalName = catalogItem.name;
     if (!finalName) {
-      throw new BadRequestException('Le nom du produit est introuvable dans le catalogue.');
+      throw new BadRequestException(
+        'Le nom du produit est introuvable dans le catalogue.',
+      );
     }
 
     const { data, error } = await client
       .from('shopping_list_items')
-      .insert({ 
-        list_id: listId, 
+      .insert({
+        list_id: listId,
         catalog_item_id: catalogItem.id,
         name: finalName,
         category_id: catalogItem.category_id || null,
@@ -386,7 +448,7 @@ export class ShoppingListsService {
         is_checked: false,
         unit: catalogItem.unit,
         barcode,
-        price: 0
+        price: 0,
       })
       .select()
       .single();
@@ -401,7 +463,7 @@ export class ShoppingListsService {
       .from('shopping_list_items')
       .delete()
       .eq('id', itemId);
-    
+
     if (error) this.handleError(error);
     return { success: true };
   }
@@ -454,7 +516,15 @@ export class ShoppingListsService {
     return data;
   }
 
-  async updateCatalogItem(id: string, payload: { name?: string; barcode?: string; category_id?: string; unit?: string }) {
+  async updateCatalogItem(
+    id: string,
+    payload: {
+      name?: string;
+      barcode?: string;
+      category_id?: string;
+      unit?: string;
+    },
+  ) {
     const householdId = this.getHouseholdIdOrThrow();
     const { data, error } = await this.supabaseService
       .getClient()
@@ -501,7 +571,9 @@ export class ShoppingListsService {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('items_catalog')
-      .select('name, category_id, store_id, categories(name), stores(name), unit')
+      .select(
+        'name, category_id, store_id, categories(name), stores(name), unit',
+      )
       .eq('household_id', householdId)
       .ilike('name', `%${query}%`)
       .limit(5);
@@ -521,7 +593,15 @@ export class ShoppingListsService {
     return data;
   }
 
-  async importCatalogItems(items: { name: string; barcode?: string; unit?: string; category_name?: string }[], storeId: string) {
+  async importCatalogItems(
+    items: {
+      name: string;
+      barcode?: string;
+      unit?: string;
+      category_name?: string;
+    }[],
+    storeId: string,
+  ) {
     const householdId = this.getHouseholdIdOrThrow();
     const client = this.supabaseService.getClient();
 
@@ -531,16 +611,20 @@ export class ShoppingListsService {
       .select('id, name')
       .eq('store_id', storeId);
 
-    const categoryMap = new Map(categories?.map(c => [c.name.toLowerCase(), c.id]));
+    const categoryMap = new Map(
+      categories?.map((c) => [c.name.toLowerCase(), c.id]),
+    );
 
     // 2. Préparer le payload
-    const payload = items.map(item => ({
+    const payload = items.map((item) => ({
       name: item.name,
       barcode: item.barcode || null,
       unit: item.unit || 'pcs',
       household_id: householdId,
       store_id: storeId,
-      category_id: item.category_name ? categoryMap.get(item.category_name.toLowerCase()) || null : null
+      category_id: item.category_name
+        ? categoryMap.get(item.category_name.toLowerCase()) || null
+        : null,
     }));
 
     const { data, error } = await client

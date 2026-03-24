@@ -16,13 +16,16 @@ const createNestServer = async (expressInstance: express.Express) => {
   await app.init();
 };
 
-export const api = onRequest({ region: 'europe-west1' }, async (request, response) => {
-  if (!isReady) {
-    await createNestServer(server);
-    isReady = true;
-  }
-  return server(request, response);
-});
+export const api = onRequest(
+  { region: 'europe-west1' },
+  async (request, response) => {
+    if (!isReady) {
+      await createNestServer(server);
+      isReady = true;
+    }
+    return server(request, response);
+  },
+);
 
 // For local development
 async function bootstrap() {

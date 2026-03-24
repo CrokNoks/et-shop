@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, Logger, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Patch,
+  Delete,
+  Logger,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { ShoppingListsService } from './shopping-lists.service';
 import { SupabaseAuthGuard } from '../supabase/supabase.guard';
 
@@ -13,7 +24,9 @@ export class ShoppingListsController {
   @Get('catalog')
   async getCatalog(@Query('storeId') storeId?: string) {
     try {
-      this.logger.log(`Fetching all products from catalog for store: ${storeId || 'all'}...`);
+      this.logger.log(
+        `Fetching all products from catalog for store: ${storeId || 'all'}...`,
+      );
       return await this.shoppingListsService.findAllCatalog(storeId);
     } catch (error) {
       this.logger.error('Error fetching catalog:', error.message);
@@ -22,19 +35,39 @@ export class ShoppingListsController {
   }
 
   @Post('catalog')
-  async createCatalogItem(@Body() payload: { name: string; barcode?: string; category_id?: string; unit?: string; store_id: string }) {
+  async createCatalogItem(
+    @Body()
+    payload: {
+      name: string;
+      barcode?: string;
+      category_id?: string;
+      unit?: string;
+      store_id: string;
+    },
+  ) {
     return this.shoppingListsService.createCatalogItem(payload);
   }
 
   @Post('catalog/import')
-  async importCatalog(@Body('items') items: { name: string; barcode?: string; unit?: string; category_name?: string }[], @Body('store_id') storeId: string) {
+  async importCatalog(
+    @Body('items')
+    items: {
+      name: string;
+      barcode?: string;
+      unit?: string;
+      category_name?: string;
+    }[],
+    @Body('store_id') storeId: string,
+  ) {
     return this.shoppingListsService.importCatalogItems(items, storeId);
   }
 
   @Get('categories')
   async getCategories(@Query('storeId') storeId?: string) {
     try {
-      this.logger.log(`Fetching all categories for store: ${storeId || 'all'}...`);
+      this.logger.log(
+        `Fetching all categories for store: ${storeId || 'all'}...`,
+      );
       return await this.shoppingListsService.findAllCategories(storeId);
     } catch (error) {
       this.logger.error('Error fetching categories:', error.message);
@@ -43,12 +76,24 @@ export class ShoppingListsController {
   }
 
   @Post('categories')
-  async createCategory(@Body() payload: { name: string; icon?: string; sort_order?: number; store_id: string }) {
+  async createCategory(
+    @Body()
+    payload: {
+      name: string;
+      icon?: string;
+      sort_order?: number;
+      store_id: string;
+    },
+  ) {
     return this.shoppingListsService.createCategory(payload);
   }
 
   @Post('categories/import')
-  async importCategories(@Body('categories') categories: { name: string; icon?: string; sort_order?: number }[], @Body('store_id') storeId: string) {
+  async importCategories(
+    @Body('categories')
+    categories: { name: string; icon?: string; sort_order?: number }[],
+    @Body('store_id') storeId: string,
+  ) {
     return this.shoppingListsService.importCategories(categories, storeId);
   }
 
@@ -67,14 +112,25 @@ export class ShoppingListsController {
   }
 
   @Patch('catalog/bulk-category')
-  async bulkUpdateCatalogCategory(@Body() payload: { ids: string[]; category_id: string }) {
-    return this.shoppingListsService.bulkUpdateCatalogItemsCategory(payload.ids, payload.category_id);
+  async bulkUpdateCatalogCategory(
+    @Body() payload: { ids: string[]; category_id: string },
+  ) {
+    return this.shoppingListsService.bulkUpdateCatalogItemsCategory(
+      payload.ids,
+      payload.category_id,
+    );
   }
 
   @Patch('catalog/:id')
   async updateCatalog(
     @Param('id') id: string,
-    @Body() payload: { name?: string; barcode?: string; category_id?: string; unit?: string },
+    @Body()
+    payload: {
+      name?: string;
+      barcode?: string;
+      category_id?: string;
+      unit?: string;
+    },
   ) {
     return this.shoppingListsService.updateCatalogItem(id, payload);
   }
@@ -85,7 +141,10 @@ export class ShoppingListsController {
   }
 
   @Patch('items/:id/toggle')
-  async toggleItem(@Param('id') itemId: string, @Body('isChecked') isChecked: boolean) {
+  async toggleItem(
+    @Param('id') itemId: string,
+    @Body('isChecked') isChecked: boolean,
+  ) {
     return this.shoppingListsService.toggleItem(itemId, isChecked);
   }
 
@@ -95,7 +154,10 @@ export class ShoppingListsController {
   }
 
   @Patch('items/:id/quantity')
-  async updateQuantity(@Param('id') itemId: string, @Body('quantity') quantity: number) {
+  async updateQuantity(
+    @Param('id') itemId: string,
+    @Body('quantity') quantity: number,
+  ) {
     return this.shoppingListsService.updateQuantity(itemId, quantity);
   }
 
@@ -105,7 +167,10 @@ export class ShoppingListsController {
   }
 
   @Patch('items/:id/barcode')
-  async updateBarcode(@Param('id') itemId: string, @Body('barcode') barcode: string) {
+  async updateBarcode(
+    @Param('id') itemId: string,
+    @Body('barcode') barcode: string,
+  ) {
     return this.shoppingListsService.updateBarcode(itemId, barcode);
   }
 
@@ -138,9 +203,9 @@ export class ShoppingListsController {
 
   @Patch(':id')
   async update(
-    @Param('id') id: string, 
+    @Param('id') id: string,
     @Body('name') name?: string,
-    @Body('store_id') store_id?: string | null
+    @Body('store_id') store_id?: string | null,
   ) {
     return this.shoppingListsService.update(id, { name, store_id });
   }
@@ -153,7 +218,15 @@ export class ShoppingListsController {
   @Post(':id/items')
   async addItem(
     @Param('id') listId: string,
-    @Body() payload: { name: string; quantity?: number; barcode?: string; category_id?: string; unit?: string; store_id?: string },
+    @Body()
+    payload: {
+      name: string;
+      quantity?: number;
+      barcode?: string;
+      category_id?: string;
+      unit?: string;
+      store_id?: string;
+    },
   ) {
     return this.shoppingListsService.addItem(listId, payload);
   }
