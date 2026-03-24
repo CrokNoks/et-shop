@@ -33,16 +33,24 @@ export async function proxy(request: NextRequest) {
           response = NextResponse.next({ request: { headers: request.headers } });
           response.cookies.set({ name, value: '', ...options });
         },
-      },
-    }
-  );
+        },
+        }
+        );
 
-  const { data: { user } } = await supabase.auth.getUser();
+        console.log('Server-side proxy: Attempting to get user from Supabase');
+        const { data: { user }, error } = await supabase.auth.getUser();
 
-  // 1. Rediriger vers login si non connecté
-  if (!user && !request.nextUrl.pathname.startsWith('/login')) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
+        if (error) {
+        console.error('Server-side proxy: Error getting user from Supabase:', error);
+        } else {
+        console.log('Server-side proxy: User obtained:', user ? 'Authenticated' : 'Not Authenticated');
+        }
+
+        // 1. Rediriger vers login si non connecté
+        if (!user && !request.nextUrl.pathname.startsWith('/login')) {
+        console.log('Server-side proxy: User not authenticated, redirecting to /login');
+        return NextResponse.redirect(new URL('/login', request.url));
+        }
 
   // 2. Rediriger vers accueil si connecté sur login
   if (user && request.nextUrl.pathname.startsWith('/login')) {
