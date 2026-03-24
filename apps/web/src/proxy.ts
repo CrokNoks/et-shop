@@ -16,15 +16,9 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-  // Log the specific auth cookie value
-  const authCookieName = `sb-${process.env.NEXT_PUBLIC_SUPABASE_REF_ID}-auth-token`;
-  const authCookieValue = request.cookies.get(authCookieName)?.value;
-  console.log(`Server-side proxy: Raw auth cookie (${authCookieName}) value:`, authCookieValue ? 'Present' : 'Missing');
-  if (authCookieValue) {
-    console.log(`Server-side proxy: Auth cookie length: ${authCookieValue.length}`);
-    // Optionally log a truncated version if it's very long, or just its presence
-    // console.log(`Server-side proxy: Auth cookie (truncated): ${authCookieValue.substring(0, 50)}...`);
-  }
+  // Log all cookies received by the server
+  const allCookies = request.cookies.getAll();
+  console.log('Server-side proxy: All request cookies received:', allCookies.map(c => c.name));
 
   const supabase = createServerClient(
     supabaseUrl,
@@ -33,7 +27,7 @@ export async function proxy(request: NextRequest) {
       cookies: {
         get(name: string) {
           const cookieValue = request.cookies.get(name)?.value;
-          // console.log(`Server-side proxy: Cookie getter for ${name} returned:`, cookieValue ? 'Present' : 'Missing');
+          console.log(`Server-side proxy: Cookie getter for '${name}' returned:`, cookieValue ? 'Present' : 'Missing');
           return cookieValue;
         },        set(name: string, value: string, options: CookieOptions) {
           request.cookies.set({ name, value, ...options });
