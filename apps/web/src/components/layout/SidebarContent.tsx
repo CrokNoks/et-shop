@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { PlusIcon, UsersIcon, BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 import { fetchApi } from '@/lib/api';
 import Link from 'next/link';
@@ -28,7 +28,7 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, on
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [newListName, setNewListName] = useState('');
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     const householdId = typeof window !== 'undefined' ? localStorage.getItem('active_household_id') : null;
     setActiveHouseholdId(householdId);
     if (!householdId) {
@@ -45,7 +45,7 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, on
       
       setLists(listsData || []);
       
-      const currentHousehold = householdsData.find((h: any) => h.id === householdId);
+      const currentHousehold = householdsData.find((h: { id: string; name: string }) => h.id === householdId);
       if (currentHousehold) {
         setHouseholdName(currentHousehold.name);
       }
@@ -54,7 +54,7 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, on
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -81,7 +81,7 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, on
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase]);
+  }, [supabase, loadData]);
 
   const handleCreateList = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,8 +184,8 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, on
           )}
         </div>
 
-        <div className="mt-4 p-4 bg-[#1A365D]/5 rounded-2xl border border-[#1A365D]/10">
-          <div className="flex items-center gap-2 mb-2">
+        <div className="mt-4 pt-0 px-4 pb-4 bg-[#1A365D]/5 rounded-2xl border border-[#1A365D]/10">
+          <div className="flex items-center gap-2 mb-2 pt-4">
             <UsersIcon className="w-4 h-4 text-[#1A365D]" />
             <span className="text-xs font-bold text-[#1A365D] uppercase tracking-wider">
               {householdName || 'Foyer'}

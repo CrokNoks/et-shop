@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -22,13 +22,25 @@ interface InviteMemberModalProps {
   householdName: string;
 }
 
+interface MemberWithProfile {
+  user_id: string;
+  household_id: string;
+  role: string;
+  profile: {
+    id: string;
+    email: string;
+    full_name?: string;
+    avatar_url?: string;
+  };
+}
+
 export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, onClose, householdId, householdName }) => {
   const [email, setEmail] = useState('');
-  const [members, setMembers] = useState<any[]>([]);
+  const [members, setMembers] = useState<MemberWithProfile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await fetchApi(`/households/${householdId}/members`);
@@ -38,13 +50,13 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, on
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [householdId]);
 
   useEffect(() => {
     if (isOpen) {
       fetchMembers();
     }
-  }, [isOpen, householdId]);
+  }, [isOpen, fetchMembers]);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,8 +71,9 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, on
       setEmail('');
       toast.success("Membre ajouté avec succès !");
       fetchMembers();
-    } catch (error: any) {
-      toast.error(error.message || "Erreur lors de l'ajout du membre.");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Erreur lors de l'ajout du membre.";
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -113,7 +126,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, on
                 Ajouter
               </Button>
             </div>
-            <p className="text-[10px] text-gray-400 font-medium">L'utilisateur doit déjà avoir un compte Et SHop!.</p>
+            <p className="text-[10px] text-gray-400 font-medium">L&apos;utilisateur doit déjà avoir un compte Et SHop!.</p>
           </form>
 
           <div className="flex flex-col gap-3">

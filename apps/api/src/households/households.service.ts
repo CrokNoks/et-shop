@@ -1,21 +1,40 @@
 import { Injectable, UnauthorizedException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
+export interface HouseholdMember {
+  household_id: string;
+  user_id: string;
+  role: 'admin' | 'member';
+  profile?: {
+    id: string;
+    email: string;
+    full_name?: string;
+    avatar_url?: string;
+  };
+}
+
+export interface Household {
+  id: string;
+  name: string;
+  created_at: string;
+  household_members?: HouseholdMember[];
+}
+
 @Injectable()
 export class HouseholdsService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
-  async findMyHouseholds() {
+  async findMyHouseholds(): Promise<Household[]> {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('households')
       .select('*, household_members!inner(*)');
     
     if (error) throw error;
-    return data;
+    return data as Household[];
   }
 
-  async create(name: string) {
+  async create(name: string): Promise<Household> {
     const client = this.supabaseService.getClient();
     const user = this.supabaseService.getUser();
     
@@ -34,17 +53,17 @@ export class HouseholdsService {
     const { error: mError } = await client
       .from('household_members')
       .insert({ 
-        household_id: household.id, 
+        household_id: (household as Household).id, 
         user_id: user.id,
         role: 'admin' 
       });
 
     if (mError) throw mError;
 
-    return household;
+    return household as Household;
   }
 
-  async findMembers(householdId: string) {
+  async findMembers(householdId: string): Promise<HouseholdMember[]> {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('household_members')
@@ -52,10 +71,10 @@ export class HouseholdsService {
       .eq('household_id', householdId);
 
     if (error) throw error;
-    return data;
+    return data as HouseholdMember[];
   }
 
-  async addMember(householdId: string, email: string) {
+  async addMember(householdId: string, email: string): Promise<{ success: boolean }> {
     const client = this.supabaseService.getClient();
     const currentUser = this.supabaseService.getUser();
 
@@ -67,7 +86,7 @@ export class HouseholdsService {
       .eq('user_id', currentUser.id)
       .single();
 
-    if (mError || member?.role !== 'admin') {
+    if (mError || (member as HouseholdMember)?.role !== 'admin') {
       throw new UnauthorizedException('Vous devez être administrateur pour ajouter un membre');
     }
 
@@ -87,7 +106,7 @@ export class HouseholdsService {
       .from('household_members')
       .insert({
         household_id: householdId,
-        user_id: profile.id,
+        user_id: (profile as { id: string }).id,
         role: 'member'
       });
 
@@ -99,7 +118,7 @@ export class HouseholdsService {
     return { success: true };
   }
 
-  async removeMember(householdId: string, userId: string) {
+  async removeMember(householdId: string, userId: string): Promise<{ success: boolean }> {
     const client = this.supabaseService.getClient();
     const currentUser = this.supabaseService.getUser();
 
@@ -111,11 +130,9 @@ export class HouseholdsService {
       .eq('user_id', currentUser.id)
       .single();
 
-    if (mError || member?.role !== 'admin') {
+    if (mError || (member as HouseholdMember)?.role !== 'admin') {
       throw new UnauthorizedException('Vous devez être administrateur pour supprimer un membre');
     }
-
-    // 2. Ne pas pouvoir se supprimer soi-même si on est le seul admin (optionnel pour l'instant)
 
     // 3. Supprimer le membre
     const { error: dError } = await client

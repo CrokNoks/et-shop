@@ -26,7 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowUpTrayIcon, CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ArrowUpTrayIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { fetchApi } from '@/lib/api';
 import { toast } from 'sonner';
 
@@ -45,7 +45,7 @@ type Mapping = {
 export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({ onImported, storeId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState<'upload' | 'mapping' | 'preview'>('upload');
-  const [csvData, setCsvData] = useState<any[]>([]);
+  const [csvData, setCsvData] = useState<Record<string, string>[]>([]);
   const [headers, setHeaders] = useState<string[]>([]);
   const [mapping, setMapping] = useState<Mapping>({
     name: '',
@@ -71,10 +71,10 @@ export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({ onImpo
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      complete: (results) => {
+      complete: (results: Papa.ParseResult<Record<string, string>>) => {
         if (results.meta.fields) {
           setHeaders(results.meta.fields);
-          setCsvData(results.data);
+          setCsvData(results.data as Record<string, string>[]);
           
           // Auto-mapping tentative
           const autoMapping = { ...mapping };
@@ -250,8 +250,8 @@ export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({ onImpo
                 <div className="p-4 bg-blue-50 rounded-2xl flex items-start gap-3">
                   <ExclamationTriangleIcon className="w-5 h-5 text-blue-500 mt-0.5" />
                   <p className="text-xs text-blue-700 leading-relaxed">
-                    L'importation va ajouter <strong>{csvData.length}</strong> produits au catalogue. 
-                    Si un rayon n'est pas reconnu par son nom, le produit sera importé sans rayon.
+                    L&apos;importation va ajouter <strong>{csvData.length}</strong> produits au catalogue. 
+                    Si un rayon n&apos;est pas reconnu par son nom, le produit sera importé sans rayon.
                   </p>
                 </div>
               </div>
