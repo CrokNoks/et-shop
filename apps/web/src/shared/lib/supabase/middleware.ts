@@ -36,9 +36,8 @@ export async function updateSession(request: NextRequest, response?: NextRespons
     }
   )
 
-  // IMPORTANT: Using getSession in middleware for performance
-  const { data: { session } } = await supabase.auth.getSession();
-  const user = session?.user;
+  // IMPORTANT: Using getUser to actively validate the token and prevent redirect loops
+  const { data: { user } } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
   const isLoginPage = pathname === '/login' || pathname.endsWith('/login');
