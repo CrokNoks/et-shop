@@ -20,11 +20,12 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, on
   const pathname = usePathname();
   const supabase = useSupabase();
   const [lists, setLists] = useState<ShoppingList[]>([]);
+  const [householdName, setHouseholdName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newListName, setNewListName] = useState('');
 
-  const loadLists = async () => {
+  const loadData = async () => {
     const householdId = typeof window !== 'undefined' ? localStorage.getItem('active_household_id') : null;
     if (!householdId) {
       setIsLoading(false);
@@ -32,23 +33,33 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, on
     }
 
     try {
-      const data = await fetchApi('/shopping-lists');
-      setLists(data || []);
+      // Charger les listes et le foyer en parallèle
+      const [listsData, householdsData] = await Promise.all([
+        fetchApi('/shopping-lists'),
+        fetchApi('/households/me')
+      ]);
+      
+      setLists(listsData || []);
+      
+      const currentHousehold = householdsData.find((h: any) => h.id === householdId);
+      if (currentHousehold) {
+        setHouseholdName(currentHousehold.name);
+      }
     } catch (error) {
-      console.error('Failed to load lists:', error);
+      console.error('Failed to load sidebar data:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadLists();
+    loadData();
 
     const householdId = typeof window !== 'undefined' ? localStorage.getItem('active_household_id') : null;
     if (!householdId) return;
 
     const channel = supabase
-      .channel('sidebar_lists')
+      .channel('sidebar_changes')
       .on(
         'postgres_changes',
         {
@@ -58,7 +69,7 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, on
           filter: `household_id=eq.${householdId}`,
         },
         () => {
-          loadLists();
+          loadData();
         }
       )
       .subscribe();
@@ -79,7 +90,7 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, on
       });
       setNewListName('');
       setShowCreateForm(false);
-      loadLists();
+      loadData();
       onListSelect(newList.id);
       onClose?.();
     } catch (error) {
@@ -172,7 +183,9 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({ activeListId, on
         <div className="mt-4 p-4 bg-[#1A365D]/5 rounded-2xl border border-[#1A365D]/10">
           <div className="flex items-center gap-2 mb-2">
             <UsersIcon className="w-4 h-4 text-[#1A365D]" />
-            <span className="text-xs font-bold text-[#1A365D] uppercase tracking-wider">Foyer</span>
+            <span className="text-xs font-bold text-[#1A365D] uppercase tracking-wider">
+              {householdName || 'Foyer'}
+            </span>
           </div>
           <p className="text-[10px] text-gray-500 leading-tight">
             Partagez vos listes avec vos proches pour une synchronisation en temps réel.
