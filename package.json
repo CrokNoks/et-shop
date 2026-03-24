@@ -1,6 +1,6 @@
 {
   "name": "et-shop-monorepo",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "type": "module",
   "private": true,
   "scripts": {
