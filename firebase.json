@@ -2,9 +2,12 @@
   "hosting": {
     "source": "apps/web",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "frameworksBackend": {
-      "region": "europe-west1"
-    }
+    "rewrites": [
+      {
+        "source": "**",
+        "function": "ssretshopc83d6"
+      }
+    ]
   },
   "functions": {
     "source": "apps/api",
