@@ -65,6 +65,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
           SUPABASE_JWT_SECRET: ${{ secrets.SUPABASE_JWT_SECRET }}
+          NEXT_PUBLIC_SUPABASE_REF_ID: ${{ secrets.NEXT_PUBLIC_SUPABASE_REF_ID }}
 
       - name: Clean build artifacts
         run: |

@@ -12,7 +12,18 @@ export async function proxy(request: NextRequest) {
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
+    console.error('Server-side proxy: SUPABASE_URL or SUPABASE_KEY is missing');
     return response;
+  }
+
+  // Log the specific auth cookie value
+  const authCookieName = `sb-${process.env.NEXT_PUBLIC_SUPABASE_REF_ID}-auth-token`;
+  const authCookieValue = request.cookies.get(authCookieName)?.value;
+  console.log(`Server-side proxy: Raw auth cookie (${authCookieName}) value:`, authCookieValue ? 'Present' : 'Missing');
+  if (authCookieValue) {
+    console.log(`Server-side proxy: Auth cookie length: ${authCookieValue.length}`);
+    // Optionally log a truncated version if it's very long, or just its presence
+    // console.log(`Server-side proxy: Auth cookie (truncated): ${authCookieValue.substring(0, 50)}...`);
   }
 
   const supabase = createServerClient(
@@ -21,9 +32,10 @@ export async function proxy(request: NextRequest) {
     {
       cookies: {
         get(name: string) {
-          return request.cookies.get(name)?.value;
-        },
-        set(name: string, value: string, options: CookieOptions) {
+          const cookieValue = request.cookies.get(name)?.value;
+          // console.log(`Server-side proxy: Cookie getter for ${name} returned:`, cookieValue ? 'Present' : 'Missing');
+          return cookieValue;
+        },        set(name: string, value: string, options: CookieOptions) {
           request.cookies.set({ name, value, ...options });
           response = NextResponse.next({ request: { headers: request.headers } });
           response.cookies.set({ name, value, ...options });
