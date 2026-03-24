@@ -17,6 +17,19 @@ export class StoresService {
     return data;
   }
 
+  async findOne(id: string, householdId: string) {
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('stores')
+      .select('*')
+      .eq('id', id)
+      .eq('household_id', householdId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
   async create(createStoreDto: CreateStoreDto) {
     const { data, error } = await this.supabaseService
       .getClient()

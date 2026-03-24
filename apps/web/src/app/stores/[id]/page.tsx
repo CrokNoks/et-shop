@@ -19,10 +19,9 @@ export default function StoreDetailPage() {
   useEffect(() => {
     const fetchStore = async () => {
       try {
-        const stores = await fetchApi('/stores');
-        const found = stores.find((s: Store) => s.id === id);
-        if (found) {
-          setStore(found);
+        const store = await fetchApi(`/stores/${id}`);
+        if (store) {
+          setStore(store);
         } else {
           router.push('/stores');
         }

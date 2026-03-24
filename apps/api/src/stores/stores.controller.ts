@@ -16,6 +16,17 @@ export class StoresController {
     return this.storesService.findAll(householdId);
   }
 
+  @Get(':id')
+  async findOne(
+    @Param('id') id: string,
+    @Headers('x-household-id') householdId: string,
+  ) {
+    if (!householdId) {
+      throw new BadRequestException('x-household-id header is required');
+    }
+    return this.storesService.findOne(id, householdId);
+  }
+
   @Post()
   async create(
     @Headers('x-household-id') householdId: string,
