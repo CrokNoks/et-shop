@@ -5,19 +5,32 @@
     "rewrites": [
       {
         "source": "**",
-        "function": "ssretshopc83d6"
+        "function": "web-ssr"
       }
     ]
   },
-  "functions": {
-    "source": "apps/api",
-    "codebase": "api-nestjs",
-    "ignore": [
-      "node_modules",
-      ".git",
-      "firebase-debug.log",
-      "firebase-debug.*.log",
-      "*.local"
-    ]
-  }
+  "functions": [
+    {
+      "codebase": "api-nestjs",
+      "source": "apps/api",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    },
+    {
+      "codebase": "web-ssr",
+      "source": "apps/web/functions",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ]
 }
