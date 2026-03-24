@@ -10,13 +10,31 @@ export async function updateSession(request: NextRequest, response: NextResponse
     return response;
   }
 
+  // Log all cookies received by the middleware
+  const allCookies = request.cookies.getAll();
+  console.log('Middleware: All request cookies received:', allCookies.map(c => c.name));
+
+  // Log the specific Supabase auth cookie's value
+  const authCookieNamePrefix = `sb-${process.env.NEXT_PUBLIC_SUPABASE_REF_ID}`; // Assuming REF_ID is available, otherwise this will be sb-undefined
+  const supabaseAuthCookie = allCookies.find(cookie => cookie.name.startsWith(authCookieNamePrefix) && cookie.name.includes('-auth-token'));
+
+  if (supabaseAuthCookie) {
+    console.log(`Middleware: Supabase Auth Cookie '${supabaseAuthCookie.name}' value: Present (length: ${supabaseAuthCookie.value.length})`);
+    // Optionally log a truncated version for inspection if needed:
+    // console.log(`Middleware: Supabase Auth Cookie (truncated): ${supabaseAuthCookie.value.substring(0, 50)}...`);
+  } else {
+    console.log(`Middleware: Supabase Auth Cookie (prefix: ${authCookieNamePrefix}) not found.`);
+  }
+
   const supabase = createServerClient(
     supabaseUrl,
     supabaseKey,
     {
       cookies: {
         get(name: string) {
-          return request.cookies.get(name)?.value;
+          const cookieValue = request.cookies.get(name)?.value;
+          // console.log(`Middleware: Cookie getter for '${name}' returned:`, cookieValue ? 'Present' : 'Missing'); // Keep this commented unless needed for deeper debug
+          return cookieValue;
         },
         set(name: string, value: string, options: CookieOptions) {
           response.cookies.set({ name, value, ...options });
