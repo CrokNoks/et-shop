@@ -2,9 +2,33 @@
   "hosting": {
     "source": "apps/web",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "frameworksBackend": {
-      "region": "europe-west1"
-    }
+    "rewrites": [
+      {
+        "source": "/stores/**",
+        "function": "ssretshopc83d6"
+      },
+      {
+        "source": "/_next/data/**",
+        "function": "ssretshopc83d6"
+      },
+      {
+        "source": "/_next/image",
+        "function": "ssretshopc83d6"
+      },
+      {
+        "source": "/_next/**",
+        "function": "ssretshopc83d6"
+      },
+      {
+        "source": "/api/**",
+        "function": "ssretshopc83d6"
+      },
+      {
+        "source": "**",
+        "function": "ssretshopc83d6"
+      }
+    ],
+    "public": "apps/web/public"
   },
   "functions": {
     "source": "apps/api",
