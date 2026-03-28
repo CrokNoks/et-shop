@@ -5,16 +5,13 @@
 import React from "react";
 import Link from "next/link";
 import { LoyaltyCardFrontend } from "../../types/loyalty-card";
-import { getStoreName } from "../../lib/utils"; // Assuming a utility to get store name from ID
 
 interface LoyaltyCardItemProps {
   card: LoyaltyCardFrontend;
+  storeName?: string;
 }
 
-export function LoyaltyCardItem({ card }: LoyaltyCardItemProps) {
-  // In a real app, you'd fetch store details based on card.storeId
-  // For now, let's just display the storeId as a placeholder or use a mock function.
-  const storeName = getStoreName(card.storeId); // Placeholder for actual store data fetching
+export function LoyaltyCardItem({ card, storeName }: LoyaltyCardItemProps) {
 
   const cardStyle = card.customColor
     ? { borderColor: card.customColor, borderWidth: "2px" }
@@ -28,9 +25,12 @@ export function LoyaltyCardItem({ card }: LoyaltyCardItemProps) {
       >
         <div className="flex-grow">
           <h3 className="text-lg font-semibold text-gray-800">
-            {storeName || `Magasin ID: ${card.storeId}`}
+            {card.name}
           </h3>
-          <p className="text-sm text-gray-600">Numéro: {card.cardData}</p>
+          {card.description && (
+            <p className="text-sm text-gray-500">{card.description}</p>
+          )}
+          <p className="text-sm text-gray-600">{storeName ?? card.storeId}</p>
         </div>
         <div className="text-gray-400">
           <svg

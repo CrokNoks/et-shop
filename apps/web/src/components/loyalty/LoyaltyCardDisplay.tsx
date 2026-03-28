@@ -49,6 +49,22 @@ function BarcodeRenderer({
       </div>
     );
   }
+  if (format === BarcodeFormat.EAN_13) {
+    return (
+      <div className="bg-white p-4 rounded-lg flex flex-col items-center">
+        <div className="w-full bg-black h-16 flex justify-between">
+          {Array.from({ length: 13 }).map((_, i) => (
+            <React.Fragment key={i}>
+              <div className="w-px bg-black h-full"></div>
+              <div className="w-px bg-white h-full"></div>
+            </React.Fragment>
+          ))}
+        </div>
+        <p className="mt-2 text-sm font-mono tracking-widest">{data}</p>
+      </div>
+    );
+  }
+
   // Example for QR Code
   if (format === BarcodeFormat.QR_CODE) {
     return (

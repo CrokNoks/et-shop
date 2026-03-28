@@ -19,6 +19,8 @@ export function AddLoyaltyCardForm() {
   const createLoyaltyCard = useCreateLoyaltyCard();
 
   const [storeId, setStoreId] = useState<string>("");
+  const [name, setName] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
   const [cardData, setCardData] = useState<string>("");
   const [barcodeFormat, setBarcodeFormat] = useState<BarcodeFormat>(
     BarcodeFormat.CODE_128,
@@ -31,6 +33,8 @@ export function AddLoyaltyCardForm() {
     try {
       await createLoyaltyCard.mutateAsync({
         storeId,
+        name,
+        description: description || undefined,
         cardData,
         barcodeFormat,
         customColor: customColor || undefined,
@@ -79,6 +83,35 @@ export function AddLoyaltyCardForm() {
               </option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            Nom de la carte
+          </label>
+          <input
+            type="text"
+            id="name"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Ex: Carte Leclerc, Fidélité Bio..."
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+            Description <span className="font-normal text-gray-400">(optionnel)</span>
+          </label>
+          <input
+            type="text"
+            id="description"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Ex: Carte principale, conjoint..."
+          />
         </div>
 
         <div>

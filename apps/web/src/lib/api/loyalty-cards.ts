@@ -1,27 +1,32 @@
 // app_build/apps/web/src/lib/api/loyalty-cards.ts
 
-import { createClient } from "@supabase/supabase-js"; // Assuming Supabase client is used for auth on frontend
-import { BarcodeFormat, LoyaltyCardFrontend } from "../../types/loyalty-card"; // Import from newly created types file
-export type { BarcodeFormat, LoyaltyCardFrontend }; // Re-export for consumers
-import { config } from "../../config"; // Import from newly created config file
+import { createBrowserClient } from "@supabase/ssr";
+import { BarcodeFormat, LoyaltyCardFrontend } from "../../types/loyalty-card";
+export type { BarcodeFormat, LoyaltyCardFrontend };
+import { config } from "../../config";
 
 // DTOs for frontend requests
 export interface CreateLoyaltyCardPayload {
   storeId: string;
+  name: string;
+  description?: string;
   cardData: string;
   barcodeFormat: BarcodeFormat;
   customColor?: string;
 }
 
 export interface UpdateLoyaltyCardPayload {
-  storeId?: string;
+  name?: string;
+  description?: string;
   cardData?: string;
   barcodeFormat?: BarcodeFormat;
   customColor?: string;
 }
 
 async function getAuthToken(): Promise<string | null> {
-  const supabase = createClient(config.supabaseUrl!, config.supabaseAnonKey!);
+  const supabase = createBrowserClient(config.supabaseUrl!, config.supabaseAnonKey!, {
+    cookieOptions: { name: "__session" },
+  });
   const { data } = await supabase.auth.getSession();
   return data.session?.access_token || null;
 }
