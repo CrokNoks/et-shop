@@ -1,56 +1,62 @@
 #!/usr/bin/env bash
-# ─────────────────────────────────────────────────────────────────────────────
-# dev-list.sh — List active et-shop dev stack instances
+# =============================================================================
+# dev-list.sh — List active Docker dev stack instances
 #
-# Usage: bash scripts/dev-list.sh
+# Usage:
+#   bash scripts/dev-list.sh
 #
 # Requirements: Docker >= 24
-# ─────────────────────────────────────────────────────────────────────────────
+# =============================================================================
 set -euo pipefail
 
 echo "Active et-shop dev stack instances:"
-echo "────────────────────────────────────────────────────────────"
+echo "-------------------------------------"
 
-# Find all unique instance names from the label
+# Find all containers with the etshop label
 INSTANCES=$(docker ps \
   --filter "label=dev.etshop.instance" \
   --format "{{.Label \"dev.etshop.instance\"}}" \
-  | sort -u)
+  2>/dev/null | sort -u)
 
-if [[ -z "$INSTANCES" ]]; then
+if [[ -z "${INSTANCES}" ]]; then
   echo "  (none)"
   exit 0
 fi
 
-printf "%-25s %-12s %-12s %-12s\n" "PROJECT" "PORT_WEB" "PORT_STUDIO" "PORT_KONG"
-echo "────────────────────────────────────────────────────────────"
+for INSTANCE in ${INSTANCES}; do
+  echo ""
+  echo "  Instance: ${INSTANCE}"
 
-for INSTANCE in $INSTANCES; do
-  # Extract port_web from project name (etshop_<PORT_WEB>)
-  PORT_WEB="${INSTANCE#etshop_}"
+  # Extract port info from running containers
+  CONTAINERS=$(docker ps \
+    --filter "label=dev.etshop.instance=${INSTANCE}" \
+    --format "{{.Names}}\t{{.Ports}}\t{{.Status}}")
 
-  # Find PORT_STUDIO and PORT_KONG from running containers
-  PORT_STUDIO=$(docker ps \
+  while IFS=$'\t' read -r name ports status; do
+    printf "    %-40s  %-50s  %s\n" "${name}" "${ports}" "${status}"
+  done <<< "${CONTAINERS}"
+
+  # Show main access URLs based on port labels
+  WEB_PORT=$(docker ps \
+    --filter "label=dev.etshop.instance=${INSTANCE}" \
+    --filter "label=dev.etshop.service=web" \
+    --format "{{.Ports}}" 2>/dev/null | grep -oP '0\.0\.0\.0:\K\d+(?=->)' | head -1 || true)
+
+  STUDIO_PORT=$(docker ps \
     --filter "label=dev.etshop.instance=${INSTANCE}" \
     --filter "label=dev.etshop.service=studio" \
-    --format "{{.Ports}}" \
-    | grep -oE '0\.0\.0\.0:[0-9]+->' | grep -oE '[0-9]+' | head -1 || echo "?")
+    --format "{{.Ports}}" 2>/dev/null | grep -oP '0\.0\.0\.0:\K\d+(?=->)' | head -1 || true)
 
-  PORT_KONG=$(docker ps \
+  KONG_PORT=$(docker ps \
     --filter "label=dev.etshop.instance=${INSTANCE}" \
     --filter "label=dev.etshop.service=kong" \
-    --format "{{.Ports}}" \
-    | grep -oE '0\.0\.0\.0:[0-9]+->' | grep -oE '[0-9]+' | head -1 || echo "?")
+    --format "{{.Ports}}" 2>/dev/null | grep -oP '0\.0\.0\.0:\K\d+(?=->8000)' | head -1 || true)
 
-  printf "%-25s %-12s %-12s %-12s\n" "$INSTANCE" "$PORT_WEB" "${PORT_STUDIO:-?}" "${PORT_KONG:-?}"
+  echo ""
+  [[ -n "${WEB_PORT}" ]]    && echo "    Web     : http://localhost:${WEB_PORT}"
+  [[ -n "${STUDIO_PORT}" ]] && echo "    Studio  : http://localhost:${STUDIO_PORT}"
+  [[ -n "${KONG_PORT}" ]]   && echo "    Kong    : http://localhost:${KONG_PORT}"
+  echo "    Stop    : bash scripts/dev-down.sh --port-web ${WEB_PORT:-?}"
 done
 
-echo "────────────────────────────────────────────────────────────"
-
-# Show container details
 echo ""
-echo "Container details:"
-docker ps \
-  --filter "label=dev.etshop.instance" \
-  --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" \
-  | head -50
