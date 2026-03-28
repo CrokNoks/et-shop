@@ -49,5 +49,20 @@ export interface ShoppingListItem {
   unit?: string;
   barcode?: string;
   name?: string;
-  items_catalog: any; // Using any for Supabase join variations
+  items_catalog:
+    | {
+        name?: string;
+        barcode?: string;
+        unit?: string;
+        categories?: { name: string; sort_order: number };
+        stores?: { id: string; name: string };
+      }
+    | {
+        name?: string;
+        barcode?: string;
+        unit?: string;
+        categories?: { name: string; sort_order: number };
+        stores?: { id: string; name: string };
+      }[]
+    | null; // Supabase join can return object or array
 }

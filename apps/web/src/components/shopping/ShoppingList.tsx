@@ -1,8 +1,21 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { CheckCircleIcon, ShoppingCartIcon, TagIcon, ChevronRightIcon, MinusIcon, PlusIcon, QrCodeIcon, TrashIcon, ArchiveBoxIcon } from '@heroicons/react/24/outline';
-import { CheckCircleIcon as CheckCircleSolidIcon, QrCodeIcon as QrCodeSolidIcon } from '@heroicons/react/24/solid';
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+import Link from "next/link";
+import {
+  CheckCircleIcon,
+  ShoppingCartIcon,
+  TagIcon,
+  ChevronRightIcon,
+  MinusIcon,
+  PlusIcon,
+  TrashIcon,
+  ArchiveBoxIcon,
+} from "@heroicons/react/24/outline";
+import { useLoyaltyCards } from "../../hooks/useLoyaltyCards"; // New import for fetching relevant cards
+import { getStoreName } from "../../lib/utils"; // New import for getting store names
+
+import { CheckCircleIcon as CheckCircleSolidIcon } from "@heroicons/react/24/solid";
 import {
   Sheet,
   SheetContent,
@@ -14,10 +27,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { fetchApi } from '@/lib/api';
-import { useSupabase } from '@/hooks/useSupabase';
-import { toast } from 'sonner';
-import { ShoppingListItem, StoreCategoryOrder } from '@/types';
+import { fetchApi } from "@/lib/api";
+import { useSupabase } from "@/hooks/useSupabase";
+import { toast } from "sonner";
+import { ShoppingListItem } from "@/types";
 
 interface ShoppingListProps {
   listId: string;
@@ -25,18 +38,23 @@ interface ShoppingListProps {
   refreshKey?: number;
 }
 
-export const ShoppingList: React.FC<ShoppingListProps> = ({ listId, storeId, refreshKey }) => {
+export const ShoppingList: React.FC<ShoppingListProps> = ({
+  listId,
+  refreshKey,
+}) => {
   const supabase = useSupabase();
   const [items, setItems] = useState<ShoppingListItem[]>([]);
   const [isShoppingMode, setIsShoppingMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [wakeLock, setWakeLock] = useState<any>(null);
+  const [wakeLock, setWakeLock] = useState<{ release: () => void } | null>(
+    null,
+  );
 
   // Edit Item Sheet State
   const [editingItem, setEditingItem] = useState<ShoppingListItem | null>(null);
-  const [editPrice, setEditPrice] = useState('');
-  const [editUnit, setEditUnit] = useState('');
-  const [editBarcode, setEditBarcode] = useState('');
+  const [editPrice, setEditPrice] = useState("");
+  const [editUnit, setEditUnit] = useState("");
+  const [editBarcode, setEditBarcode] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
 
   const fetchItems = useCallback(async () => {
@@ -44,7 +62,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId, storeId, ref
       const data = await fetchApi(`/shopping-lists/${listId}`);
       setItems(data.shopping_list_items || []);
     } catch (error) {
-      console.error('Failed to fetch items:', error);
+      console.error("Failed to fetch items:", error);
     } finally {
       setIsLoading(false);
     }
@@ -54,54 +72,87 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId, storeId, ref
     fetchItems();
     const channel = supabase
       .channel(`shopping_list_${listId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'shopping_list_items', filter: `list_id=eq.${listId}` }, () => fetchItems())
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "shopping_list_items",
+          filter: `list_id=eq.${listId}`,
+        },
+        () => fetchItems(),
+      )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [listId, refreshKey, supabase, fetchItems]);
 
   useEffect(() => {
     const requestWakeLock = async () => {
-      if ('wakeLock' in navigator && isShoppingMode) {
+      if ("wakeLock" in navigator && isShoppingMode) {
         try {
-          const lock = await (navigator as any).wakeLock.request('screen');
+          const lock = await (
+            navigator as Navigator & {
+              wakeLock: {
+                request: (type: string) => Promise<{ release: () => void }>;
+              };
+            }
+          ).wakeLock.request("screen");
           setWakeLock(lock);
-        } catch (err: any) {
-          console.error(`${err?.name}, ${err?.message}`);
+        } catch (err: unknown) {
+          const e = err as { name?: string; message?: string };
+          console.error(`${e?.name}, ${e?.message}`);
         }
       }
     };
     if (isShoppingMode) requestWakeLock();
-    else if (wakeLock) { wakeLock.release(); setWakeLock(null); }
-    return () => { if (wakeLock) wakeLock.release(); };
-  }, [isShoppingMode]);
+    else if (wakeLock) {
+      wakeLock.release();
+      setWakeLock(null);
+    }
+    return () => {
+      if (wakeLock) wakeLock.release();
+    };
+  }, [isShoppingMode, wakeLock]);
 
   const getCatalogInfo = (item: ShoppingListItem) => {
-    const catalog = Array.isArray(item.items_catalog) ? item.items_catalog[0] : item.items_catalog;
+    const catalog = Array.isArray(item.items_catalog)
+      ? item.items_catalog[0]
+      : item.items_catalog;
     return {
-      name: catalog?.name || item.name || 'Inconnu',
+      name: catalog?.name || item.name || "Inconnu",
       barcode: item.barcode || catalog?.barcode,
       category: catalog?.categories,
       store: catalog?.stores,
-      unit: item.unit || catalog?.unit || 'pcs'
+      unit: item.unit || catalog?.unit || "pcs",
     };
   };
 
   const toggleCheck = async (id: string, currentChecked: boolean) => {
-    if (!currentChecked && 'vibrate' in navigator) navigator.vibrate(50);
+    if (!currentChecked && "vibrate" in navigator) navigator.vibrate(50);
     try {
-      setItems(prev => prev.map(item => item.id === id ? { ...item, is_checked: !currentChecked } : item));
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, is_checked: !currentChecked } : item,
+        ),
+      );
       await fetchApi(`/shopping-lists/items/${id}/toggle`, {
-        method: 'PATCH',
+        method: "PATCH",
         body: JSON.stringify({ isChecked: !currentChecked }),
       });
-    } catch (error) { fetchItems(); }
+    } catch {
+      fetchItems();
+    }
   };
 
   const handleDeleteItem = async (id: string) => {
     try {
-      setItems(prev => prev.filter(item => item.id !== id));
-      await fetchApi(`/shopping-lists/items/${id}`, { method: 'DELETE' });
-    } catch (error) { fetchItems(); }
+      setItems((prev) => prev.filter((item) => item.id !== id));
+      await fetchApi(`/shopping-lists/items/${id}`, { method: "DELETE" });
+    } catch {
+      fetchItems();
+    }
   };
 
   const openEditSheet = (item: ShoppingListItem) => {
@@ -109,7 +160,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId, storeId, ref
     setEditingItem(item);
     setEditPrice(item.price.toString());
     setEditUnit(unit);
-    setEditBarcode(barcode || '');
+    setEditBarcode(barcode || "");
   };
 
   const handleUpdateItem = async (e: React.FormEvent) => {
@@ -121,66 +172,77 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId, storeId, ref
       const price = parseFloat(editPrice) || 0;
       await Promise.all([
         fetchApi(`/shopping-lists/items/${editingItem.id}/price`, {
-          method: 'PATCH',
+          method: "PATCH",
           body: JSON.stringify({ price }),
         }),
         fetchApi(`/shopping-lists/items/${editingItem.id}/unit`, {
-          method: 'PATCH',
+          method: "PATCH",
           body: JSON.stringify({ unit: editUnit }),
         }),
         fetchApi(`/shopping-lists/items/${editingItem.id}/barcode`, {
-          method: 'PATCH',
+          method: "PATCH",
           body: JSON.stringify({ barcode: editBarcode }),
-        })
+        }),
       ]);
       toast.success("Article mis à jour !");
       setEditingItem(null);
       fetchItems();
-    } catch (error) {
+    } catch {
       toast.error("Erreur lors de la mise à jour.");
     } finally {
       setIsUpdating(false);
     }
   };
 
-  const handlePriceUpdate = async (id: string, newPrice: string) => {
-    const price = parseFloat(newPrice) || 0;
-    try {
-      setItems(prev => prev.map(item => item.id === id ? { ...item, price } : item));
-      await fetchApi(`/shopping-lists/items/${id}/price`, { method: 'PATCH', body: JSON.stringify({ price }) });
-    } catch (error) { fetchItems(); }
-  };
-
-  const handleQuantityUpdate = async (id: string, currentQuantity: number, delta: number) => {
+  const handleQuantityUpdate = async (
+    id: string,
+    currentQuantity: number,
+    delta: number,
+  ) => {
     const newQuantity = Math.max(1, currentQuantity + delta);
     if (newQuantity === currentQuantity) return;
     try {
-      setItems(prev => prev.map(item => item.id === id ? { ...item, quantity: newQuantity } : item));
-      await fetchApi(`/shopping-lists/items/${id}/quantity`, { method: 'PATCH', body: JSON.stringify({ quantity: newQuantity }) });
-    } catch (error) { fetchItems(); }
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, quantity: newQuantity } : item,
+        ),
+      );
+      await fetchApi(`/shopping-lists/items/${id}/quantity`, {
+        method: "PATCH",
+        body: JSON.stringify({ quantity: newQuantity }),
+      });
+    } catch {
+      fetchItems();
+    }
   };
 
-  const { todoGroups, doneItems } = useMemo(() => {
-    const todo: Record<string, { 
-      name: string;
-      categories: Record<string, { items: ShoppingListItem[]; order: number }>
-    }> = {};
+  const { todoGroups, doneItems, relevantStoreIds } = useMemo(() => {
+    const todo: Record<
+      string,
+      {
+        name: string;
+        categories: Record<
+          string,
+          { items: ShoppingListItem[]; order: number }
+        >;
+      }
+    > = {};
     const done: ShoppingListItem[] = [];
-    
-    items.forEach(item => {
+
+    items.forEach((item) => {
       if (isShoppingMode && item.is_checked) done.push(item);
       else {
         const { category, store } = getCatalogInfo(item);
-        const storeName = store?.name || 'Sans magasin';
-        const storeId = store?.id || 'none';
-        const categoryName = category?.name || 'Inconnu';
-        
+        const storeName = store?.name || "Sans magasin";
+        const storeId = store?.id || "none";
+        const categoryName = category?.name || "Inconnu";
+
         const order = category?.sort_order ?? 999;
-        
+
         if (!todo[storeId]) {
           todo[storeId] = { name: storeName, categories: {} };
         }
-        
+
         if (!todo[storeId].categories[categoryName]) {
           todo[storeId].categories[categoryName] = { items: [], order };
         }
@@ -189,56 +251,162 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId, storeId, ref
     });
 
     // Trier les magasins (alphabétique) puis les rayons par ordre
-    const sortedGroups = Object.entries(todo).map(([id, storeData]) => ({
-      id,
-      name: storeData.name,
-      categories: Object.entries(storeData.categories)
-        .sort((a, b) => a[1].order - b[1].order)
-    })).sort((a, b) => a.name.localeCompare(b.name));
+    const sortedGroups = Object.entries(todo)
+      .map(([id, storeData]) => ({
+        id,
+        name: storeData.name,
+        categories: Object.entries(storeData.categories).sort(
+          (a, b) => a[1].order - b[1].order,
+        ),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
 
-    return { todoGroups: sortedGroups, doneItems: done };
+    const uniqueStoreIds = new Set<string>();
+    items.forEach((item) => {
+      const { store } = getCatalogInfo(item);
+      if (store?.id) {
+        uniqueStoreIds.add(store.id);
+      }
+    });
+
+    return {
+      todoGroups: sortedGroups,
+      doneItems: done,
+      relevantStoreIds: Array.from(uniqueStoreIds),
+    };
   }, [items, isShoppingMode]);
 
-  const totalBudget = useMemo(() => items.reduce((acc, item) => acc + (Number(item.price) * (item.quantity || 1)), 0), [items]);
-  const checkedTotal = useMemo(() => items.filter(i => i.is_checked).reduce((acc, item) => acc + (Number(item.price) * (item.quantity || 1)), 0), [items]);
-  const progress = items.length > 0 ? (items.filter(i => i.is_checked).length / items.length) * 100 : 0;
+  const { data: relevantLoyaltyCards, isLoading: isLoadingLoyaltyCards } =
+    useLoyaltyCards(relevantStoreIds); // New hook call
 
-  if (isLoading && items.length === 0) return <div className="p-8 text-center text-[#1A365D] animate-pulse">Chargement...</div>;
+  const totalBudget = useMemo(
+    () =>
+      items.reduce(
+        (acc, item) => acc + Number(item.price) * (item.quantity || 1),
+        0,
+      ),
+    [items],
+  );
+
+  const checkedTotal = useMemo(
+    () =>
+      items
+        .filter((i) => i.is_checked)
+        .reduce(
+          (acc, item) => acc + Number(item.price) * (item.quantity || 1),
+          0,
+        ),
+    [items],
+  );
+  const progress =
+    items.length > 0
+      ? (items.filter((i) => i.is_checked).length / items.length) * 100
+      : 0;
+
+  if (isLoading && items.length === 0)
+    return (
+      <div className="p-8 text-center text-[#1A365D] animate-pulse">
+        Chargement...
+      </div>
+    );
 
   return (
-    <div className={`w-full max-w-2xl transition-all duration-300 ${isShoppingMode ? 'fixed inset-0 bg-white z-[100] p-6 pb-32 overflow-y-auto' : 'mt-8'}`}>
-      
+    <div
+      className={`w-full max-w-2xl transition-all duration-300 ${isShoppingMode ? "fixed inset-0 bg-white z-[100] p-6 pb-32 overflow-y-auto" : "mt-8"}`}
+    >
       <div className="flex items-center justify-between mb-6 text-[#1A365D]">
-        <h2 className={`font-black ${isShoppingMode ? 'text-3xl' : 'text-xl'}`}>
-          {isShoppingMode ? '🛒 En magasin' : 'Ma liste active'}
+        <h2 className={`font-black ${isShoppingMode ? "text-3xl" : "text-xl"}`}>
+          {isShoppingMode ? "🛒 En magasin" : "Ma liste active"}
         </h2>
-        <button 
+        <button
           onClick={() => setIsShoppingMode(!isShoppingMode)}
           className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold transition-all shadow-md ${
-            isShoppingMode ? 'bg-[#1A365D] text-white' : 'bg-gray-100 text-[#1A365D] hover:bg-gray-200'
+            isShoppingMode
+              ? "bg-[#1A365D] text-white"
+              : "bg-gray-100 text-[#1A365D] hover:bg-gray-200"
           }`}
         >
-          {isShoppingMode ? <ChevronRightIcon className="w-5 h-5 rotate-180" /> : <ShoppingCartIcon className="w-5 h-5" />}
-          {isShoppingMode ? 'Mode classique' : 'Mode Shopping'}
+          {isShoppingMode ? (
+            <ChevronRightIcon className="w-5 h-5 rotate-180" />
+          ) : (
+            <ShoppingCartIcon className="w-5 h-5" />
+          )}
+          {isShoppingMode ? "Mode classique" : "Mode Shopping"}
         </button>
       </div>
 
       {isShoppingMode && (
         <div className="w-full h-3 bg-gray-100 rounded-full mb-8 overflow-hidden border border-gray-50">
-          <div className="h-full bg-[#FF6B35] transition-all duration-500 ease-out" style={{ width: `${progress}%` }} />
+          <div
+            className="h-full bg-[#FF6B35] transition-all duration-500 ease-out"
+            style={{ width: `${progress}%` }}
+          />
         </div>
       )}
 
       <div className="bg-gray-50 rounded-2xl p-4 mb-8 flex items-center justify-between border border-gray-100 text-[#1A365D]">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-[#FF6B35]/10 rounded-xl"><TagIcon className="w-6 h-6 text-[#FF6B35]" /></div>
-          <div><p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Total estimé</p><p className="text-xl font-black">{totalBudget.toFixed(2)} €</p></div>
+          <div className="p-2 bg-[#FF6B35]/10 rounded-xl">
+            <TagIcon className="w-6 h-6 text-[#FF6B35]" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">
+              Total estimé
+            </p>
+            <p className="text-xl font-black">{totalBudget.toFixed(2)} €</p>
+          </div>
         </div>
-        <div className="text-right"><p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Dans le panier</p><p className="text-lg font-bold text-[#FF6B35]">{checkedTotal.toFixed(2)} €</p></div>
+        <div className="text-right">
+          <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">
+            Dans le panier
+          </p>
+          <p className="text-lg font-bold text-[#FF6B35]">
+            {checkedTotal.toFixed(2)} €
+          </p>
+        </div>
       </div>
 
+      {isLoadingLoyaltyCards && relevantStoreIds.length > 0 && (
+        <div className="p-4 text-center text-gray-500">
+          Chargement des cartes de fidélité pertinentes...
+        </div>
+      )}
+
+      {!isLoadingLoyaltyCards &&
+        relevantLoyaltyCards &&
+        relevantLoyaltyCards.length > 0 && (
+          <div className="bg-gray-50 rounded-2xl p-4 mb-8 border border-gray-100 text-[#1A365D]">
+            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest px-2 mb-4">
+              Cartes de fidélité pertinentes
+            </h3>
+            <div className="space-y-2">
+              {relevantLoyaltyCards.map((card) => (
+                <Link
+                  key={card.id}
+                  href={`/loyalty-cards/${card.id}`}
+                  className="block"
+                >
+                  <div className="flex items-center gap-2 p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                    <span className="text-sm font-semibold">
+                      {getStoreName(card.storeId)}:
+                    </span>
+                    <span className="text-sm text-gray-600">
+                      {card.cardData}
+                    </span>
+                    <ChevronRightIcon className="w-4 h-4 ml-auto text-gray-400" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
       <div className="space-y-12 text-[#1A365D]">
-        {items.length === 0 ? <div className="text-center py-12 opacity-40 italic">Votre liste est vide. Ajoutez un article ! 🚀</div> : (
+        {items.length === 0 ? (
+          <div className="text-center py-12 opacity-40 italic">
+            Votre liste est vide. Ajoutez un article ! 🚀
+          </div>
+        ) : (
           todoGroups.map((storeGroup) => (
             <div key={storeGroup.id} className="space-y-8">
               <div className="flex items-center gap-3 px-2">
@@ -249,39 +417,112 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId, storeId, ref
               </div>
 
               <div className="space-y-8 pl-4 border-l-2 border-gray-100">
-                {storeGroup.categories.map(([category, { items: categoryItems }]) => (
-                  <div key={category} className="space-y-3 text-left">
-                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest px-2 flex items-center gap-2">
-                      <span className="w-4 h-[2px] bg-[#FF6B35]" />
-                      {category}
-                    </h4>
-                    <div className="space-y-2">
-                      {categoryItems.map((item) => {
-                        const { name, unit } = getCatalogInfo(item);
-                        return (
-                          <div key={item.id} onClick={() => toggleCheck(item.id, item.is_checked)} className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer group/item ${isShoppingMode ? 'p-5 sm:p-6 bg-white border-gray-100 shadow-sm hover:border-[#FF6B35]' : 'bg-white border-gray-100'}`}>
-                            <button className="flex-shrink-0">{item.is_checked ? <CheckCircleSolidIcon className="w-8 h-8 sm:w-10 sm:h-10 text-[#FF6B35]" /> : <CheckCircleIcon className="w-8 h-8 sm:w-10 sm:h-10 text-gray-200 group-hover/item:text-[#FF6B35]/30 transition-colors" />}</button>
-                            <div className="flex-1 min-w-0 flex flex-col gap-0.5 text-left">
-                              <p className={`font-bold truncate ${isShoppingMode ? 'text-xl sm:text-2xl' : 'text-sm sm:text-base'} ${item.is_checked ? 'line-through text-gray-400' : ''}`}>{name}</p>
-                              <div className="flex items-center gap-2">
-                                <div className="flex items-center gap-1 bg-gray-100/50 px-1.5 py-0.5 rounded-lg border border-gray-100" onClick={(e) => e.stopPropagation()}>
-                                  <button onClick={() => handleQuantityUpdate(item.id, item.quantity, -1)} className="p-0.5 sm:p-1 hover:bg-white rounded-md text-gray-400 transition-colors"><MinusIcon className="w-3 h-3" /></button>
-                                  <span className={`text-xs sm:text-sm font-black min-w-[16px] sm:min-w-[20px] text-center ${isShoppingMode ? 'text-base sm:text-lg' : ''}`}>{item.quantity}</span>
-                                  <button onClick={() => handleQuantityUpdate(item.id, item.quantity, 1)} className="p-0.5 sm:p-1 hover:bg-white rounded-md text-gray-400 transition-colors"><PlusIcon className="w-3 h-3" /></button>
+                {storeGroup.categories.map(
+                  ([category, { items: categoryItems }]) => (
+                    <div key={category} className="space-y-3 text-left">
+                      <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest px-2 flex items-center gap-2">
+                        <span className="w-4 h-[2px] bg-[#FF6B35]" />
+                        {category}
+                      </h4>
+                      <div className="space-y-2">
+                        {categoryItems.map((item) => {
+                          const { name, unit } = getCatalogInfo(item);
+                          return (
+                            <div
+                              key={item.id}
+                              onClick={() =>
+                                toggleCheck(item.id, item.is_checked)
+                              }
+                              className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer group/item ${isShoppingMode ? "p-5 sm:p-6 bg-white border-gray-100 shadow-sm hover:border-[#FF6B35]" : "bg-white border-gray-100"}`}
+                            >
+                              <button className="flex-shrink-0">
+                                {item.is_checked ? (
+                                  <CheckCircleSolidIcon className="w-8 h-8 sm:w-10 sm:h-10 text-[#FF6B35]" />
+                                ) : (
+                                  <CheckCircleIcon className="w-8 h-8 sm:w-10 sm:h-10 text-gray-200 group-hover/item:text-[#FF6B35]/30 transition-colors" />
+                                )}
+                              </button>
+                              <div className="flex-1 min-w-0 flex flex-col gap-0.5 text-left">
+                                <p
+                                  className={`font-bold truncate ${isShoppingMode ? "text-xl sm:text-2xl" : "text-sm sm:text-base"} ${item.is_checked ? "line-through text-gray-400" : ""}`}
+                                >
+                                  {name}
+                                </p>
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    className="flex items-center gap-1 bg-gray-100/50 px-1.5 py-0.5 rounded-lg border border-gray-100"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <button
+                                      onClick={() =>
+                                        handleQuantityUpdate(
+                                          item.id,
+                                          item.quantity,
+                                          -1,
+                                        )
+                                      }
+                                      className="p-0.5 sm:p-1 hover:bg-white rounded-md text-gray-400 transition-colors"
+                                    >
+                                      <MinusIcon className="w-3 h-3" />
+                                    </button>
+                                    <span
+                                      className={`text-xs sm:text-sm font-black min-w-[16px] sm:min-w-[20px] text-center ${isShoppingMode ? "text-base sm:text-lg" : ""}`}
+                                    >
+                                      {item.quantity}
+                                    </span>
+                                    <button
+                                      onClick={() =>
+                                        handleQuantityUpdate(
+                                          item.id,
+                                          item.quantity,
+                                          1,
+                                        )
+                                      }
+                                      className="p-0.5 sm:p-1 hover:bg-white rounded-md text-gray-400 transition-colors"
+                                    >
+                                      <PlusIcon className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openEditSheet(item);
+                                    }}
+                                    className="text-[9px] sm:text-[10px] font-black uppercase text-gray-400 tracking-wider hover:text-[#FF6B35] transition-colors"
+                                  >
+                                    {unit}
+                                  </button>
                                 </div>
-                                <button onClick={(e) => { e.stopPropagation(); openEditSheet(item); }} className="text-[9px] sm:text-[10px] font-black uppercase text-gray-400 tracking-wider hover:text-[#FF6B35] transition-colors">{unit}</button>
+                              </div>
+                              <div
+                                className="flex items-center gap-2 sm:gap-4"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {!isShoppingMode && (
+                                  <button
+                                    onClick={() => handleDeleteItem(item.id)}
+                                    className="p-1.5 sm:p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-100 sm:opacity-0 sm:group-hover/item:opacity-100"
+                                  >
+                                    <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                                  </button>
+                                )}
+                                <div
+                                  onClick={() => openEditSheet(item)}
+                                  className={`text-base sm:text-xl font-bold whitespace-nowrap ${item.is_checked ? "text-gray-300" : "text-[#FF6B35] bg-[#FF6B35]/5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg border border-[#FF6B35]/10"}`}
+                                >
+                                  {(
+                                    Number(item.price) * (item.quantity || 1)
+                                  ).toFixed(2)}{" "}
+                                  €
+                                </div>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 sm:gap-4" onClick={(e) => e.stopPropagation()}>
-                              {!isShoppingMode && <button onClick={() => handleDeleteItem(item.id)} className="p-1.5 sm:p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-100 sm:opacity-0 sm:group-hover/item:opacity-100"><TrashIcon className="w-4 h-4 sm:w-5 sm:h-5" /></button>}
-                              <div onClick={() => openEditSheet(item)} className={`text-base sm:text-xl font-bold whitespace-nowrap ${item.is_checked ? 'text-gray-300' : 'text-[#FF6B35] bg-[#FF6B35]/5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg border border-[#FF6B35]/10'}`}>{(Number(item.price) * (item.quantity || 1)).toFixed(2)} €</div>
-                            </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ),
+                )}
               </div>
             </div>
           ))
@@ -290,62 +531,117 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({ listId, storeId, ref
 
       {isShoppingMode && doneItems.length > 0 && (
         <div className="mt-12 pt-12 border-t border-dashed border-gray-200">
-          <h3 className="text-xs font-black text-gray-300 uppercase tracking-widest px-2 mb-4 flex items-center gap-2"><ArchiveBoxIcon className="w-4 h-4" />Déjà dans le panier ({doneItems.length})</h3>
-          <div className="space-y-2 opacity-50">{doneItems.map((item) => { const { name } = getCatalogInfo(item); return (<div key={item.id} onClick={() => toggleCheck(item.id, item.is_checked)} className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-transparent cursor-pointer"><CheckCircleSolidIcon className="w-8 h-8 text-[#FF6B35]" /><p className="flex-1 font-bold text-[#1A365D] line-through decoration-2">{name}</p></div>); })}</div>
+          <h3 className="text-xs font-black text-gray-300 uppercase tracking-widest px-2 mb-4 flex items-center gap-2">
+            <ArchiveBoxIcon className="w-4 h-4" />
+            Déjà dans le panier ({doneItems.length})
+          </h3>
+          <div className="space-y-2 opacity-50">
+            {doneItems.map((item) => {
+              const { name } = getCatalogInfo(item);
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => toggleCheck(item.id, item.is_checked)}
+                  className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-transparent cursor-pointer"
+                >
+                  <CheckCircleSolidIcon className="w-8 h-8 text-[#FF6B35]" />
+                  <p className="flex-1 font-bold text-[#1A365D] line-through decoration-2">
+                    {name}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
-      {isShoppingMode && <div className="fixed bottom-6 left-6 right-6 flex gap-4"><button onClick={() => setIsShoppingMode(false)} className="flex-1 bg-[#1A365D] text-white py-5 rounded-2xl font-black text-xl shadow-2xl hover:scale-[1.02] active:scale-95 transition-all">Terminer</button></div>}
+      {isShoppingMode && (
+        <div className="fixed bottom-6 left-6 right-6 flex gap-4">
+          <button
+            onClick={() => setIsShoppingMode(false)}
+            className="flex-1 bg-[#1A365D] text-white py-5 rounded-2xl font-black text-xl shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
+          >
+            Terminer
+          </button>
+        </div>
+      )}
 
       {/* Edit Item Sheet */}
-      <Sheet open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
-        <SheetContent side="right" className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]">
+      <Sheet
+        open={!!editingItem}
+        onOpenChange={(open) => !open && setEditingItem(null)}
+      >
+        <SheetContent
+          side="right"
+          className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]"
+        >
           <SheetHeader className="mb-10 text-left">
-            <SheetTitle className="text-3xl font-black">Modifier l'article</SheetTitle>
+            <SheetTitle className="text-3xl font-black">
+              Modifier l&apos;article
+            </SheetTitle>
             <SheetDescription className="text-base text-gray-500 mt-2">
               {editingItem && getCatalogInfo(editingItem).name}
             </SheetDescription>
           </SheetHeader>
-          
+
           <form onSubmit={handleUpdateItem} className="space-y-8">
             <div className="space-y-2">
-              <Label htmlFor="item-price" className="text-xs font-black text-gray-400 uppercase tracking-widest">Prix unitaire (€)</Label>
-              <Input 
-                id="item-price" 
-                type="number" 
+              <Label
+                htmlFor="item-price"
+                className="text-xs font-black text-gray-400 uppercase tracking-widest"
+              >
+                Prix unitaire (€)
+              </Label>
+              <Input
+                id="item-price"
+                type="number"
                 step="0.01"
-                value={editPrice} 
-                onChange={(e) => setEditPrice(e.target.value)} 
+                value={editPrice}
+                onChange={(e) => setEditPrice(e.target.value)}
                 className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="item-unit" className="text-xs font-black text-gray-400 uppercase tracking-widest">Unité</Label>
-              <Input 
-                id="item-unit" 
-                value={editUnit} 
-                onChange={(e) => setEditUnit(e.target.value)} 
+              <Label
+                htmlFor="item-unit"
+                className="text-xs font-black text-gray-400 uppercase tracking-widest"
+              >
+                Unité
+              </Label>
+              <Input
+                id="item-unit"
+                value={editUnit}
+                onChange={(e) => setEditUnit(e.target.value)}
                 className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="item-barcode" className="text-xs font-black text-gray-400 uppercase tracking-widest">Code-barres</Label>
-              <Input 
-                id="item-barcode" 
-                value={editBarcode} 
-                onChange={(e) => setEditBarcode(e.target.value)} 
+              <Label
+                htmlFor="item-barcode"
+                className="text-xs font-black text-gray-400 uppercase tracking-widest"
+              >
+                Code-barres
+              </Label>
+              <Input
+                id="item-barcode"
+                value={editBarcode}
+                onChange={(e) => setEditBarcode(e.target.value)}
                 placeholder="Scanner ou saisir..."
                 className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35] font-mono"
               />
             </div>
 
             <SheetFooter className="mt-8 pt-4 sm:justify-start">
-              <Button type="submit" disabled={isUpdating} className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl">
-                {isUpdating ? 'Mise à jour...' : 'Enregistrer'}
+              <Button
+                type="submit"
+                disabled={isUpdating}
+                className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl"
+              >
+                {isUpdating ? "Mise à jour..." : "Enregistrer"}
               </Button>
             </SheetFooter>
           </form>
