@@ -19,7 +19,7 @@ Application de gestion de liste de courses
 ## Ta mission
 Implémente l'application complète dans ton worktree selon la spec. Crée docker/compose.yml, docker/.env.template, scripts/dev-up.sh, scripts/dev-down.sh, scripts/dev-list.sh, et app_build/FEAT/.agents/skills/start_dev_stack.md ainsi que stop_dev_stack.md. Publie production_artifacts/api_contract.md dès que les interfaces sont définies.
 
-## 📜 Règles de Développement (Engineering Standards)
+Cherche le skill dans cet ordre de priorité :
 
 1. **Domain-Driven** : Le code du domaine ne doit avoir aucune dépendance vers des frameworks externes (NestJS, TypeORM, etc.).
 2. **Tests** :
