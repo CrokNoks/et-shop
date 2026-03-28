@@ -1,0 +1,303 @@
+# Docker Compose — et-shop dev environment
+# Usage: docker compose -p etshop_<PORT_WEB> --env-file <envfile> up -d
+# Each instance is isolated via project namespacing (ports, volumes, network).
+
+version: "3.8"
+
+networks:
+  default:
+    name: etshop_${FEAT:-dev_env_docker}
+    driver: bridge
+
+volumes:
+  db_data:
+    name: ${PROJECT_NAME}_db_data
+  storage_data:
+    name: ${PROJECT_NAME}_storage_data
+  inbucket_data:
+    name: ${PROJECT_NAME}_inbucket_data
+
+services:
+
+  # ─────────────────────────────────────────────
+  # WEB — Frontend (nginx placeholder)
+  # ─────────────────────────────────────────────
+  web:
+    image: nginx:alpine
+    ports:
+      - "${PORT_WEB}:80"
+    volumes:
+      - ../apps/web/public:/usr/share/nginx/html:ro
+    depends_on:
+      - api
+    labels:
+      dev.etshop.instance: "${PROJECT_NAME}"
+      dev.etshop.service: "web"
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  # API — Backend (node:20-alpine placeholder)
+  # ─────────────────────────────────────────────
+  api:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm install --if-present && node src/main.js || tail -f /dev/null"
+    ports:
+      - "${PORT_API}:3001"
+    volumes:
+      - ../apps/api:/app:ro
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/postgres
+      SUPABASE_URL: http://kong:8000
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      dev.etshop.instance: "${PROJECT_NAME}"
+      dev.etshop.service: "api"
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  # SUPABASE — PostgreSQL
+  # ─────────────────────────────────────────────
+  db:
+    image: supabase/postgres:15.6.1.143
+    ports:
+      - "${PORT_DB}:5432"
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: postgres
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ../supabase/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    labels:
+      dev.etshop.instance: "${PROJECT_NAME}"
+      dev.etshop.service: "db"
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  # SUPABASE — Kong API Gateway
+  # ─────────────────────────────────────────────
+  kong:
+    image: kong:2.8.1
+    ports:
+      - "${PORT_KONG}:8000"
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /var/lib/kong/kong.yml
+      KONG_DNS_ORDER: LAST,A,CNAME
+      KONG_PLUGINS: request-transformer,cors,key-auth,acl,basic-auth
+      KONG_NGINX_PROXY_PROXY_BUFFER_SIZE: 160k
+      KONG_NGINX_PROXY_PROXY_BUFFERS: 64 160k
+    volumes:
+      - ./kong.yml:/var/lib/kong/kong.yml:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      dev.etshop.instance: "${PROJECT_NAME}"
+      dev.etshop.service: "kong"
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  # SUPABASE — Auth (GoTrue)
+  # ─────────────────────────────────────────────
+  auth:
+    image: supabase/gotrue:v2.151.0
+    environment:
+      GOTRUE_API_HOST: "0.0.0.0"
+      GOTRUE_API_PORT: 9999
+      API_EXTERNAL_URL: http://localhost:${PORT_KONG}
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@db:5432/postgres
+      GOTRUE_SITE_URL: http://localhost:${PORT_WEB}
+      GOTRUE_URI_ALLOW_LIST: ""
+      GOTRUE_DISABLE_SIGNUP: "false"
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_EXP: 3600
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_SMTP_ADMIN_EMAIL: admin@example.com
+      GOTRUE_SMTP_HOST: inbucket
+      GOTRUE_SMTP_PORT: 2500
+      GOTRUE_SMTP_SENDER_NAME: "et-shop dev"
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      dev.etshop.instance: "${PROJECT_NAME}"
+      dev.etshop.service: "auth"
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  # SUPABASE — REST (PostgREST)
+  # ─────────────────────────────────────────────
+  rest:
+    image: postgrest/postgrest:v12.0.2
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${POSTGRES_PASSWORD}@db:5432/postgres
+      PGRST_DB_SCHEMAS: public,storage,graphql_public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+      PGRST_APP_SETTINGS_JWT_SECRET: ${JWT_SECRET}
+      PGRST_APP_SETTINGS_JWT_EXP: 3600
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      dev.etshop.instance: "${PROJECT_NAME}"
+      dev.etshop.service: "rest"
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  # SUPABASE — Realtime
+  # ─────────────────────────────────────────────
+  realtime:
+    image: supabase/realtime:v2.30.34
+    environment:
+      PORT: 4000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: supabase_admin
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: postgres
+      DB_AFTER_CONNECT_QUERY: "SET search_path TO _realtime"
+      DB_ENC_KEY: supabaserealtime
+      API_JWT_SECRET: ${JWT_SECRET}
+      FLY_ALLOC_ID: fly123
+      FLY_APP_NAME: realtime
+      SECRET_KEY_BASE: UpNVntn3cDxHJpq99YMc1T1AQgQpc8kfYTuRgBiYa15BLrx8etQoXz3bhZa39neqJdY2tF64pS2wBqA3gPIHaQ==
+      ERL_AFLAGS: -proto_dist inet_tcp
+      ENABLE_TAILSCALE: "false"
+      DNS_NODES: "''"
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      dev.etshop.instance: "${PROJECT_NAME}"
+      dev.etshop.service: "realtime"
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  # SUPABASE — Storage
+  # ─────────────────────────────────────────────
+  storage:
+    image: supabase/storage-api:v1.11.13
+    environment:
+      ANON_KEY: ${ANON_KEY}
+      SERVICE_KEY: ${SERVICE_ROLE_KEY}
+      POSTGREST_URL: http://rest:3000
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      DATABASE_URL: postgres://supabase_storage_admin:${POSTGRES_PASSWORD}@db:5432/postgres
+      FILE_SIZE_LIMIT: 52428800
+      STORAGE_BACKEND: file
+      FILE_STORAGE_BACKEND_PATH: /var/lib/storage
+      TENANT_ID: stub
+      REGION: stub
+      GLOBAL_S3_BUCKET: stub
+      ENABLE_IMAGE_TRANSFORMATION: "true"
+      IMGPROXY_URL: http://imgproxy:5001
+    volumes:
+      - storage_data:/var/lib/storage
+    depends_on:
+      db:
+        condition: service_healthy
+      rest:
+        condition: service_started
+    labels:
+      dev.etshop.instance: "${PROJECT_NAME}"
+      dev.etshop.service: "storage"
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  # SUPABASE — Image proxy
+  # ─────────────────────────────────────────────
+  imgproxy:
+    image: darthsim/imgproxy:v3.8.0
+    environment:
+      IMGPROXY_BIND: ":5001"
+      IMGPROXY_LOCAL_FILESYSTEM_ROOT: /
+      IMGPROXY_USE_ETAG: "true"
+      IMGPROXY_ENABLE_WEBP_DETECTION: "true"
+    volumes:
+      - storage_data:/var/lib/storage:ro
+    labels:
+      dev.etshop.instance: "${PROJECT_NAME}"
+      dev.etshop.service: "imgproxy"
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  # SUPABASE — Meta (pg-meta)
+  # ─────────────────────────────────────────────
+  meta:
+    image: supabase/postgres-meta:v0.83.2
+    environment:
+      PG_META_PORT: 8080
+      PG_META_DB_HOST: db
+      PG_META_DB_PORT: 5432
+      PG_META_DB_NAME: postgres
+      PG_META_DB_USER: supabase
+      PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      dev.etshop.instance: "${PROJECT_NAME}"
+      dev.etshop.service: "meta"
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  # SUPABASE — Studio
+  # ─────────────────────────────────────────────
+  studio:
+    image: supabase/studio:20240422-5cf8f30
+    ports:
+      - "${PORT_STUDIO}:3000"
+    environment:
+      STUDIO_PG_META_URL: http://meta:8080
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DEFAULT_ORGANIZATION_NAME: "et-shop dev"
+      DEFAULT_PROJECT_NAME: "${PROJECT_NAME}"
+      SUPABASE_URL: http://kong:8000
+      SUPABASE_PUBLIC_URL: http://localhost:${PORT_KONG}
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY}
+      LOGFLARE_API_KEY: your-super-secret-and-long-logflare-key
+      LOGFLARE_URL: http://analytics:4000
+      NEXT_PUBLIC_ENABLE_LOGS: "true"
+      NEXT_ANALYTICS_BACKEND_PROVIDER: postgres
+    depends_on:
+      db:
+        condition: service_healthy
+      meta:
+        condition: service_started
+    labels:
+      dev.etshop.instance: "${PROJECT_NAME}"
+      dev.etshop.service: "studio"
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  # SUPABASE — Inbucket (email testing)
+  # ─────────────────────────────────────────────
+  inbucket:
+    image: inbucket/inbucket:3.0.4
+    ports:
+      - "${PORT_INBUCKET}:9000"
+    volumes:
+      - inbucket_data:/storage
+    labels:
+      dev.etshop.instance: "${PROJECT_NAME}"
+      dev.etshop.service: "inbucket"
+    restart: unless-stopped

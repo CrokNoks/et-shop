@@ -1,105 +1,44 @@
-# 💰 Account V2 - Project Context
+---
+AGENT BRIEFING — FICHIER CRITIQUE, NE PAS SUPPRIMER NI MODIFIER
+---
 
-## 🎯 Vision & Objectif
+# Contexte de travail
 
-Refonte complète de l'application de gestion de budget et de comptes bancaires personnels. L'objectif est de remplacer la version actuelle en production par une base de code plus saine, robuste et maintenable, en éliminant la dette technique et les bugs de la V1.
+Tu es un agent IA travaillant dans un **worktree Git isolé**. Ce fichier fait office de
+source de vérité absolue sur ton contexte. En cas de doute, relis-le.
 
-- **Cible** : Usage personnel uniquement.
-- **Approche** : Qualité logicielle maximale pour garantir la fiabilité des données financières.
+## Ton identité
+- **Rôle** : Full-Stack Engineer
+- **Branche Git** : feature/dev_env_docker-impl
 
-## 🛠 Stack Technique
+## Tes chemins
+- **Ton répertoire de travail (worktree)** : /Users/lucas/Projects/perso/et-shop/app_build/dev_env_docker/engineer  ← tu travailles ICI
+- **Repo principal** : /Users/lucas/Projects/perso/et-shop
+- **Spec / Change Request (lecture seule)** : /Users/lucas/Projects/perso/et-shop/app_build/dev_env_docker/engineer/production_artifacts/Technical_Specification.md
+- **Contrat API (lecture seule, peut ne pas exister encore)** : /Users/lucas/Projects/perso/et-shop/production_artifacts/api_contract.md
+- **Ton répertoire de sortie** : /Users/lucas/Projects/perso/et-shop/app_build/dev_env_docker/engineer/.
+- **Manifest de coordination** : /Users/lucas/Projects/perso/et-shop/.agents/state/active.json
 
-- **Frontend** : Next.js
-- **Backend** : NestJS
-- **Base de données** : Supabase (PostgreSQL)
-- **Principes de Design** :
-  - **Clean Architecture** : Séparation stricte du Domaine, de l'Application (Use Cases) et de l'Infrastructure.
-  - **TDD (Test Driven Development)** : Aucun code métier sans test préalable.
-  - **Type Safety** : TypeScript strict.
+## Ta mission
+Implémente l'application complète dans ton worktree selon la spec. Crée docker/compose.yml, docker/.env.template, scripts/dev-up.sh, scripts/dev-down.sh, scripts/dev-list.sh, et app_build/FEAT/.agents/skills/start_dev_stack.md ainsi que stop_dev_stack.md. Publie production_artifacts/api_contract.md dès que les interfaces sont définies.
 
-## 💶 Gestion Monétaire
+## Règles ABSOLUES
+1. Tu travailles UNIQUEMENT dans `/Users/lucas/Projects/perso/et-shop/app_build/dev_env_docker/engineer`
+2. Tu ne changes JAMAIS de branche Git (`git checkout` est interdit)
+3. Tu ne modifies AUCUN fichier en dehors de `/Users/lucas/Projects/perso/et-shop/app_build/dev_env_docker/engineer`
+4. Tu lis la spec depuis le repo principal (lecture seule, ne jamais l'écraser)
+5. Tous tes commits se font sur ta branche : `feature/dev_env_docker-impl`
+6. Quand tu as terminé, tu mets à jour le manifest de coordination :
+   - Fichier : `/Users/lucas/Projects/perso/et-shop/.agents/state/active.json`
+   - Champ à mettre à jour : `worktrees.engineer.status` → `"done"`
 
-- **Format** : Toutes les valeurs monétaires sont stockées et manipulées sous forme d'**entiers** (ex: `1030` pour représenter 10,30 €).
-- **Règle** : Les calculs et le stockage se font systématiquement en centimes pour garantir une précision absolue.
+## Skill à exécuter
 
-## 📜 Règles de Développement (Engineering Standards)
+Cherche le skill dans cet ordre de priorité :
 
-1. **Domain-Driven** : Le code du domaine ne doit avoir aucune dépendance vers des frameworks externes (NestJS, TypeORM, etc.).
-2. **Tests** :
-   - Tests unitaires obligatoires pour la logique métier (Domaine & Use Cases).
-   - Tests d'intégration pour les adaptateurs d'infrastructure (Repositories, Supabase).
-3. **Validation** : Validation stricte des entrées via DTOs et utilisation de Value Objects pour les concepts métier (ex: `Amount`).
-4. **Documentation API** : Chaque route doit posséder une documentation **Swagger/OpenAPI** complète (auto-générée via le module `@nestjs/swagger`).
-5. **Validation Obligatoire** : Pour chaque modification du backend, les étapes suivantes doivent être validées avec succès :
-   - Exécution de tous les tests (`npm test`).
-   - Lancement du serveur de développement sans erreur (`npm run start:dev`).
-   - Réussite du build de production (`npm run build`).
-   - Le code est conforme au norme (`npm run lint`).
-   - Une tâche est considérée comme terminée uniquement lorsque ces quatres étapes sont validées.
-6. **Commit** : Ne jamais commit sans instruction direct. Si l'utilisateur donne l'ordre de commiter :
-   - tirer une branche de main après avoir mis main à jour SI et SEULEMENT SI on est sur la branche main
-   - donner un nom cohérent et en lien avec les modification en cours.
-   - grouper les modifications en plusieurs commit en fonction de leur impact
+1. **Local (codebase)** : `/Users/lucas/Projects/perso/et-shop/app_build/dev_env_docker/engineer/.agents/skills/generate_code.md`
+   → s'il existe, il est spécifique à ce projet et prend la priorité
+2. **Générique (orchestrateur)** : `/Users/lucas/Projects/perso/et-shop/.agents/skills/generate_code.md`
+   → fallback universel
 
-## Autres points
-
-1. Informe l'utilisateur lorsque tu as chargé correctement ce fichier et les skills du projet.
-
-## Workflow Orchestration
-
-### 1. Plan Node Default
-
-- Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
-- If something goes sideways, STOP and re-plan immediately - don't keep pushing
-- Use plan mode for verification steps, not just building
-- Write detailed specs upfront to reduce ambiguity
-
-### 2. Subagent Strategy
-
-- Use subagents liberally to keep main context window clean
-- Offload research, exploration, and parallel analysis to subagents
-- For complex problems, throw more compute at it via subagents
-- One tack per subagent for focused execution
-
-### 3. Self-Improvement Loop
-
-- After ANY correction from the user: update `tasks/lessons.md` with the pattern
-- Write rules for yourself that prevent the same mistake
-- Ruthlessly iterate on these lessons until mistake rate drops
-- Review lessons at session start for relevant project
-
-### 4. Verification Before Done
-
-- Never mark a task complete without proving it works
-- Diff behavior between main and your changes when relevant
-- Ask yourself: "Would a staff engineer approve this?"
-- Run tests, check logs, demonstrate correctness
-
-### 5. Demand Elegance (Balanced)
-
-- For non-trivial changes: pause and ask "is there a more elegant way?"
-- If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
-- Skip this for simple, obvious fixes - don't over-engineer
-- Challenge your own work before presenting it
-
-### 6. Autonomous Bug Fixing
-
-- When given a bug report: just fix it. Don't ask for hand-holding
-- Point at logs, errors, failing tests - then resolve them
-- Zero context switching required from the user
-- Go fix failing CI tests without being told how
-
-## Task Management
-
-1. **Plan First**: Write plan to `tasks/todo.md` with checkable items
-2. **Verify Plan**: Check in before starting implementation
-3. **Track Progress**: Mark items complete as you go
-4. **Explain Changes**: High-level summary at each step
-5. **Document Results**: Add review section to `tasks/todo.md`
-6. **Capture Lessons**: Update `tasks/lessons.md` after corrections
-
-## Core Principles
-
-- **Simplicity First**: Make every change as simple as possible. Impact minimal code.
-- **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
-- **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
+Lis et exécute le premier trouvé.
