@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,9 +11,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { fetchApi } from '@/lib/api';
-import { toast } from 'sonner';
-import { UserIcon, TrashIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { fetchApi } from "@/lib/api";
+import { toast } from "sonner";
+import {
+  UserIcon,
+  TrashIcon,
+  ShieldCheckIcon,
+} from "@heroicons/react/24/outline";
 
 interface InviteMemberModalProps {
   isOpen: boolean;
@@ -34,8 +38,13 @@ interface MemberWithProfile {
   };
 }
 
-export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, onClose, householdId, householdName }) => {
-  const [email, setEmail] = useState('');
+export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
+  isOpen,
+  onClose,
+  householdId,
+  householdName,
+}) => {
+  const [email, setEmail] = useState("");
   const [members, setMembers] = useState<MemberWithProfile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,7 +55,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, on
       const data = await fetchApi(`/households/${householdId}/members`);
       setMembers(data || []);
     } catch (error) {
-      console.error('Failed to fetch members:', error);
+      console.error("Failed to fetch members:", error);
     } finally {
       setIsLoading(false);
     }
@@ -65,14 +74,17 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, on
     setIsSubmitting(true);
     try {
       await fetchApi(`/households/${householdId}/members`, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({ email }),
       });
-      setEmail('');
+      setEmail("");
       toast.success("Membre ajouté avec succès !");
       fetchMembers();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Erreur lors de l'ajout du membre.";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Erreur lors de l'ajout du membre.";
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -83,11 +95,11 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, on
     if (!confirm("Voulez-vous vraiment retirer ce membre du foyer ?")) return;
     try {
       await fetchApi(`/households/${householdId}/members/${userId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
       toast.success("Membre retiré.");
       fetchMembers();
-    } catch (error) {
+    } catch {
       toast.error("Erreur lors de la suppression.");
     }
   };
@@ -118,15 +130,17 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, on
                 className="flex-1 font-bold border-gray-200"
                 required
               />
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isSubmitting}
                 className="bg-[#FF6B35] hover:bg-[#e55a2b]"
               >
                 Ajouter
               </Button>
             </div>
-            <p className="text-[10px] text-gray-400 font-medium">L&apos;utilisateur doit déjà avoir un compte Et SHop!.</p>
+            <p className="text-[10px] text-gray-400 font-medium">
+              L&apos;utilisateur doit déjà avoir un compte Et SHop!.
+            </p>
           </form>
 
           <div className="flex flex-col gap-3">
@@ -135,12 +149,19 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, on
             </label>
             <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
               {isLoading ? (
-                <p className="text-center py-4 text-sm text-gray-400 animate-pulse italic">Chargement des membres...</p>
+                <p className="text-center py-4 text-sm text-gray-400 animate-pulse italic">
+                  Chargement des membres...
+                </p>
               ) : members.length === 0 ? (
-                <p className="text-center py-4 text-sm text-gray-400 italic">Aucun membre.</p>
+                <p className="text-center py-4 text-sm text-gray-400 italic">
+                  Aucun membre.
+                </p>
               ) : (
                 members.map((member) => (
-                  <div key={member.user_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl group transition-all">
+                  <div
+                    key={member.user_id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-xl group transition-all"
+                  >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-white border border-gray-100 rounded-full flex items-center justify-center text-[#1A365D]">
                         <UserIcon className="w-5 h-5" />
@@ -148,15 +169,19 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, on
                       <div className="flex flex-col">
                         <span className="text-sm font-black flex items-center gap-1.5">
                           {member.profile?.full_name || member.profile?.email}
-                          {member.role === 'admin' && <ShieldCheckIcon className="w-4 h-4 text-[#FF6B35]" />}
+                          {member.role === "admin" && (
+                            <ShieldCheckIcon className="w-4 h-4 text-[#FF6B35]" />
+                          )}
                         </span>
                         <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
-                          {member.role === 'admin' ? 'Administrateur' : 'Membre'}
+                          {member.role === "admin"
+                            ? "Administrateur"
+                            : "Membre"}
                         </span>
                       </div>
                     </div>
-                    {member.role !== 'admin' && (
-                      <button 
+                    {member.role !== "admin" && (
+                      <button
                         onClick={() => handleRemove(member.user_id)}
                         className="p-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
                       >
@@ -171,7 +196,13 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, on
         </div>
 
         <DialogFooter className="pt-4 border-t border-gray-50">
-          <Button onClick={onClose} variant="ghost" className="w-full font-bold">Fermer</Button>
+          <Button
+            onClick={onClose}
+            variant="ghost"
+            className="w-full font-bold"
+          >
+            Fermer
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

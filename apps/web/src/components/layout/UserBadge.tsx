@@ -1,9 +1,9 @@
 "use client";
 
-import React from 'react';
-import { ArrowLeftOnRectangleIcon } from '@heroicons/react/24/outline';
-import { useSupabase } from '@/hooks/useSupabase';
-import { useRouter } from 'next/navigation';
+import React from "react";
+import { ArrowLeftOnRectangleIcon } from "@heroicons/react/24/outline";
+import { useSupabase } from "@/hooks/useSupabase";
+import { useRouter } from "next/navigation";
 
 interface UserBadgeProps {
   initials: string;
@@ -11,14 +11,18 @@ interface UserBadgeProps {
   plan: string;
 }
 
-export const UserBadge: React.FC<UserBadgeProps> = ({ initials, name, plan }) => {
+export const UserBadge: React.FC<UserBadgeProps> = ({
+  initials,
+  name,
+  plan,
+}) => {
   const supabase = useSupabase();
   const router = useRouter();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    localStorage.removeItem('active_household_id');
-    router.push('/login');
+    localStorage.removeItem("active_household_id");
+    router.push("/login");
     router.refresh();
   };
 
@@ -30,10 +34,12 @@ export const UserBadge: React.FC<UserBadgeProps> = ({ initials, name, plan }) =>
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-[#1A365D] truncate">{name}</p>
-          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{plan}</p>
+          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+            {plan}
+          </p>
         </div>
       </div>
-      <button 
+      <button
         onClick={handleLogout}
         className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
         title="Se déconnecter"

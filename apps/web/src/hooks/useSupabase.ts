@@ -1,5 +1,5 @@
-import { createBrowserClient } from '@supabase/ssr';
-import { useMemo } from 'react';
+import { createBrowserClient } from "@supabase/ssr";
+import { useMemo } from "react";
 
 export const useSupabase = () => {
   const supabase = useMemo(
@@ -9,11 +9,11 @@ export const useSupabase = () => {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
           cookieOptions: {
-            name: '__session',
+            name: "__session",
           },
-        }
+        },
       ),
-    []
+    [],
   );
 
   return supabase;

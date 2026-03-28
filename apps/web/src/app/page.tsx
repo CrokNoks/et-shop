@@ -1,61 +1,71 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { HopInput } from "@/components/shopping/HopInput";
 import { ShoppingList } from "@/components/shopping/ShoppingList";
 import { ListHeader } from "@/components/shopping/ListHeader";
-import { fetchApi } from '@/lib/api';
-import { useRouter } from 'next/navigation';
+import { fetchApi } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { ShoppingList as ShoppingListType } from "@/types";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default function Home() {
   const [activeListId, setActiveListId] = useState<string | null>(null);
-  const [activeListName, setActiveListName] = useState('Chargement...');
+  const [activeListName, setActiveListName] = useState("Chargement...");
   const [activeStoreId, setActiveStoreId] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const router = useRouter();
 
   const handleItemAdded = () => {
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   const loadInitialList = useCallback(async () => {
-    const householdId = typeof window !== 'undefined' ? localStorage.getItem('active_household_id') : null;
+    const householdId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("active_household_id")
+        : null;
     if (!householdId) {
-      router.push('/household/setup');
+      router.push("/household/setup");
       return;
     }
 
     try {
-      const lists = await fetchApi('/shopping-lists');
+      const lists = await fetchApi("/shopping-lists");
       if (lists && lists.length > 0) {
-        const currentActive = lists.find((l: any) => l.id === activeListId) || lists[0];
+        const currentActive =
+          lists.find((l: ShoppingListType) => l.id === activeListId) ||
+          lists[0];
         setActiveListId(currentActive.id);
         setActiveListName(currentActive.name);
         setActiveStoreId(currentActive.store_id || null);
       } else {
         setActiveListId(null);
-        setActiveListName('Aucune liste trouvée');
+        setActiveListName("Aucune liste trouvée");
         setActiveStoreId(null);
       }
-    } catch (error: any) {
-      console.error('Failed to load lists:', error);
-      if (error.status === 401) {
-        router.push('/login');
-      } else if (error.status === 400 || error.status === 403) {
+    } catch (error: unknown) {
+      console.error("Failed to load lists:", error);
+      const err = error as { status?: number };
+      if (err.status === 401) {
+        router.push("/login");
+      } else if (err.status === 400 || err.status === 403) {
         // ID foyer manquant ou invalide, on renvoie vers le setup
-        localStorage.removeItem('active_household_id');
-        router.push('/household/setup');
+        localStorage.removeItem("active_household_id");
+        router.push("/household/setup");
       } else {
-        setActiveListName('Erreur de connexion');
+        setActiveListName("Erreur de connexion");
       }
     }
   }, [activeListId, router]);
 
   useEffect(() => {
-    loadInitialList();
+    const run = async () => {
+      await loadInitialList();
+    };
+    run();
   }, [loadInitialList]);
 
   const handleListSelect = (id: string) => {
@@ -64,18 +74,19 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-[family-name:var(--font-geist-sans)]">
-      
-      <Sidebar activeListId={activeListId || ''} onListSelect={handleListSelect} />
+      <Sidebar
+        activeListId={activeListId || ""}
+        onListSelect={handleListSelect}
+      />
 
       <main className="flex-1 p-6 pt-24 sm:p-12 flex justify-center">
         <div className="w-full max-w-2xl flex flex-col gap-10">
-          
           {activeListId ? (
-            <ListHeader 
+            <ListHeader
               id={activeListId}
-              name={activeListName} 
+              name={activeListName}
               storeId={activeStoreId}
-              isSynced={true} 
+              isSynced={true}
               onUpdate={(newName, newStoreId) => {
                 setActiveListName(newName);
                 setActiveStoreId(newStoreId || null);
@@ -96,11 +107,17 @@ export default function Home() {
               <div className="flex flex-col gap-4">
                 <HopInput listId={activeListId} onItemAdded={handleItemAdded} />
               </div>
-              <ShoppingList listId={activeListId} storeId={activeStoreId || undefined} refreshKey={refreshTrigger} />
+              <ShoppingList
+                listId={activeListId}
+                storeId={activeStoreId || undefined}
+                refreshKey={refreshTrigger}
+              />
             </>
           ) : (
             <div className="py-20 text-center text-[#1A365D]">
-              <p className="text-gray-400 italic font-medium">Veuillez sélectionner ou créer une liste pour commencer.</p>
+              <p className="text-gray-400 italic font-medium">
+                Veuillez sélectionner ou créer une liste pour commencer.
+              </p>
             </div>
           )}
 

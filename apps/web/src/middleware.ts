@@ -1,5 +1,5 @@
-import { type NextRequest, NextResponse } from 'next/server'
-import { updateSession } from './shared/lib/supabase/middleware' // Path relative to apps/web
+import { type NextRequest, NextResponse } from "next/server";
+import { updateSession } from "./shared/lib/supabase/middleware"; // Path relative to apps/web
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({
@@ -21,6 +21,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - robots.txt, sitemap.xml, etc.
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\..*).*)',
+    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\..*).*)",
   ],
 };

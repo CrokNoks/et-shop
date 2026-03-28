@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { fetchApi } from '@/lib/api';
-import { CatalogSearch } from '@/components/catalog/CatalogSearch';
-import { CatalogItemCard } from '@/components/catalog/CatalogItemCard';
-import { ProductForm } from '@/components/shopping/ProductForm';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect, useMemo } from "react";
+import { fetchApi } from "@/lib/api";
+import { CatalogSearch } from "@/components/catalog/CatalogSearch";
+import { CatalogItemCard } from "@/components/catalog/CatalogItemCard";
+import { ProductForm } from "@/components/shopping/ProductForm";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import {
   Sheet,
   SheetContent,
@@ -14,7 +14,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -22,8 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Category, CatalogItem } from '@/types';
-import { CatalogImportWizard } from '@/components/catalog/CatalogImportWizard';
+import { Category, CatalogItem } from "@/types";
+import { CatalogImportWizard } from "@/components/catalog/CatalogImportWizard";
 
 interface StoreCatalogProps {
   storeId: string;
@@ -33,7 +33,7 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
   const [items, setItems] = useState<CatalogItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Selection state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -43,9 +43,9 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
   // Form state (Edit & Create)
   const [editingItem, setEditingItem] = useState<CatalogItem | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [barcode, setBarcode] = useState('');
-  const [unit, setUnit] = useState('pcs');
+  const [name, setName] = useState("");
+  const [barcode, setBarcode] = useState("");
+  const [unit, setUnit] = useState("pcs");
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -54,12 +54,12 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
       setIsLoading(true);
       const [catalogData, categoriesData] = await Promise.all([
         fetchApi(`/shopping-lists/catalog?storeId=${storeId}`),
-        fetchApi(`/shopping-lists/categories?storeId=${storeId}`)
+        fetchApi(`/shopping-lists/categories?storeId=${storeId}`),
       ]);
       setItems(catalogData || []);
       setCategories(categoriesData || []);
     } catch (error) {
-      console.error('Failed to fetch catalog data:', error);
+      console.error("Failed to fetch catalog data:", error);
     } finally {
       setIsLoading(false);
     }
@@ -67,13 +67,14 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storeId]);
 
   const handleOpenCreate = () => {
     setEditingItem(null);
-    setName('');
-    setBarcode('');
-    setUnit('pcs');
+    setName("");
+    setBarcode("");
+    setUnit("pcs");
     setCategoryId(null);
     setIsSheetOpen(true);
   };
@@ -81,8 +82,8 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
   const openEditSheet = (item: CatalogItem) => {
     setEditingItem(item);
     setName(item.name);
-    setBarcode(item.barcode || '');
-    setUnit(item.unit || 'pcs');
+    setBarcode(item.barcode || "");
+    setUnit(item.unit || "pcs");
     setCategoryId(item.category_id || null);
     setIsSheetOpen(true);
   };
@@ -96,25 +97,25 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
         barcode: barcode || null,
         unit,
         category_id: categoryId || null,
-        store_id: storeId
+        store_id: storeId,
       };
 
       if (editingItem) {
         await fetchApi(`/shopping-lists/catalog/${editingItem.id}`, {
-          method: 'PATCH',
+          method: "PATCH",
           body: JSON.stringify(payload),
         });
         toast.success("Produit mis à jour !");
       } else {
-        await fetchApi('/shopping-lists/catalog', {
-          method: 'POST',
+        await fetchApi("/shopping-lists/catalog", {
+          method: "POST",
           body: JSON.stringify(payload),
         });
         toast.success("Produit ajouté au catalogue !");
       }
       fetchData();
       setIsSheetOpen(false);
-    } catch (error) {
+    } catch {
       toast.error("Erreur lors de l'enregistrement.");
     } finally {
       setIsSubmitting(false);
@@ -124,10 +125,10 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
   const handleDelete = async (id: string) => {
     if (!confirm("Supprimer ce produit du catalogue ?")) return;
     try {
-      await fetchApi(`/shopping-lists/catalog/${id}`, { method: 'DELETE' });
-      setItems(items.filter(item => item.id !== id));
+      await fetchApi(`/shopping-lists/catalog/${id}`, { method: "DELETE" });
+      setItems(items.filter((item) => item.id !== id));
       toast.success("Produit supprimé.");
-    } catch (error) {
+    } catch {
       toast.error("Erreur lors de la suppression.");
     }
   };
@@ -136,15 +137,15 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
     if (!bulkCategoryId || selectedIds.length === 0) return;
     setIsBulkUpdating(true);
     try {
-      await fetchApi('/shopping-lists/catalog/bulk-category', {
-        method: 'PATCH',
+      await fetchApi("/shopping-lists/catalog/bulk-category", {
+        method: "PATCH",
         body: JSON.stringify({ ids: selectedIds, category_id: bulkCategoryId }),
       });
       toast.success(`${selectedIds.length} produits mis à jour !`);
       setSelectedIds([]);
       setBulkCategoryId(null);
       fetchData();
-    } catch (error) {
+    } catch {
       toast.error("Erreur lors de la mise à jour groupée.");
     } finally {
       setIsBulkUpdating(false);
@@ -152,9 +153,10 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
   };
 
   const filteredItems = useMemo(() => {
-    return items.filter(item => 
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.barcode?.includes(searchQuery)
+    return items.filter(
+      (item) =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.barcode?.includes(searchQuery),
     );
   }, [items, searchQuery]);
 
@@ -163,11 +165,13 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
       <div className="flex flex-col md:flex-row justify-between items-start gap-6">
         <div className="flex flex-col gap-2">
           <h2 className="text-3xl font-black">Catalogue du magasin</h2>
-          <p className="text-gray-500">Gérez vos articles habituels pour ce magasin.</p>
+          <p className="text-gray-500">
+            Gérez vos articles habituels pour ce magasin.
+          </p>
         </div>
         <div className="flex gap-3">
           <CatalogImportWizard onImported={fetchData} storeId={storeId} />
-          <Button 
+          <Button
             onClick={handleOpenCreate}
             className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold rounded-2xl px-6 py-6 shadow-lg transition-all border-none"
           >
@@ -186,35 +190,53 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
               {selectedIds.length} article(s) sélectionné(s)
             </p>
             <div className="flex items-center gap-3 w-full md:w-auto">
-              <Select value={bulkCategoryId || ""} onValueChange={(val) => setBulkCategoryId(val || null)}>
+              <Select
+                value={bulkCategoryId || ""}
+                onValueChange={(val) => setBulkCategoryId(val || null)}
+              >
                 <SelectTrigger className="bg-white border-indigo-200 text-indigo-900 font-bold rounded-xl min-w-[200px]">
                   <SelectValue placeholder="Assigner à un rayon...">
-                    {bulkCategoryId && categories.find(c => c.id === bulkCategoryId) ? (
+                    {bulkCategoryId &&
+                    categories.find((c) => c.id === bulkCategoryId) ? (
                       <div className="flex items-center gap-2">
-                        <span>{categories.find(c => c.id === bulkCategoryId)?.icon}</span>
-                        <span>{categories.find(c => c.id === bulkCategoryId)?.name}</span>
+                        <span>
+                          {
+                            categories.find((c) => c.id === bulkCategoryId)
+                              ?.icon
+                          }
+                        </span>
+                        <span>
+                          {
+                            categories.find((c) => c.id === bulkCategoryId)
+                              ?.name
+                          }
+                        </span>
                       </div>
                     ) : null}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="text-[#1A365D]">
-                  {categories.map(cat => (
-                    <SelectItem key={cat.id} value={cat.id} className="font-bold">
+                  {categories.map((cat) => (
+                    <SelectItem
+                      key={cat.id}
+                      value={cat.id}
+                      className="font-bold"
+                    >
                       <span className="mr-2">{cat.icon}</span>
                       {cat.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Button 
-                onClick={handleBulkUpdateCategory} 
+              <Button
+                onClick={handleBulkUpdateCategory}
                 disabled={!bulkCategoryId || isBulkUpdating}
                 className="bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl"
               >
                 {isBulkUpdating ? "..." : "Appliquer"}
               </Button>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 onClick={() => setSelectedIds([])}
                 className="text-indigo-400 hover:text-indigo-600 font-bold"
               >
@@ -226,20 +248,26 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {isLoading ? (
-            <p className="col-span-full text-center py-20 text-gray-400 italic animate-pulse">Chargement...</p>
+            <p className="col-span-full text-center py-20 text-gray-400 italic animate-pulse">
+              Chargement...
+            </p>
           ) : filteredItems.length === 0 ? (
-            <p className="col-span-full text-center py-20 text-gray-400 italic">Aucun produit trouvé.</p>
+            <p className="col-span-full text-center py-20 text-gray-400 italic">
+              Aucun produit trouvé.
+            </p>
           ) : (
             filteredItems.map((item) => (
-              <CatalogItemCard 
-                key={item.id} 
-                item={item} 
+              <CatalogItemCard
+                key={item.id}
+                item={item}
                 onEdit={() => openEditSheet(item)}
                 onDelete={() => handleDelete(item.id)}
                 isSelected={selectedIds.includes(item.id)}
                 onSelect={(selected) => {
-                  setSelectedIds(prev => 
-                    selected ? [...prev, item.id] : prev.filter(id => id !== item.id)
+                  setSelectedIds((prev) =>
+                    selected
+                      ? [...prev, item.id]
+                      : prev.filter((id) => id !== item.id),
                   );
                 }}
               />
@@ -250,17 +278,20 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
 
       {/* Form Sheet */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent side="right" className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]">
+        <SheetContent
+          side="right"
+          className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]"
+        >
           <SheetHeader className="mb-10 text-left">
             <SheetTitle className="text-3xl font-black">
-              {editingItem ? 'Modifier le produit' : 'Nouveau produit'}
+              {editingItem ? "Modifier le produit" : "Nouveau produit"}
             </SheetTitle>
             <SheetDescription className="text-base text-gray-500 mt-2">
               Détails du produit pour votre catalogue.
             </SheetDescription>
           </SheetHeader>
-          
-          <ProductForm 
+
+          <ProductForm
             name={name}
             setName={setName}
             barcode={barcode}

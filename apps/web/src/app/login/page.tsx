@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
-import { useRouter } from 'next/navigation';
-import { Logo } from '@/components/layout/Logo';
-import { toast } from 'sonner';
+import React, { useState } from "react";
+import { createBrowserClient } from "@supabase/ssr";
+import { useRouter } from "next/navigation";
+import { Logo } from "@/components/layout/Logo";
+import { toast } from "sonner";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -18,9 +18,9 @@ export default function LoginPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookieOptions: {
-        name: '__session',
+        name: "__session",
       },
-    }
+    },
   );
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -39,18 +39,18 @@ export default function LoginPage() {
     } else {
       try {
         // Redirection intelligente : on vérifie si l'utilisateur a des foyers
-        const { fetchApi } = await import('@/lib/api');
-        const households = await fetchApi('/households/me');
-        
+        const { fetchApi } = await import("@/lib/api");
+        const households = await fetchApi("/households/me");
+
         if (households && households.length > 0) {
-          localStorage.setItem('active_household_id', households[0].id);
-          router.push('/');
+          localStorage.setItem("active_household_id", households[0].id);
+          router.push("/");
         } else {
-          router.push('/household/setup');
+          router.push("/household/setup");
         }
-      } catch (err) {
+      } catch {
         // Si le fetch échoue (ex: pas encore de foyer), on va sur setup
-        router.push('/household/setup');
+        router.push("/household/setup");
       }
       router.refresh();
     }
@@ -71,7 +71,7 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
     } else {
-      toast.success('Vérifiez vos e-mails pour confirmer votre inscription !');
+      toast.success("Vérifiez vos e-mails pour confirmer votre inscription !");
     }
     setLoading(false);
   };
@@ -86,7 +86,9 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-black text-gray-400 uppercase tracking-widest px-1">Email</label>
+            <label className="text-xs font-black text-gray-400 uppercase tracking-widest px-1">
+              Email
+            </label>
             <input
               type="email"
               value={email}
@@ -98,7 +100,9 @@ export default function LoginPage() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-black text-gray-400 uppercase tracking-widest px-1">Mot de passe</label>
+            <label className="text-xs font-black text-gray-400 uppercase tracking-widest px-1">
+              Mot de passe
+            </label>
             <input
               type="password"
               value={password}
@@ -109,21 +113,27 @@ export default function LoginPage() {
             />
           </div>
 
-          {error && <p className="text-red-500 text-sm font-bold text-center px-2">{error}</p>}
+          {error && (
+            <p className="text-red-500 text-sm font-bold text-center px-2">
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"
             disabled={loading}
             className="mt-4 w-full py-4 bg-[#FF6B35] text-white rounded-2xl font-black text-lg shadow-lg hover:bg-[#e55a2b] disabled:opacity-50 transition-all"
           >
-            {loading ? 'Connexion...' : 'Se connecter'}
+            {loading ? "Connexion..." : "Se connecter"}
           </button>
         </form>
 
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-4">
             <div className="h-[1px] flex-1 bg-gray-100" />
-            <span className="text-xs font-bold text-gray-300 uppercase">ou</span>
+            <span className="text-xs font-bold text-gray-300 uppercase">
+              ou
+            </span>
             <div className="h-[1px] flex-1 bg-gray-100" />
           </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
-import React from 'react';
-import { QrCodeIcon } from '@heroicons/react/24/outline';
+import React from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,12 +13,39 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Category, Store } from '@/types';
+import { Category, Store } from "@/types";
 
 const EMOJI_OPTIONS = [
-  '🍎', '🥦', '🥖', '🧀', '🥩', '🐟', '🍝', '🧂', '🥤', '🍷', 
-  '🍺', '🍦', '🍩', '🍫', '☕', '🧼', '🧻', '💊', '🔋', '🐶', 
-  '🐱', '🧹', '🕯️', '📦', '🛒', '🛍️', '🍓', '🍋', '🥚', '🥛'
+  "🍎",
+  "🥦",
+  "🥖",
+  "🧀",
+  "🥩",
+  "🐟",
+  "🍝",
+  "🧂",
+  "🥤",
+  "🍷",
+  "🍺",
+  "🍦",
+  "🍩",
+  "🍫",
+  "☕",
+  "🧼",
+  "🧻",
+  "💊",
+  "🔋",
+  "🐶",
+  "🐱",
+  "🧹",
+  "🕯️",
+  "📦",
+  "🛒",
+  "🛍️",
+  "🍓",
+  "🍋",
+  "🥚",
+  "🥛",
 ];
 
 interface ProductFormProps {
@@ -49,11 +76,16 @@ interface ProductFormProps {
 }
 
 export const ProductForm: React.FC<ProductFormProps> = ({
-  name, setName,
-  quantity, setQuantity,
-  unit, setUnit,
-  barcode, setBarcode,
-  categoryId, setCategoryId,
+  name,
+  setName,
+  quantity,
+  setQuantity,
+  unit,
+  setUnit,
+  barcode,
+  setBarcode,
+  categoryId,
+  setCategoryId,
   categories,
   stores,
   storeId,
@@ -62,21 +94,28 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   isSubmitting,
   submitLabel,
   showQuantity = false,
-  icon, setIcon,
-  sortOrder, setSortOrder,
-  isCategoryForm = false
+  icon,
+  setIcon,
+  sortOrder,
+  setSortOrder,
+  isCategoryForm = false,
 }) => {
   return (
     <form onSubmit={onSubmit} className="space-y-8 text-[#1A365D]">
       <div className="space-y-2 text-left">
-        <Label htmlFor="name" className="text-xs font-black text-gray-400 uppercase tracking-widest">
-          {isCategoryForm ? 'Nom du rayon' : 'Nom du produit'}
+        <Label
+          htmlFor="name"
+          className="text-xs font-black text-gray-400 uppercase tracking-widest"
+        >
+          {isCategoryForm ? "Nom du rayon" : "Nom du produit"}
         </Label>
-        <Input 
-          id="name" 
-          value={name} 
-          onChange={(e) => setName(e.target.value)} 
-          placeholder={isCategoryForm ? "Ex: Surgelés, Fruits..." : "Nom du produit"}
+        <Input
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={
+            isCategoryForm ? "Ex: Surgelés, Fruits..." : "Nom du produit"
+          }
           className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
           required
         />
@@ -84,7 +123,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
       {isCategoryForm && setIcon && (
         <div className="space-y-3 text-left">
-          <Label className="text-xs font-black text-gray-400 uppercase tracking-widest">Icône du rayon</Label>
+          <Label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+            Icône du rayon
+          </Label>
           <div className="grid grid-cols-6 gap-2 p-4 bg-gray-50 rounded-2xl border border-gray-100 max-h-[200px] overflow-y-auto">
             {EMOJI_OPTIONS.map((emoji) => (
               <button
@@ -92,9 +133,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 type="button"
                 onClick={() => setIcon(emoji)}
                 className={`text-2xl p-2 rounded-xl transition-all hover:scale-110 active:scale-95 ${
-                  icon === emoji 
-                    ? 'bg-[#FF6B35] shadow-md scale-110' 
-                    : 'hover:bg-white'
+                  icon === emoji
+                    ? "bg-[#FF6B35] shadow-md scale-110"
+                    : "hover:bg-white"
                 }`}
               >
                 {emoji}
@@ -106,12 +147,17 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
       {isCategoryForm && setSortOrder && (
         <div className="space-y-2 text-left">
-          <Label htmlFor="sortOrder" className="text-xs font-black text-gray-400 uppercase tracking-widest">Ordre de tri</Label>
-          <Input 
-            id="sortOrder" 
+          <Label
+            htmlFor="sortOrder"
+            className="text-xs font-black text-gray-400 uppercase tracking-widest"
+          >
+            Ordre de tri
+          </Label>
+          <Input
+            id="sortOrder"
             type="number"
-            value={sortOrder} 
-            onChange={(e) => setSortOrder(parseInt(e.target.value) || 0)} 
+            value={sortOrder}
+            onChange={(e) => setSortOrder(parseInt(e.target.value) || 0)}
             className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
             required
           />
@@ -120,19 +166,28 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
       {!isCategoryForm && stores && setStoreId && (
         <div className="space-y-2 text-left">
-          <Label htmlFor="store" className="text-xs font-black text-gray-400 uppercase tracking-widest">Magasin</Label>
-          <Select 
-            value={storeId || ""} 
+          <Label
+            htmlFor="store"
+            className="text-xs font-black text-gray-400 uppercase tracking-widest"
+          >
+            Magasin
+          </Label>
+          <Select
+            value={storeId || ""}
             onValueChange={(val) => setStoreId(val || null)}
           >
             <SelectTrigger className="w-full text-lg font-bold border-gray-200 focus:ring-[#FF6B35]">
               <SelectValue placeholder="Choisir un magasin...">
-                {storeId && stores.find(s => s.id === storeId)?.name}
+                {storeId && stores.find((s) => s.id === storeId)?.name}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {stores.map((store) => (
-                <SelectItem key={store.id} value={store.id} className="font-bold text-[#1A365D]">
+                <SelectItem
+                  key={store.id}
+                  value={store.id}
+                  className="font-bold text-[#1A365D]"
+                >
                   {store.name}
                 </SelectItem>
               ))}
@@ -143,28 +198,51 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
       {!isCategoryForm && (
         <div className="space-y-2 text-left">
-          <Label htmlFor="category" className="text-xs font-black text-gray-400 uppercase tracking-widest">Rayon (Catégorie)</Label>
-          <Select 
-            value={categoryId || ""} 
+          <Label
+            htmlFor="category"
+            className="text-xs font-black text-gray-400 uppercase tracking-widest"
+          >
+            Rayon (Catégorie)
+          </Label>
+          <Select
+            value={categoryId || ""}
             onValueChange={(val) => setCategoryId(val || null)}
             disabled={stores && !storeId}
           >
-            <SelectTrigger className={`w-full text-lg font-bold border-gray-200 focus:ring-[#FF6B35] ${stores && !storeId ? 'opacity-50 grayscale cursor-not-allowed bg-gray-50' : ''}`}>
-              <SelectValue placeholder={stores && !storeId ? "Sélectionnez d'abord un magasin" : "Choisir un rayon..."}>
-                {categoryId && categories.find(c => c.id === categoryId) ? (
+            <SelectTrigger
+              className={`w-full text-lg font-bold border-gray-200 focus:ring-[#FF6B35] ${stores && !storeId ? "opacity-50 grayscale cursor-not-allowed bg-gray-50" : ""}`}
+            >
+              <SelectValue
+                placeholder={
+                  stores && !storeId
+                    ? "Sélectionnez d'abord un magasin"
+                    : "Choisir un rayon..."
+                }
+              >
+                {categoryId && categories.find((c) => c.id === categoryId) ? (
                   <div className="flex items-center gap-2">
-                    <span>{categories.find(c => c.id === categoryId)?.icon}</span>
-                    <span>{categories.find(c => c.id === categoryId)?.name}</span>
+                    <span>
+                      {categories.find((c) => c.id === categoryId)?.icon}
+                    </span>
+                    <span>
+                      {categories.find((c) => c.id === categoryId)?.name}
+                    </span>
                   </div>
                 ) : null}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {categories.length === 0 ? (
-                <div className="p-4 text-center text-sm text-gray-400 italic">Aucun rayon pour ce magasin</div>
+                <div className="p-4 text-center text-sm text-gray-400 italic">
+                  Aucun rayon pour ce magasin
+                </div>
               ) : (
                 categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id} className="font-bold text-[#1A365D]">
+                  <SelectItem
+                    key={cat.id}
+                    value={cat.id}
+                    className="font-bold text-[#1A365D]"
+                  >
                     <span className="mr-2">{cat.icon}</span>
                     {cat.name}
                   </SelectItem>
@@ -174,27 +252,37 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           </Select>
         </div>
       )}
-      
+
       {!isCategoryForm && showQuantity && setQuantity && (
         <div className="grid grid-cols-2 gap-4 text-left">
           <div className="space-y-2">
-            <Label htmlFor="quantity" className="text-xs font-black text-gray-400 uppercase tracking-widest">Quantité</Label>
-            <Input 
-              id="quantity" 
-              type="number" 
-              min="1" 
-              value={quantity} 
-              onChange={(e) => setQuantity(parseInt(e.target.value) || 1)} 
+            <Label
+              htmlFor="quantity"
+              className="text-xs font-black text-gray-400 uppercase tracking-widest"
+            >
+              Quantité
+            </Label>
+            <Input
+              id="quantity"
+              type="number"
+              min="1"
+              value={quantity}
+              onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
               className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="unit" className="text-xs font-black text-gray-400 uppercase tracking-widest">Unité</Label>
-            <Input 
-              id="unit" 
-              value={unit} 
-              onChange={(e) => setUnit(e.target.value)} 
+            <Label
+              htmlFor="unit"
+              className="text-xs font-black text-gray-400 uppercase tracking-widest"
+            >
+              Unité
+            </Label>
+            <Input
+              id="unit"
+              value={unit}
+              onChange={(e) => setUnit(e.target.value)}
               placeholder="Ex: brique, pack de 6..."
               className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
             />
@@ -204,11 +292,16 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
       {!isCategoryForm && !showQuantity && (
         <div className="space-y-2 text-left">
-          <Label htmlFor="unit" className="text-xs font-black text-gray-400 uppercase tracking-widest">Unité par défaut</Label>
-          <Input 
-            id="unit" 
-            value={unit} 
-            onChange={(e) => setUnit(e.target.value)} 
+          <Label
+            htmlFor="unit"
+            className="text-xs font-black text-gray-400 uppercase tracking-widest"
+          >
+            Unité par défaut
+          </Label>
+          <Input
+            id="unit"
+            value={unit}
+            onChange={(e) => setUnit(e.target.value)}
             placeholder="Ex: brique, pack de 6..."
             className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
           />
@@ -217,11 +310,16 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
       {!isCategoryForm && (
         <div className="space-y-2 text-left">
-          <Label htmlFor="barcode" className="text-xs font-black text-gray-400 uppercase tracking-widest">Code-barres (Optionnel)</Label>
-          <Input 
-            id="barcode" 
-            value={barcode} 
-            onChange={(e) => setBarcode(e.target.value)} 
+          <Label
+            htmlFor="barcode"
+            className="text-xs font-black text-gray-400 uppercase tracking-widest"
+          >
+            Code-barres (Optionnel)
+          </Label>
+          <Input
+            id="barcode"
+            value={barcode}
+            onChange={(e) => setBarcode(e.target.value)}
             placeholder="Ex: 3017620422003"
             className="font-mono text-[#1A365D] border-gray-200 focus-visible:ring-[#FF6B35]"
           />
@@ -229,8 +327,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       )}
 
       <SheetFooter className="mt-8 pt-4 sm:justify-start">
-        <Button type="submit" disabled={isSubmitting} className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl">
-          {isSubmitting ? 'Traitement...' : submitLabel}
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl"
+        >
+          {isSubmitting ? "Traitement..." : submitLabel}
         </Button>
       </SheetFooter>
     </form>
