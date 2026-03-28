@@ -43,5 +43,5 @@ if (
   !process.env.FUNCTIONS_EMULATOR &&
   !process.env.FIREBASE_CONFIG
 ) {
-  bootstrap();
+  void bootstrap();
 }

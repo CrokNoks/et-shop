@@ -12,7 +12,6 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { StoresService } from './stores.service';
-import { CreateStoreDto } from './dto/create-store.dto';
 import { SupabaseAuthGuard } from '../supabase/supabase.guard';
 
 @Controller('stores')

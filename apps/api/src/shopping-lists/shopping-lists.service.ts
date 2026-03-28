@@ -381,7 +381,7 @@ export class ShoppingListsService {
   }
 
   async addItemByBarcode(listId: string, barcode: string) {
-    const householdId = this.getHouseholdIdOrThrow();
+    this.getHouseholdIdOrThrow();
     const client = this.supabaseService.getClient();
 
     // 0. Récupérer le store_id de la liste
