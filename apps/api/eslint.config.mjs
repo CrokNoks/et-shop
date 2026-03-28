@@ -34,7 +34,7 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-call': 'off', // Temporarily off
       '@typescript-eslint/no-unsafe-return': 'off', // Temporarily off
       '@typescript-eslint/unbound-method': 'off', // Temporarily off
-      '@typescript-eslint/no-unused-vars': ['warn', { "argsIgnorePattern": "^_" }], // Allow unused vars if prefixed with _
+      '@typescript-eslint/no-unused-vars': ['warn', { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }], // Allow unused vars/args if prefixed with _
       '@typescript-eslint/no-require-imports': 'off', // Temporarily off
       "prettier/prettier": ["error", { endOfLine: "auto" }],
     },
