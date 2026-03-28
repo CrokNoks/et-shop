@@ -316,7 +316,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
 
   if (isLoading && items.length === 0)
     return (
-      <div className="p-8 text-center text-[#1A365D] animate-pulse">
+      <div className="p-8 text-center text-[var(--color-brand)] animate-pulse">
         Chargement...
       </div>
     );
@@ -325,7 +325,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
     <div
       className={`w-full max-w-2xl transition-all duration-300 ${isShoppingMode ? "fixed inset-0 bg-white z-[100] p-6 pb-32 overflow-y-auto" : "mt-8"}`}
     >
-      <div className="flex items-center justify-between mb-6 text-[#1A365D]">
+      <div className="flex items-center justify-between mb-6 text-[var(--color-brand)]">
         <h2 className={`font-black ${isShoppingMode ? "text-3xl" : "text-xl"}`}>
           {isShoppingMode ? "🛒 En magasin" : "Ma liste active"}
         </h2>
@@ -333,8 +333,8 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
           onClick={() => setIsShoppingMode(!isShoppingMode)}
           className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold transition-all shadow-md ${
             isShoppingMode
-              ? "bg-[#1A365D] text-white"
-              : "bg-gray-100 text-[#1A365D] hover:bg-gray-200"
+              ? "bg-[var(--color-brand)] text-white"
+              : "bg-gray-100 text-[var(--color-brand)] hover:bg-gray-200"
           }`}
         >
           {isShoppingMode ? (
@@ -349,16 +349,16 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
       {isShoppingMode && (
         <div className="w-full h-3 bg-gray-100 rounded-full mb-8 overflow-hidden border border-gray-50">
           <div
-            className="h-full bg-[#FF6B35] transition-all duration-500 ease-out"
+            className="h-full bg-[var(--color-accent)] transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
       )}
 
-      <div className="bg-gray-50 rounded-2xl p-4 mb-8 flex items-center justify-between border border-gray-100 text-[#1A365D]">
+      <div className="bg-gray-50 rounded-2xl p-4 mb-8 flex items-center justify-between border border-gray-100 text-[var(--color-brand)]">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-[#FF6B35]/10 rounded-xl">
-            <TagIcon className="w-6 h-6 text-[#FF6B35]" />
+          <div className="p-2 bg-[var(--color-accent)]/10 rounded-xl">
+            <TagIcon className="w-6 h-6 text-[var(--color-accent)]" />
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">
@@ -371,7 +371,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
           <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">
             Dans le panier
           </p>
-          <p className="text-lg font-bold text-[#FF6B35]">
+          <p className="text-lg font-bold text-[var(--color-accent)]">
             {checkedTotal.toFixed(2)} €
           </p>
         </div>
@@ -385,7 +385,36 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
         />
       )}
 
-      <div className="space-y-12 text-[#1A365D]">
+      {!isLoadingLoyaltyCards &&
+        relevantLoyaltyCards &&
+        relevantLoyaltyCards.length > 0 && (
+          <div className="bg-gray-50 rounded-2xl p-4 mb-8 border border-gray-100 text-[var(--color-brand)]">
+            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest px-2 mb-4">
+              Cartes de fidélité pertinentes
+            </h3>
+            <div className="space-y-2">
+              {relevantLoyaltyCards.map((card) => (
+                <Link
+                  key={card.id}
+                  href={`/loyalty-cards/${card.id}`}
+                  className="block"
+                >
+                  <div className="flex items-center gap-2 p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                    <span className="text-sm font-semibold">
+                      {getStoreName(card.storeId)}:
+                    </span>
+                    <span className="text-sm text-gray-600">
+                      {card.cardData}
+                    </span>
+                    <ChevronRightIcon className="w-4 h-4 ml-auto text-gray-400" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+      <div className="space-y-12 text-[var(--color-brand)]">
         {items.length === 0 ? (
           <div className="text-center py-12 opacity-40 italic">
             Votre liste est vide. Ajoutez un article ! 🚀
@@ -394,7 +423,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
           todoGroups.map((storeGroup) => (
             <div key={storeGroup.id} className="space-y-8">
               <div className="flex items-center gap-3 px-2">
-                <div className="w-10 h-10 rounded-2xl bg-[#FF6B35]/10 flex items-center justify-center text-[#FF6B35]">
+                <div className="w-10 h-10 rounded-2xl bg-[var(--color-accent)]/10 flex items-center justify-center text-[var(--color-accent)]">
                   <TagIcon className="w-6 h-6" />
                 </div>
                 <h3 className="text-2xl font-black flex-1">{storeGroup.name}</h3>
@@ -414,7 +443,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                   ([category, { items: categoryItems }]) => (
                     <div key={category} className="space-y-3 text-left">
                       <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest px-2 flex items-center gap-2">
-                        <span className="w-4 h-[2px] bg-[#FF6B35]" />
+                        <span className="w-4 h-[2px] bg-[var(--color-accent)]" />
                         {category}
                       </h4>
                       <div className="space-y-2">
@@ -426,13 +455,13 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                               onClick={() =>
                                 toggleCheck(item.id, item.is_checked)
                               }
-                              className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer group/item ${isShoppingMode ? "p-5 sm:p-6 bg-white border-gray-100 shadow-sm hover:border-[#FF6B35]" : "bg-white border-gray-100"}`}
+                              className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer group/item ${isShoppingMode ? "p-5 sm:p-6 bg-white border-gray-100 shadow-sm hover:border-[var(--color-accent)]" : "bg-white border-gray-100"}`}
                             >
                               <button className="flex-shrink-0">
                                 {item.is_checked ? (
-                                  <CheckCircleSolidIcon className="w-8 h-8 sm:w-10 sm:h-10 text-[#FF6B35]" />
+                                  <CheckCircleSolidIcon className="w-8 h-8 sm:w-10 sm:h-10 text-[var(--color-accent)]" />
                                 ) : (
-                                  <CheckCircleIcon className="w-8 h-8 sm:w-10 sm:h-10 text-gray-200 group-hover/item:text-[#FF6B35]/30 transition-colors" />
+                                  <CheckCircleIcon className="w-8 h-8 sm:w-10 sm:h-10 text-gray-200 group-hover/item:text-[var(--color-accent)]/30 transition-colors" />
                                 )}
                               </button>
                               <div className="flex-1 min-w-0 flex flex-col gap-0.5 text-left">
@@ -481,7 +510,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                                       e.stopPropagation();
                                       openEditSheet(item);
                                     }}
-                                    className="text-[9px] sm:text-[10px] font-black uppercase text-gray-400 tracking-wider hover:text-[#FF6B35] transition-colors"
+                                    className="text-[9px] sm:text-[10px] font-black uppercase text-gray-400 tracking-wider hover:text-[var(--color-accent)] transition-colors"
                                   >
                                     {unit}
                                   </button>
@@ -501,7 +530,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                                 )}
                                 <div
                                   onClick={() => openEditSheet(item)}
-                                  className={`text-base sm:text-xl font-bold whitespace-nowrap ${item.is_checked ? "text-gray-300" : "text-[#FF6B35] bg-[#FF6B35]/5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg border border-[#FF6B35]/10"}`}
+                                  className={`text-base sm:text-xl font-bold whitespace-nowrap ${item.is_checked ? "text-gray-300" : "text-[var(--color-accent)] bg-[var(--color-accent)]/5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg border border-[var(--color-accent)]/10"}`}
                                 >
                                   {(
                                     Number(item.price) * (item.quantity || 1)
@@ -537,8 +566,8 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                   onClick={() => toggleCheck(item.id, item.is_checked)}
                   className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-transparent cursor-pointer"
                 >
-                  <CheckCircleSolidIcon className="w-8 h-8 text-[#FF6B35]" />
-                  <p className="flex-1 font-bold text-[#1A365D] line-through decoration-2">
+                  <CheckCircleSolidIcon className="w-8 h-8 text-[var(--color-accent)]" />
+                  <p className="flex-1 font-bold text-[var(--color-brand)] line-through decoration-2">
                     {name}
                   </p>
                 </div>
@@ -552,7 +581,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
         <div className="fixed bottom-6 left-6 right-6 flex gap-4">
           <button
             onClick={() => setIsShoppingMode(false)}
-            className="flex-1 bg-[#1A365D] text-white py-5 rounded-2xl font-black text-xl shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
+            className="flex-1 bg-[var(--color-brand)] text-white py-5 rounded-2xl font-black text-xl shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
           >
             Terminer
           </button>
@@ -566,7 +595,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
       >
         <SheetContent
           side="right"
-          className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]"
+          className="w-screen sm:max-w-[450px] p-10 text-[var(--color-brand)]"
         >
           <SheetHeader className="mb-10 text-left">
             <SheetTitle className="text-3xl font-black">
@@ -591,7 +620,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                 step="0.01"
                 value={editPrice}
                 onChange={(e) => setEditPrice(e.target.value)}
-                className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
+                className="text-lg font-bold border-gray-200 focus-visible:ring-[var(--color-accent)]"
                 required
               />
             </div>
@@ -607,7 +636,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                 id="item-unit"
                 value={editUnit}
                 onChange={(e) => setEditUnit(e.target.value)}
-                className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
+                className="text-lg font-bold border-gray-200 focus-visible:ring-[var(--color-accent)]"
                 required
               />
             </div>
@@ -624,7 +653,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                 value={editBarcode}
                 onChange={(e) => setEditBarcode(e.target.value)}
                 placeholder="Scanner ou saisir..."
-                className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35] font-mono"
+                className="text-lg font-bold border-gray-200 focus-visible:ring-[var(--color-accent)] font-mono"
               />
             </div>
 
@@ -632,7 +661,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               <Button
                 type="submit"
                 disabled={isUpdating}
-                className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl"
+                className="w-full bg-[var(--color-accent)] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl"
               >
                 {isUpdating ? "Mise à jour..." : "Enregistrer"}
               </Button>
