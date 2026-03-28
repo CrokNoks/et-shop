@@ -6,6 +6,7 @@ import { SupabaseModule } from './supabase/supabase.module';
 import { ShoppingListsModule } from './shopping-lists/shopping-lists.module';
 import { HouseholdsModule } from './households/households.module';
 import { StoresModule } from './stores/stores.module';
+import { LoyaltyCardsModule } from './loyalty-cards/loyalty-cards.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { StoresModule } from './stores/stores.module';
     ShoppingListsModule,
     HouseholdsModule,
     StoresModule,
+    LoyaltyCardsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
