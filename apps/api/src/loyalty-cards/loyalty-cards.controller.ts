@@ -31,10 +31,10 @@ import { UpdateLoyaltyCardUseCase } from './application/update-loyalty-card.use-
 import { DeleteLoyaltyCardUseCase } from './application/delete-loyalty-card.use-case';
 import { LoyaltyCard } from './domain/loyalty-card.entity';
 
-// Extend Request to include user property
+// Extend Request to include user property (Supabase User object attached by SupabaseAuthGuard)
 interface AuthenticatedRequest extends Request {
   user: {
-    sub: string; // Supabase user ID
+    id: string;
     email: string;
   };
 }
@@ -67,7 +67,7 @@ export class LoyaltyCardsController {
     @Body() createLoyaltyCardDto: CreateLoyaltyCardDto,
     @Req() req: AuthenticatedRequest,
   ): Promise<LoyaltyCard> {
-    createLoyaltyCardDto.userId = req.user.sub; // Inject userId from authenticated user
+    createLoyaltyCardDto.userId = req.user.id; // Inject userId from authenticated user
     return this.createLoyaltyCardUseCase.execute(createLoyaltyCardDto);
   }
 
@@ -89,7 +89,7 @@ export class LoyaltyCardsController {
     @Req() req: AuthenticatedRequest,
     @Query('storeIds') storeIds?: string | string[],
   ): Promise<LoyaltyCard[]> {
-    const userId = req.user.sub;
+    const userId = req.user.id;
     // Split comma-separated string if provided, otherwise pass as array
     let parsedStoreIds: string[] | undefined;
     if (storeIds) {
@@ -120,7 +120,7 @@ export class LoyaltyCardsController {
     @Req() req: AuthenticatedRequest,
   ): Promise<LoyaltyCard> {
     try {
-      return await this.getLoyaltyCardByIdUseCase.execute(id, req.user.sub);
+      return await this.getLoyaltyCardByIdUseCase.execute(id, req.user.id);
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw new NotFoundException(error.message);
@@ -152,7 +152,7 @@ export class LoyaltyCardsController {
     try {
       return await this.updateLoyaltyCardUseCase.execute(
         id,
-        req.user.sub,
+        req.user.id,
         updateLoyaltyCardDto,
       );
     } catch (error) {
@@ -182,7 +182,7 @@ export class LoyaltyCardsController {
     @Req() req: AuthenticatedRequest,
   ): Promise<void> {
     try {
-      await this.deleteLoyaltyCardUseCase.execute(id, req.user.sub);
+      await this.deleteLoyaltyCardUseCase.execute(id, req.user.id);
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw new NotFoundException(error.message);

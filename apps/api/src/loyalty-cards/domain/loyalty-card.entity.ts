@@ -4,6 +4,8 @@ export interface LoyaltyCardProps {
   id: string;
   userId: string;
   storeId: string;
+  name: string;
+  description?: string;
   cardData: string;
   barcodeFormat: BarcodeFormat;
   customColor?: string;
@@ -24,6 +26,14 @@ export class LoyaltyCard {
 
   get storeId(): string {
     return this.props.storeId;
+  }
+
+  get name(): string {
+    return this.props.name;
+  }
+
+  get description(): string | undefined {
+    return this.props.description;
   }
 
   get cardData(): string {
@@ -61,10 +71,31 @@ export class LoyaltyCard {
     });
   }
 
+  toJSON() {
+    return {
+      id: this.id,
+      userId: this.userId,
+      storeId: this.storeId,
+      name: this.name,
+      description: this.description,
+      cardData: this.cardData,
+      barcodeFormat: this.barcodeFormat,
+      customColor: this.customColor,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    };
+  }
+
   update(
     props: Partial<Omit<LoyaltyCardProps, 'id' | 'userId' | 'createdAt'>>,
   ): void {
-    const { ...updatableProps } = props; // Filter out id and userId
+    // Destructure to explicitly exclude immutable fields even when bypassed with `as any`
+    const {
+      id: _id,
+      userId: _userId,
+      createdAt: _createdAt,
+      ...updatableProps
+    } = props as any;
     Object.assign(this.props, { ...updatableProps, updatedAt: new Date() });
   }
 }

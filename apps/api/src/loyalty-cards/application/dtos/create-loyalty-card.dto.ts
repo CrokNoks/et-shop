@@ -27,6 +27,16 @@ export class CreateLoyaltyCardDto {
   @IsNotEmpty()
   storeId: string;
 
+  @ApiProperty({ description: 'Display name for the loyalty card.' })
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty({ description: 'Optional description.', required: false })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
   @ApiProperty({
     description: 'The actual data of the loyalty card (e.g., card number).',
     minLength: 1,

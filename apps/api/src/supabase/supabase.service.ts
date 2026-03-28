@@ -25,9 +25,18 @@ export class SupabaseService {
       throw new Error('Server configuration error');
     }
 
-    // En développement local, nous utilisons la Service Key pour éviter les erreurs de décalage d'horloge (JWT issued at future).
-    // La sécurité est assurée par le filtrage manuel par household_id dans nos services.
-    this.supabase = createClient(supabaseUrl, supabaseKey);
+    // Injecter le JWT de l'utilisateur pour que PostgREST exécute les requêtes avec le rôle
+    // `authenticated` et que auth.uid() retourne l'identité correcte dans les triggers et politiques RLS.
+    const authHeader = (this.request.headers['authorization'] as string) ?? '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+
+    this.supabase = createClient(supabaseUrl, supabaseKey, {
+      global: {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      },
+    });
 
     return this.supabase;
   }

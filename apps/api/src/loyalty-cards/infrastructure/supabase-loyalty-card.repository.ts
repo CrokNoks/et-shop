@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { SupabaseClient } from '@supabase/supabase-js';
 import { LoyaltyCardRepository } from '../domain/loyalty-card.repository';
 import { LoyaltyCard } from '../domain/loyalty-card.entity';
 import { SupabaseService } from '../../supabase/supabase.service';
@@ -7,11 +6,7 @@ import { BarcodeFormat } from '../domain/barcode-format.enum';
 
 @Injectable()
 export class SupabaseLoyaltyCardRepository implements LoyaltyCardRepository {
-  private readonly supabase: SupabaseClient;
-
-  constructor(private readonly supabaseService: SupabaseService) {
-    this.supabase = this.supabaseService.getClient();
-  }
+  constructor(private readonly supabaseService: SupabaseService) {}
 
   private mapToEntity(data: any): LoyaltyCard | null {
     if (!data) return null;
@@ -19,8 +14,10 @@ export class SupabaseLoyaltyCardRepository implements LoyaltyCardRepository {
       {
         userId: data.user_id,
         storeId: data.store_id,
+        name: data.name ?? '',
+        description: data.description ?? undefined,
         cardData: data.card_data,
-        barcodeFormat: data.barcode_format as BarcodeFormat, // Cast to enum
+        barcodeFormat: data.barcode_format as BarcodeFormat,
         customColor: data.custom_color,
       },
       data.id,
@@ -32,6 +29,8 @@ export class SupabaseLoyaltyCardRepository implements LoyaltyCardRepository {
       id: entity.id,
       user_id: entity.userId,
       store_id: entity.storeId,
+      name: entity.name,
+      description: entity.description ?? null,
       card_data: entity.cardData,
       barcode_format: entity.barcodeFormat,
       custom_color: entity.customColor,
@@ -41,7 +40,7 @@ export class SupabaseLoyaltyCardRepository implements LoyaltyCardRepository {
   }
 
   async create(loyaltyCard: LoyaltyCard): Promise<LoyaltyCard> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.supabaseService.getClient()
       .from('loyalty_cards')
       .insert(this.mapToData(loyaltyCard))
       .select()
@@ -54,7 +53,7 @@ export class SupabaseLoyaltyCardRepository implements LoyaltyCardRepository {
   }
 
   async findById(id: string): Promise<LoyaltyCard | null> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.supabaseService.getClient()
       .from('loyalty_cards')
       .select('*')
       .eq('id', id)
@@ -71,7 +70,7 @@ export class SupabaseLoyaltyCardRepository implements LoyaltyCardRepository {
     userId: string,
     storeIds?: string[],
   ): Promise<LoyaltyCard[]> {
-    let query = this.supabase
+    let query = this.supabaseService.getClient()
       .from('loyalty_cards')
       .select('*')
       .eq('user_id', userId);
@@ -89,7 +88,7 @@ export class SupabaseLoyaltyCardRepository implements LoyaltyCardRepository {
   }
 
   async update(loyaltyCard: LoyaltyCard): Promise<LoyaltyCard> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.supabaseService.getClient()
       .from('loyalty_cards')
       .update(this.mapToData(loyaltyCard))
       .eq('id', loyaltyCard.id)
@@ -103,7 +102,7 @@ export class SupabaseLoyaltyCardRepository implements LoyaltyCardRepository {
   }
 
   async delete(id: string): Promise<void> {
-    const { error } = await this.supabase
+    const { error } = await this.supabaseService.getClient()
       .from('loyalty_cards')
       .delete()
       .eq('id', id);
