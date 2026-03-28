@@ -45,7 +45,8 @@ export class HouseholdsService {
 
     if (!user) throw new UnauthorizedException('User not found');
 
-    // 1. Créer le foyer
+    // Le trigger BEFORE INSERT (handle_new_household) définit owner_id = auth.uid()
+    // Le trigger AFTER INSERT (handle_new_household_membership) ajoute le créateur comme admin
     const { data: household, error: hError } = await client
       .from('households')
       .insert({ name })
@@ -53,15 +54,6 @@ export class HouseholdsService {
       .single();
 
     if (hError) throw hError;
-
-    // 2. Ajouter le créateur comme admin
-    const { error: mError } = await client.from('household_members').insert({
-      household_id: (household as Household).id,
-      user_id: user.id,
-      role: 'admin',
-    });
-
-    if (mError) throw mError;
 
     return household as Household;
   }

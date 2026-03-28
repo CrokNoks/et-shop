@@ -27,7 +27,9 @@ export class UpdateLoyaltyCardUseCase {
     }
 
     existingCard.update({
-      storeId: dto.storeId, // Nullish coalescing is handled by PartialType, if undefined, it keeps the old value
+      storeId: dto.storeId,
+      name: dto.name,
+      description: dto.description,
       cardData: dto.cardData,
       barcodeFormat: dto.barcodeFormat,
       customColor: dto.customColor,

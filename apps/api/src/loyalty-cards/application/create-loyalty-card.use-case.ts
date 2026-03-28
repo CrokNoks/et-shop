@@ -11,6 +11,8 @@ export class CreateLoyaltyCardUseCase {
     const loyaltyCard = LoyaltyCard.create({
       userId: dto.userId,
       storeId: dto.storeId,
+      name: dto.name,
+      description: dto.description,
       cardData: dto.cardData,
       barcodeFormat: dto.barcodeFormat,
       customColor: dto.customColor,
