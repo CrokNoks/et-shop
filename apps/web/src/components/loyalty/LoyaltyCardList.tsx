@@ -5,11 +5,13 @@
 import React from "react";
 import Link from "next/link";
 import { useLoyaltyCards } from "../../hooks/useLoyaltyCards";
+import { useStoreMap } from "../../hooks/useStores";
 import { LoyaltyCardItem } from "./LoyaltyCardItem";
 import { LoyaltyCardFrontend } from "../../types/loyalty-card";
 
 export function LoyaltyCardList() {
   const { data: loyaltyCards, isLoading, isError, error } = useLoyaltyCards();
+  const storeMap = useStoreMap();
 
   if (isLoading) {
     return (
@@ -44,7 +46,7 @@ export function LoyaltyCardList() {
   return (
     <div className="space-y-4">
       {loyaltyCards.map((card: LoyaltyCardFrontend) => (
-        <LoyaltyCardItem key={card.id} card={card} />
+        <LoyaltyCardItem key={card.id} card={card} storeName={storeMap[card.storeId]} />
       ))}
     </div>
   );

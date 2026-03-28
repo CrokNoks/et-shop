@@ -12,8 +12,11 @@ import {
   TrashIcon,
   ArchiveBoxIcon,
 } from "@heroicons/react/24/outline";
-import { useLoyaltyCards } from "../../hooks/useLoyaltyCards"; // New import for fetching relevant cards
-import { getStoreName } from "../../lib/utils"; // New import for getting store names
+import { useLoyaltyCards } from "../../hooks/useLoyaltyCards";
+import { useStoreMap } from "../../hooks/useStores";
+import { LoyaltyCardOverlay } from "../loyalty/LoyaltyCardOverlay";
+import { LoyaltyCardFrontend } from "../../types/loyalty-card";
+import { CreditCardIcon } from "@heroicons/react/24/outline";
 
 import { CheckCircleIcon as CheckCircleSolidIcon } from "@heroicons/react/24/solid";
 import {
@@ -276,8 +279,16 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
     };
   }, [items, isShoppingMode]);
 
-  const { data: relevantLoyaltyCards, isLoading: isLoadingLoyaltyCards } =
-    useLoyaltyCards(relevantStoreIds); // New hook call
+  const { data: relevantLoyaltyCards } = useLoyaltyCards(relevantStoreIds);
+  const storeMap = useStoreMap();
+  const [activeCard, setActiveCard] = useState<LoyaltyCardFrontend | null>(null);
+
+  // Map storeId → carte de fidélité pour accès rapide
+  const loyaltyCardByStore = useMemo(() => {
+    const map: Record<string, LoyaltyCardFrontend> = {};
+    relevantLoyaltyCards?.forEach((c) => { map[c.storeId] = c; });
+    return map;
+  }, [relevantLoyaltyCards]);
 
   const totalBudget = useMemo(
     () =>
@@ -366,40 +377,13 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
         </div>
       </div>
 
-      {isLoadingLoyaltyCards && relevantStoreIds.length > 0 && (
-        <div className="p-4 text-center text-gray-500">
-          Chargement des cartes de fidélité pertinentes...
-        </div>
+      {activeCard && (
+        <LoyaltyCardOverlay
+          card={activeCard}
+          storeName={storeMap[activeCard.storeId] ?? activeCard.storeId}
+          onClose={() => setActiveCard(null)}
+        />
       )}
-
-      {!isLoadingLoyaltyCards &&
-        relevantLoyaltyCards &&
-        relevantLoyaltyCards.length > 0 && (
-          <div className="bg-gray-50 rounded-2xl p-4 mb-8 border border-gray-100 text-[#1A365D]">
-            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest px-2 mb-4">
-              Cartes de fidélité pertinentes
-            </h3>
-            <div className="space-y-2">
-              {relevantLoyaltyCards.map((card) => (
-                <Link
-                  key={card.id}
-                  href={`/loyalty-cards/${card.id}`}
-                  className="block"
-                >
-                  <div className="flex items-center gap-2 p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                    <span className="text-sm font-semibold">
-                      {getStoreName(card.storeId)}:
-                    </span>
-                    <span className="text-sm text-gray-600">
-                      {card.cardData}
-                    </span>
-                    <ChevronRightIcon className="w-4 h-4 ml-auto text-gray-400" />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
 
       <div className="space-y-12 text-[#1A365D]">
         {items.length === 0 ? (
@@ -413,7 +397,16 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                 <div className="w-10 h-10 rounded-2xl bg-[#FF6B35]/10 flex items-center justify-center text-[#FF6B35]">
                   <TagIcon className="w-6 h-6" />
                 </div>
-                <h3 className="text-2xl font-black">{storeGroup.name}</h3>
+                <h3 className="text-2xl font-black flex-1">{storeGroup.name}</h3>
+                {loyaltyCardByStore[storeGroup.id] && (
+                  <button
+                    onClick={() => setActiveCard(loyaltyCardByStore[storeGroup.id])}
+                    className="p-2 rounded-2xl bg-[#FF6B35]/10 hover:bg-[#FF6B35]/20 text-[#FF6B35] transition-colors"
+                    title="Afficher la carte de fidélité"
+                  >
+                    <CreditCardIcon className="w-6 h-6" />
+                  </button>
+                )}
               </div>
 
               <div className="space-y-8 pl-4 border-l-2 border-gray-100">

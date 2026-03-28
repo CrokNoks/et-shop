@@ -8,6 +8,7 @@ import {
   TrashIcon,
   PlusIcon,
   ChevronRightIcon,
+  CreditCardIcon,
 } from "@heroicons/react/24/outline";
 import {
   Sheet,
@@ -20,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Store } from "@/types";
 import Link from "next/link";
+import { AddLoyaltyCardSheet } from "@/components/loyalty/AddLoyaltyCardSheet";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +34,16 @@ export default function StoresPage() {
   const [isStoreSheetOpen, setIsStoreSheetOpen] = useState(false);
   const [storeName, setStoreName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Loyalty card state
+  const [selectedStoreForCard, setSelectedStoreForCard] =
+    useState<Store | null>(null);
+
+  const handleOpenLoyaltyCard = (e: React.MouseEvent, store: Store) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedStoreForCard(store);
+  };
 
   const fetchData = async () => {
     try {
@@ -158,6 +170,13 @@ export default function StoresPage() {
 
                   <div className="flex items-center gap-2">
                     <button
+                      onClick={(e) => handleOpenLoyaltyCard(e, store)}
+                      className="p-3 text-gray-300 hover:text-[#FF6B35] hover:bg-orange-50 rounded-2xl transition-all"
+                      title="Carte de fidélité"
+                    >
+                      <CreditCardIcon className="w-6 h-6" />
+                    </button>
+                    <button
                       onClick={(e) => handleOpenEditStore(e, store)}
                       className="p-3 text-gray-300 hover:text-[#1A365D] hover:bg-gray-50 rounded-2xl transition-all"
                       title="Modifier le nom"
@@ -182,6 +201,16 @@ export default function StoresPage() {
             )}
           </div>
         </div>
+
+        {/* Loyalty Card Sheet */}
+        {selectedStoreForCard && (
+          <AddLoyaltyCardSheet
+            storeId={selectedStoreForCard.id}
+            storeName={selectedStoreForCard.name}
+            open={!!selectedStoreForCard}
+            onClose={() => setSelectedStoreForCard(null)}
+          />
+        )}
 
         {/* Store Form Sheet */}
         <Sheet open={isStoreSheetOpen} onOpenChange={setIsStoreSheetOpen}>

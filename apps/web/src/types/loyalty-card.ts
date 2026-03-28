@@ -1,5 +1,3 @@
-// app_build/apps/web/src/types/loyalty-card.ts
-
 export enum BarcodeFormat {
   CODE_128 = "CODE_128",
   QR_CODE = "QR_CODE",
@@ -11,9 +9,11 @@ export interface LoyaltyCardFrontend {
   id: string;
   userId: string;
   storeId: string;
+  name: string;
+  description?: string;
   cardData: string;
   barcodeFormat: BarcodeFormat;
   customColor?: string;
-  createdAt: string; // ISO date string
-  updatedAt: string; // ISO date string
+  createdAt: string;
+  updatedAt: string;
 }

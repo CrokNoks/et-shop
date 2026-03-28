@@ -11,14 +11,16 @@ import {
   ChevronLeftIcon,
   Squares2X2Icon,
   BookOpenIcon,
+  CreditCardIcon,
 } from "@heroicons/react/24/outline";
 import { Store } from "@/types";
+import { StoreLoyaltyCards } from "@/components/stores/detail/StoreLoyaltyCards";
 
 export default function StoreDetailPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
   const [store, setStore] = useState<Store | null>(null);
-  const [activeTab, setActiveTab] = useState<"rayons" | "produits">("rayons");
+  const [activeTab, setActiveTab] = useState<"rayons" | "produits" | "cartes">("rayons");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -110,14 +112,25 @@ export default function StoreDetailPage() {
               <BookOpenIcon className="w-5 h-5" />
               Produits
             </button>
+            <button
+              onClick={() => setActiveTab("cartes")}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
+                activeTab === "cartes"
+                  ? "bg-white text-[#1A365D] shadow-sm"
+                  : "text-gray-500 hover:text-[#1A365D]"
+              }`}
+            >
+              <CreditCardIcon className="w-5 h-5" />
+              Cartes
+            </button>
           </div>
 
           {/* Content */}
           <div className="animate-in fade-in duration-500">
-            {activeTab === "rayons" ? (
-              <StoreCategories storeId={store.id} />
-            ) : (
-              <StoreCatalog storeId={store.id} />
+            {activeTab === "rayons" && <StoreCategories storeId={store.id} />}
+            {activeTab === "produits" && <StoreCatalog storeId={store.id} />}
+            {activeTab === "cartes" && (
+              <StoreLoyaltyCards storeId={store.id} storeName={store.name} />
             )}
           </div>
 

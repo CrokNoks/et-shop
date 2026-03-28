@@ -10,7 +10,7 @@ import {
   useUpdateLoyaltyCard,
 } from "../../../hooks/useLoyaltyCards";
 import { LoyaltyCardDisplay } from "../../../components/loyalty/LoyaltyCardDisplay";
-import { getStoreName } from "../../../lib/utils";
+import { useStoreMap } from "../../../hooks/useStores";
 import { BarcodeFormat } from "../../../types/loyalty-card";
 import { useState } from "react"; // For edit mode
 
@@ -28,7 +28,10 @@ export default function LoyaltyCardDetailPage() {
   const deleteLoyaltyCard = useDeleteLoyaltyCard();
   const updateLoyaltyCard = useUpdateLoyaltyCard();
 
+  const storeMap = useStoreMap();
   const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState(loyaltyCard?.name || "");
+  const [editedDescription, setEditedDescription] = useState(loyaltyCard?.description || "");
   const [editedCardData, setEditedCardData] = useState(
     loyaltyCard?.cardData || "",
   );
@@ -41,6 +44,8 @@ export default function LoyaltyCardDetailPage() {
 
   React.useEffect(() => {
     if (loyaltyCard) {
+      setEditedName(loyaltyCard.name);
+      setEditedDescription(loyaltyCard.description || "");
       setEditedCardData(loyaltyCard.cardData);
       setEditedCustomColor(loyaltyCard.customColor || "");
       setEditedBarcodeFormat(loyaltyCard.barcodeFormat);
@@ -68,6 +73,8 @@ export default function LoyaltyCardDetailPage() {
       await updateLoyaltyCard.mutateAsync({
         id: cardId,
         payload: {
+          name: editedName,
+          description: editedDescription || undefined,
           cardData: editedCardData,
           customColor: editedCustomColor,
           barcodeFormat: editedBarcodeFormat,
@@ -92,14 +99,23 @@ export default function LoyaltyCardDetailPage() {
     );
   }
 
-  const storeName = getStoreName(loyaltyCard.storeId);
+  const storeName = storeMap[loyaltyCard.storeId] ?? loyaltyCard.storeId;
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="flex flex-col gap-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Détails de la Carte de Fidélité
-        </h1>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => router.push("/loyalty-cards")}
+            className="text-gray-500 hover:text-gray-800 transition-colors"
+            aria-label="Retour à la liste"
+          >
+            ←
+          </button>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Détails de la Carte de Fidélité
+          </h1>
+        </div>
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
@@ -114,6 +130,31 @@ export default function LoyaltyCardDetailPage() {
         {isEditing ? (
           // Edit Form
           <>
+            <div>
+              <label htmlFor="editedName" className="block text-sm font-medium text-gray-700">
+                Nom de la carte
+              </label>
+              <input
+                type="text"
+                id="editedName"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                value={editedName}
+                onChange={(e) => setEditedName(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="editedDescription" className="block text-sm font-medium text-gray-700">
+                Description <span className="font-normal text-gray-400">(optionnel)</span>
+              </label>
+              <input
+                type="text"
+                id="editedDescription"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                value={editedDescription}
+                onChange={(e) => setEditedDescription(e.target.value)}
+              />
+            </div>
             <div>
               <label
                 htmlFor="editedCardData"
@@ -186,6 +227,14 @@ export default function LoyaltyCardDetailPage() {
         ) : (
           // View Mode
           <>
+            <p>
+              <span className="font-semibold">Nom:</span> {loyaltyCard.name}
+            </p>
+            {loyaltyCard.description && (
+              <p>
+                <span className="font-semibold">Description:</span> {loyaltyCard.description}
+              </p>
+            )}
             <p>
               <span className="font-semibold">Magasin:</span> {storeName}
             </p>
