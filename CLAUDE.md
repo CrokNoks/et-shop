@@ -1,21 +1,23 @@
 # 💰 Et Shop - Project Context
 
-## 🎯 Vision & Objectif
+# Contexte de travail
 
 Application de gestion de liste de courses
 
-- **Cible** : Usage personnel uniquement.
-- **Approche** : Qualité logicielle maximale pour garantir la fiabilité des données financières.
+## Ton identité
+- **Rôle** : Full-Stack Engineer
+- **Branche Git** : feature/dev_env_docker-impl
 
-## 🛠 Stack Technique
+## Tes chemins
+- **Ton répertoire de travail (worktree)** : /Users/lucas/Projects/perso/et-shop/app_build/dev_env_docker/engineer  ← tu travailles ICI
+- **Repo principal** : /Users/lucas/Projects/perso/et-shop
+- **Spec / Change Request (lecture seule)** : /Users/lucas/Projects/perso/et-shop/app_build/dev_env_docker/engineer/production_artifacts/Technical_Specification.md
+- **Contrat API (lecture seule, peut ne pas exister encore)** : /Users/lucas/Projects/perso/et-shop/production_artifacts/api_contract.md
+- **Ton répertoire de sortie** : /Users/lucas/Projects/perso/et-shop/app_build/dev_env_docker/engineer/.
+- **Manifest de coordination** : /Users/lucas/Projects/perso/et-shop/.agents/state/active.json
 
-- **Frontend** : Next.js
-- **Backend** : NestJS
-- **Base de données** : Supabase (PostgreSQL)
-- **Principes de Design** :
-  - **Clean Architecture** : Séparation stricte du Domaine, de l'Application (Use Cases) et de l'Infrastructure.
-  - **TDD (Test Driven Development)** : Aucun code métier sans test préalable.
-  - **Type Safety** : TypeScript strict.
+## Ta mission
+Implémente l'application complète dans ton worktree selon la spec. Crée docker/compose.yml, docker/.env.template, scripts/dev-up.sh, scripts/dev-down.sh, scripts/dev-list.sh, et app_build/FEAT/.agents/skills/start_dev_stack.md ainsi que stop_dev_stack.md. Publie production_artifacts/api_contract.md dès que les interfaces sont définies.
 
 ## 📜 Règles de Développement (Engineering Standards)
 
