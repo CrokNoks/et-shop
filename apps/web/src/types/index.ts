@@ -41,6 +41,26 @@ export interface ShoppingList {
   store_id?: string;
 }
 
+export interface Recipe {
+  id: string;
+  name: string;
+  description?: string;
+  household_id: string;
+  created_at: string;
+  updated_at: string;
+  recipe_items?: RecipeItem[];
+}
+
+export interface RecipeItem {
+  id: string;
+  recipe_id: string;
+  catalog_item_id: string;
+  quantity: number;
+  unit?: string;
+  created_at: string;
+  items_catalog?: CatalogItem;
+}
+
 export interface ShoppingListItem {
   id: string;
   is_checked: boolean;
