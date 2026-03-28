@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
 export interface HouseholdMember {
@@ -29,7 +34,7 @@ export class HouseholdsService {
       .getClient()
       .from('households')
       .select('*, household_members!inner(*)');
-    
+
     if (error) throw error;
     return data as Household[];
   }
@@ -37,7 +42,7 @@ export class HouseholdsService {
   async create(name: string): Promise<Household> {
     const client = this.supabaseService.getClient();
     const user = this.supabaseService.getUser();
-    
+
     if (!user) throw new UnauthorizedException('User not found');
 
     // 1. Créer le foyer
@@ -50,13 +55,11 @@ export class HouseholdsService {
     if (hError) throw hError;
 
     // 2. Ajouter le créateur comme admin
-    const { error: mError } = await client
-      .from('household_members')
-      .insert({ 
-        household_id: (household as Household).id, 
-        user_id: user.id,
-        role: 'admin' 
-      });
+    const { error: mError } = await client.from('household_members').insert({
+      household_id: (household as Household).id,
+      user_id: user.id,
+      role: 'admin',
+    });
 
     if (mError) throw mError;
 
@@ -74,7 +77,10 @@ export class HouseholdsService {
     return data as HouseholdMember[];
   }
 
-  async addMember(householdId: string, email: string): Promise<{ success: boolean }> {
+  async addMember(
+    householdId: string,
+    email: string,
+  ): Promise<{ success: boolean }> {
     const client = this.supabaseService.getClient();
     const currentUser = this.supabaseService.getUser();
 
@@ -87,7 +93,9 @@ export class HouseholdsService {
       .single();
 
     if (mError || (member as HouseholdMember)?.role !== 'admin') {
-      throw new UnauthorizedException('Vous devez être administrateur pour ajouter un membre');
+      throw new UnauthorizedException(
+        'Vous devez être administrateur pour ajouter un membre',
+      );
     }
 
     // 2. Trouver l'utilisateur par son email
@@ -98,27 +106,33 @@ export class HouseholdsService {
       .single();
 
     if (pError || !profile) {
-      throw new NotFoundException('Aucun utilisateur trouvé avec cet email. Assurez-vous qu\'il est déjà inscrit sur Et SHop!');
+      throw new NotFoundException(
+        "Aucun utilisateur trouvé avec cet email. Assurez-vous qu'il est déjà inscrit sur Et SHop!",
+      );
     }
 
     // 3. Ajouter l'utilisateur au foyer
-    const { error: iError } = await client
-      .from('household_members')
-      .insert({
-        household_id: householdId,
-        user_id: (profile as { id: string }).id,
-        role: 'member'
-      });
+    const { error: iError } = await client.from('household_members').insert({
+      household_id: householdId,
+      user_id: (profile as { id: string }).id,
+      role: 'member',
+    });
 
     if (iError) {
-      if (iError.code === '23505') throw new BadRequestException('Cet utilisateur fait déjà partie du foyer');
+      if (iError.code === '23505')
+        throw new BadRequestException(
+          'Cet utilisateur fait déjà partie du foyer',
+        );
       throw iError;
     }
 
     return { success: true };
   }
 
-  async removeMember(householdId: string, userId: string): Promise<{ success: boolean }> {
+  async removeMember(
+    householdId: string,
+    userId: string,
+  ): Promise<{ success: boolean }> {
     const client = this.supabaseService.getClient();
     const currentUser = this.supabaseService.getUser();
 
@@ -131,7 +145,9 @@ export class HouseholdsService {
       .single();
 
     if (mError || (member as HouseholdMember)?.role !== 'admin') {
-      throw new UnauthorizedException('Vous devez être administrateur pour supprimer un membre');
+      throw new UnauthorizedException(
+        'Vous devez être administrateur pour supprimer un membre',
+      );
     }
 
     // 3. Supprimer le membre
