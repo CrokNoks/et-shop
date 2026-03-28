@@ -6,6 +6,7 @@ import {
   UsersIcon,
   BuildingStorefrontIcon,
 } from "@heroicons/react/24/outline";
+import { ChefHat } from "lucide-react";
 import { fetchApi } from "@/lib/api";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -149,6 +150,25 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({
               className={`font-bold ${pathname === "/stores" ? "text-[var(--color-brand)]" : ""}`}
             >
               Mes Magasins
+            </span>
+          </Link>
+          <Link
+            href="/recipes"
+            onClick={() => onClose?.()}
+            className={`flex items-center gap-3 p-3 rounded-xl transition-all group ${
+              pathname.startsWith("/recipes")
+                ? "bg-white shadow-md border-l-4 border-[var(--color-accent)]"
+                : "hover:bg-gray-50 border-l-4 border-transparent text-gray-500"
+            }`}
+          >
+            <ChefHat
+              className={`w-5 h-5 ${pathname.startsWith("/recipes") ? "text-[var(--color-accent)]" : "text-gray-400"}`}
+              strokeWidth={2}
+            />
+            <span
+              className={`font-bold ${pathname.startsWith("/recipes") ? "text-[var(--color-brand)]" : ""}`}
+            >
+              Recettes
             </span>
           </Link>
         </div>
