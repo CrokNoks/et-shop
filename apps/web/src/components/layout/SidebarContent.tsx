@@ -129,7 +129,7 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({
     <div className="flex flex-col gap-8 h-full">
       <Logo width={200} height={60} />
 
-      <div className="w-full flex flex-col gap-6 text-[#1A365D]">
+      <div className="w-full flex flex-col gap-6 text-[var(--color-brand)]">
         {/* Magasins Link - Hidden on mobile */}
         <div className="px-2 hidden sm:flex flex-col gap-2">
           <Link
@@ -137,16 +137,16 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({
             onClick={() => onClose?.()}
             className={`flex items-center gap-3 p-3 rounded-xl transition-all group ${
               pathname === "/stores"
-                ? "bg-white shadow-md border-l-4 border-[#FF6B35]"
+                ? "bg-white shadow-md border-l-4 border-[var(--color-accent)]"
                 : "hover:bg-gray-50 border-l-4 border-transparent text-gray-500"
             }`}
           >
             <BuildingStorefrontIcon
-              className={`w-5 h-5 ${pathname === "/stores" ? "text-[#FF6B35]" : "text-gray-400"}`}
+              className={`w-5 h-5 ${pathname === "/stores" ? "text-[var(--color-accent)]" : "text-gray-400"}`}
               strokeWidth={2}
             />
             <span
-              className={`font-bold ${pathname === "/stores" ? "text-[#1A365D]" : ""}`}
+              className={`font-bold ${pathname === "/stores" ? "text-[var(--color-brand)]" : ""}`}
             >
               Mes Magasins
             </span>
@@ -159,7 +159,7 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({
           </h3>
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className={`p-1 hover:bg-gray-100 rounded-lg transition-colors ${showCreateForm ? "text-gray-400" : "text-[#FF6B35]"}`}
+            className={`p-1 hover:bg-gray-100 rounded-lg transition-colors ${showCreateForm ? "text-gray-400" : "text-[var(--color-accent)]"}`}
           >
             <PlusIcon className="w-5 h-5" strokeWidth={2.5} />
           </button>
@@ -176,7 +176,7 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({
               value={newListName}
               onChange={(e) => setNewListName(e.target.value)}
               placeholder="Nom de la liste..."
-              className="w-full p-3 bg-gray-50 border border-[#FF6B35]/30 rounded-xl outline-none focus:border-[#FF6B35] text-sm font-bold text-[#1A365D]"
+              className="w-full p-3 bg-gray-50 border border-[var(--color-accent)]/30 rounded-xl outline-none focus:border-[var(--color-accent)] text-sm font-bold text-[var(--color-brand)]"
             />
           </form>
         )}
@@ -198,17 +198,17 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({
                 onClick={() => handleListClick(list.id)}
                 className={`flex items-center justify-between p-3 rounded-xl transition-all group ${
                   activeListId === list.id
-                    ? "bg-white shadow-md border-l-4 border-[#FF6B35]"
+                    ? "bg-white shadow-md border-l-4 border-[var(--color-accent)]"
                     : "hover:bg-gray-50 border-l-4 border-transparent text-gray-500"
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div
                     className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: list.color || "#1A365D" }}
+                    style={{ backgroundColor: list.color || "var(--color-brand)" }}
                   />
                   <span
-                    className={`font-bold truncate ${activeListId === list.id ? "text-[#1A365D]" : ""}`}
+                    className={`font-bold truncate ${activeListId === list.id ? "text-[var(--color-brand)]" : ""}`}
                   >
                     {list.name}
                   </span>
@@ -218,10 +218,10 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({
           )}
         </div>
 
-        <div className="mt-4 pt-0 px-4 pb-4 bg-[#1A365D]/5 rounded-2xl border border-[#1A365D]/10">
+        <div className="mt-4 pt-0 px-4 pb-4 bg-[var(--color-brand)]/5 rounded-2xl border border-[var(--color-brand)]/10">
           <div className="flex items-center gap-2 mb-2 pt-4">
-            <UsersIcon className="w-4 h-4 text-[#1A365D]" />
-            <span className="text-xs font-bold text-[#1A365D] uppercase tracking-wider">
+            <UsersIcon className="w-4 h-4 text-[var(--color-brand)]" />
+            <span className="text-xs font-bold text-[var(--color-brand)] uppercase tracking-wider">
               {householdName || "Foyer"}
             </span>
           </div>
@@ -231,7 +231,7 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({
           </p>
           <button
             onClick={() => setShowInviteModal(true)}
-            className="mt-3 w-full py-2 bg-white text-[#1A365D] text-xs font-bold rounded-lg border border-[#1A365D]/10 hover:shadow-sm transition-all"
+            className="mt-3 w-full py-2 bg-white text-[var(--color-brand)] text-xs font-bold rounded-lg border border-[var(--color-brand)]/10 hover:shadow-sm transition-all"
           >
             Inviter un membre
           </button>

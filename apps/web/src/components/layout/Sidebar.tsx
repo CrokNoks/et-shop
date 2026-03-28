@@ -29,12 +29,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Mobile Menu Trigger (Hamburger) */}
       <div className="sm:hidden fixed top-6 left-6 z-[60]">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger className="p-3 bg-[#1A365D] text-white rounded-2xl shadow-lg active:scale-95 transition-all outline-none">
+          <SheetTrigger className="p-3 bg-[var(--color-brand)] text-white rounded-2xl shadow-lg active:scale-95 transition-all outline-none">
             <Bars3Icon className="w-6 h-6" strokeWidth={2.5} />
           </SheetTrigger>
           <SheetContent
             side="left"
-            className="w-screen p-8 border-none text-[#1A365D]"
+            className="w-screen p-8 border-none text-[var(--color-brand)]"
           >
             <SidebarContent
               activeListId={activeListId}

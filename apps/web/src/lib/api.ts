@@ -1,17 +1,8 @@
-import { createBrowserClient } from "@supabase/ssr";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { env } from "@/lib/env";
 
 export async function fetchApi(path: string, options: RequestInit = {}) {
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookieOptions: {
-        name: "__session",
-      },
-    },
-  );
+  const supabase = getSupabaseBrowserClient();
 
   const {
     data: { session },
@@ -32,7 +23,7 @@ export async function fetchApi(path: string, options: RequestInit = {}) {
     }
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(`${env.API_URL}${path}`, {
     ...options,
     headers,
   });
