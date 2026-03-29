@@ -279,7 +279,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
     };
   }, [items, isShoppingMode]);
 
-  const { data: relevantLoyaltyCards } = useLoyaltyCards(relevantStoreIds);
+  const { data: relevantLoyaltyCards, isLoading: isLoadingLoyaltyCards } = useLoyaltyCards(relevantStoreIds);
   const storeMap = useStoreMap();
   const [activeCard, setActiveCard] = useState<LoyaltyCardFrontend | null>(null);
 
@@ -401,7 +401,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                 >
                   <div className="flex items-center gap-2 p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                     <span className="text-sm font-semibold">
-                      {getStoreName(card.storeId)}:
+                      {storeMap[card.storeId] ?? card.storeId}:
                     </span>
                     <span className="text-sm text-gray-600">
                       {card.cardData}
