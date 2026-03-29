@@ -280,7 +280,9 @@ export class ShoppingListsService {
 
       if (directCatalogItem) {
         const finalUnit =
-          (unit && unit !== 'pcs' ? unit : directCatalogItem.unit) || unit || 'pcs';
+          (unit && unit !== 'pcs' ? unit : directCatalogItem.unit) ||
+          unit ||
+          'pcs';
         const { data: existingListItem } = await client
           .from('shopping_list_items')
           .select('id, quantity')
@@ -521,7 +523,8 @@ export class ShoppingListsService {
       .eq('id', itemId);
 
     if (error) this.handleError(error);
-    if (count === 0) throw new NotFoundException('Shopping list item not found');
+    if (count === 0)
+      throw new NotFoundException('Shopping list item not found');
     return { success: true };
   }
 
