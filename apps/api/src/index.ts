@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 import express from 'express';
 import { onRequest } from 'firebase-functions/v2/https';
 
@@ -13,6 +14,7 @@ const createNestServer = async (expressInstance: express.Express) => {
     new ExpressAdapter(expressInstance),
   );
   app.enableCors();
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   await app.init();
 };
 
@@ -31,6 +33,7 @@ export const api = onRequest(
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   const port = process.env.PORT || 3000;
   await app.listen(port);
   console.log(`API is running on http://localhost:${port}`);
