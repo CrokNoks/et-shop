@@ -1,3 +1,5 @@
+import { randomUUID } from 'crypto';
+
 export interface PurchaseRecordProps {
   id: string;
   shoppingListItemId: string;
@@ -73,7 +75,7 @@ export class PurchaseRecord {
     id?: string,
   ): PurchaseRecord {
     return new PurchaseRecord({
-      id: id ?? require('crypto').randomUUID(),
+      id: id ?? randomUUID(),
       purchasedAt: new Date(),
       ...props,
     });

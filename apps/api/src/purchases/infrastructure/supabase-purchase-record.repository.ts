@@ -154,48 +154,60 @@ export class SupabasePurchaseRecordRepository implements PurchaseRecordRepositor
   ): Promise<PurchaseStatistics> {
     const client = this.supabaseService.getClient();
 
-    let query = client
-      .from('purchase_records')
-      .select('*')
+    // ── v_spending_by_category ──────────────────────────────────────────────
+    let categoryQuery = client
+      .from('v_spending_by_category')
+      .select('category_id, category_name, month, total_spent')
       .eq('household_id', householdId);
 
     if (from) {
-      query = query.gte('purchased_at', from.toISOString());
+      categoryQuery = categoryQuery.gte('month', from.toISOString());
     }
     if (to) {
-      query = query.lte('purchased_at', to.toISOString());
+      categoryQuery = categoryQuery.lte('month', to.toISOString());
     }
 
-    const { data, error } = await query;
+    const { data: categoryRows, error: categoryError } = await categoryQuery;
 
-    if (error) {
-      throw new Error(`Failed to fetch statistics: ${error.message}`);
+    if (categoryError) {
+      throw new Error(
+        `Failed to fetch category statistics: ${categoryError.message}`,
+      );
     }
 
-    const records = (data ?? []) as Record<string, unknown>[];
+    // ── v_top_items ──────────────────────────────────────────────────────────
+    const { data: topItemRows, error: topItemsError } = await client
+      .from('v_top_items')
+      .select(
+        'catalog_item_id, item_name, purchase_count, avg_price, total_quantity',
+      )
+      .eq('household_id', householdId)
+      .order('purchase_count', { ascending: false })
+      .limit(10);
 
-    // Aggregate stats in application layer
-    const totalSpent = records.reduce((sum, r) => {
-      return sum + ((r.price as number) ?? 0) * ((r.quantity as number) ?? 1);
-    }, 0);
-    const totalItems = records.length;
+    if (topItemsError) {
+      throw new Error(
+        `Failed to fetch top items statistics: ${topItemsError.message}`,
+      );
+    }
 
-    // By category
+    // ── Aggregate byCategory (sum across months) ─────────────────────────────
     const categoryMap = new Map<
       string,
       { categoryName: string; totalSpent: number; itemCount: number }
     >();
-    for (const r of records) {
-      const catId = (r.category_id as string) ?? 'uncategorized';
-      const catName = catId === 'uncategorized' ? 'Non catégorisé' : catId;
+    for (const row of categoryRows ?? []) {
+      const catId = (row.category_id as string) ?? 'uncategorized';
+      const catName =
+        (row.category_name as string) ??
+        (catId === 'uncategorized' ? 'Non catégorisé' : catId);
       const existing = categoryMap.get(catId) ?? {
         categoryName: catName,
         totalSpent: 0,
         itemCount: 0,
       };
-      existing.totalSpent +=
-        ((r.price as number) ?? 0) * ((r.quantity as number) ?? 1);
-      existing.itemCount += 1;
+      existing.totalSpent += (row.total_spent as number) ?? 0;
+      existing.itemCount += 1; // one row = one category-month bucket
       categoryMap.set(catId, existing);
     }
     const byCategory = Array.from(categoryMap.entries()).map(
@@ -207,46 +219,37 @@ export class SupabasePurchaseRecordRepository implements PurchaseRecordRepositor
       }),
     );
 
-    // Top items
-    const itemMap = new Map<
-      string,
-      { productName: string; purchaseCount: number; totalSpent: number }
-    >();
-    for (const r of records) {
-      const itemId = r.catalog_item_id as string;
-      const itemName = (r.product_name as string) ?? '';
-      const existing = itemMap.get(itemId) ?? {
-        productName: itemName,
-        purchaseCount: 0,
-        totalSpent: 0,
-      };
-      existing.purchaseCount += 1;
-      existing.totalSpent +=
-        ((r.price as number) ?? 0) * ((r.quantity as number) ?? 1);
-      itemMap.set(itemId, existing);
-    }
-    const topItems = Array.from(itemMap.entries())
-      .map(([catalogItemId, v]) => ({ catalogItemId, ...v }))
-      .sort((a, b) => b.purchaseCount - a.purchaseCount)
-      .slice(0, 10);
+    // ── topItems from v_top_items ────────────────────────────────────────────
+    const topItems = (topItemRows ?? []).map((row) => ({
+      catalogItemId: row.catalog_item_id as string,
+      productName: (row.item_name as string) ?? '',
+      purchaseCount: (row.purchase_count as number) ?? 0,
+      totalSpent:
+        ((row.avg_price as number) ?? 0) *
+        ((row.total_quantity as number) ?? 0),
+    }));
 
-    // By month
+    // ── byMonth (aggregate from category rows) ───────────────────────────────
     const monthMap = new Map<
       string,
       { totalSpent: number; itemCount: number }
     >();
-    for (const r of records) {
-      const date = new Date(r.purchased_at as string);
-      const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    for (const row of categoryRows ?? []) {
+      const rawMonth = row.month as string;
+      // month is a TIMESTAMPTZ from DATE_TRUNC; normalise to "YYYY-MM"
+      const month = rawMonth.slice(0, 7);
       const existing = monthMap.get(month) ?? { totalSpent: 0, itemCount: 0 };
-      existing.totalSpent +=
-        ((r.price as number) ?? 0) * ((r.quantity as number) ?? 1);
+      existing.totalSpent += (row.total_spent as number) ?? 0;
       existing.itemCount += 1;
       monthMap.set(month, existing);
     }
     const byMonth = Array.from(monthMap.entries())
       .map(([month, v]) => ({ month, ...v }))
       .sort((a, b) => a.month.localeCompare(b.month));
+
+    // ── totals ───────────────────────────────────────────────────────────────
+    const totalSpent = byCategory.reduce((sum, c) => sum + c.totalSpent, 0);
+    const totalItems = topItems.reduce((sum, i) => sum + i.purchaseCount, 0);
 
     return { totalSpent, totalItems, byCategory, topItems, byMonth };
   }
