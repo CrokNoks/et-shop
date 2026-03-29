@@ -172,29 +172,21 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
   };
 
   const startVoiceDictation = () => {
-    const SpeechRecognition =
-      (
-        window as {
-          SpeechRecognition?: new () => SpeechRecognition;
-          webkitSpeechRecognition?: new () => SpeechRecognition;
-        }
-      ).SpeechRecognition ||
-      (
-        window as {
-          SpeechRecognition?: new () => SpeechRecognition;
-          webkitSpeechRecognition?: new () => SpeechRecognition;
-        }
-      ).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as Record<string, any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SpeechRecognitionCtor: (new () => any) | undefined =
+      w["SpeechRecognition"] ?? w["webkitSpeechRecognition"];
+    if (!SpeechRecognitionCtor) {
       toast.error("Navigateur non supporté.");
       return;
     }
-    const recognition = new SpeechRecognition();
+    const recognition = new SpeechRecognitionCtor();
     recognition.lang = "fr-FR";
     recognition.start();
     setIsListening(true);
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      setInputValue(event.results[0][0].transcript);
+    recognition.onresult = (event: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => {
+      setInputValue(String(event.results[0][0].transcript));
       setIsListening(false);
     };
     recognition.onerror = () => setIsListening(false);

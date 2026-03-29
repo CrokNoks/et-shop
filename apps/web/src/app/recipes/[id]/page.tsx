@@ -55,10 +55,10 @@ export default function RecipePage({ params }: RecipePageProps) {
       await addRecipeItem(id, data);
       await invalidate();
       toast.success("Produit ajouté !");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to add recipe item:", error);
       // Debug pour Cypress
-      if (typeof window !== "undefined" && (window as any).Cypress) {
+      if (typeof window !== "undefined" && (window as unknown as Record<string, unknown>)["Cypress"]) {
         window.alert("RECIPE_ITEM_ERROR: " + JSON.stringify(error));
       }
       toast.error("Erreur lors de l'ajout du produit.");

@@ -191,11 +191,14 @@ export const StoreCategories: React.FC<StoreCategoriesProps> = ({
       skipEmptyLines: true,
       complete: async (results) => {
         const importedData = results.data
-          .map((row: Record<string, string>) => ({
-            name: row.nom || row.name || row.Nom,
-            sort_order: parseInt(row.ordre || row.sort_order || row.Ordre) || 0,
-            icon: row.icone || row.icon || row.Icone || "📦",
-          }))
+          .map((rawRow: unknown) => {
+            const row = rawRow as Record<string, string>;
+            return {
+              name: row.nom || row.name || row.Nom,
+              sort_order: parseInt(row.ordre || row.sort_order || row.Ordre) || 0,
+              icon: row.icone || row.icon || row.Icone || "📦",
+            };
+          })
           .filter((cat) => cat.name);
 
         if (importedData.length === 0) {

@@ -32,11 +32,16 @@ export const SendToListDialog: React.FC<SendToListDialogProps> = ({
 
   useEffect(() => {
     if (!open) return;
-    setIsLoading(true);
-    fetchApi("/shopping-lists")
-      .then((data) => setLists(data || []))
-      .catch(console.error)
-      .finally(() => setIsLoading(false));
+    const controller = new AbortController();
+    Promise.resolve().then(() => {
+      if (controller.signal.aborted) return;
+      setIsLoading(true);
+      fetchApi("/shopping-lists")
+        .then((data) => setLists(data || []))
+        .catch(console.error)
+        .finally(() => setIsLoading(false));
+    });
+    return () => controller.abort();
   }, [open]);
 
   const handleSend = () => {

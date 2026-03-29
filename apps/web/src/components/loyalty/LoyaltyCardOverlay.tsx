@@ -46,20 +46,24 @@ export function LoyaltyCardOverlay({ card, storeName, onClose }: LoyaltyCardOver
     // Luminosité max : demande le wake lock pour garder l'écran allumé
     let wakeLock: { release: () => void } | null = null;
     if ("wakeLock" in navigator) {
-      (navigator as any).wakeLock.request("screen").then((lock: { release: () => void }) => {
-        wakeLock = lock;
-      }).catch(() => {});
+      (navigator as Navigator & { wakeLock: { request: (type: string) => Promise<{ release: () => void }> } }).wakeLock
+        .request("screen")
+        .then((lock) => {
+          wakeLock = lock;
+        })
+        .catch(() => {});
     }
 
     // Verrouillage orientation paysage
-    if (screen.orientation && (screen.orientation as any).lock) {
-      (screen.orientation as any).lock("landscape").catch(() => {});
+    const orientation = screen.orientation as ScreenOrientation & { lock?: (orientation: string) => Promise<void>; unlock?: () => void };
+    if (orientation?.lock) {
+      orientation.lock("landscape").catch(() => {});
     }
 
     return () => {
       wakeLock?.release();
-      if (screen.orientation && (screen.orientation as any).unlock) {
-        (screen.orientation as any).unlock();
+      if (orientation?.unlock) {
+        orientation.unlock();
       }
     };
   }, []);

@@ -38,8 +38,8 @@ export const AddRecipeItemForm: React.FC<AddRecipeItemFormProps> = ({
 
   useEffect(() => {
     if (search.length < 2) {
-      setSuggestions([]);
-      return;
+      const t = setTimeout(() => setSuggestions([]), 0);
+      return () => clearTimeout(t);
     }
     const timeout = setTimeout(async () => {
       try {
