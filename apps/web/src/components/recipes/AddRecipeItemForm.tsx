@@ -63,11 +63,12 @@ export const AddRecipeItemForm: React.FC<AddRecipeItemFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedItem) return;
-    onAdd({
+    const payload = {
       catalog_item_id: selectedItem.id,
-      quantity: parseFloat(quantity) || 1,
+      quantity: Number(quantity) || 1,
       unit: unit || selectedItem.unit || "pcs",
-    });
+    };
+    onAdd(payload);
     setSearch("");
     setSelectedItem(null);
     setQuantity("1");
@@ -79,10 +80,14 @@ export const AddRecipeItemForm: React.FC<AddRecipeItemFormProps> = ({
       <div className="relative" ref={wrapperRef}>
         <input
           type="text"
+          data-cy="recipe-item-search"
           value={search}
           onChange={(e) => {
-            setSearch(e.target.value);
-            setSelectedItem(null);
+            const val = e.target.value;
+            setSearch(val);
+            if (selectedItem && val !== selectedItem.name) {
+              setSelectedItem(null);
+            }
           }}
           placeholder="Rechercher un produit du catalogue..."
           className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all"
@@ -92,6 +97,8 @@ export const AddRecipeItemForm: React.FC<AddRecipeItemFormProps> = ({
             {suggestions.map((item) => (
               <li
                 key={item.id}
+                data-cy={`recipe-item-suggestion-${item.id}`}
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleSelect(item)}
                 className="px-4 py-3 hover:bg-orange-50 cursor-pointer transition-colors"
               >
@@ -108,6 +115,7 @@ export const AddRecipeItemForm: React.FC<AddRecipeItemFormProps> = ({
       <div className="flex gap-3">
         <input
           type="number"
+          data-cy="recipe-item-quantity"
           min="0.01"
           step="0.01"
           value={quantity}
@@ -117,6 +125,7 @@ export const AddRecipeItemForm: React.FC<AddRecipeItemFormProps> = ({
         />
         <input
           type="text"
+          data-cy="recipe-item-unit"
           value={unit}
           onChange={(e) => setUnit(e.target.value)}
           placeholder="Unité (pcs, kg...)"
@@ -124,6 +133,7 @@ export const AddRecipeItemForm: React.FC<AddRecipeItemFormProps> = ({
         />
         <button
           type="submit"
+          data-cy="recipe-item-submit"
           disabled={!selectedItem || isSubmitting}
           className="px-6 py-4 bg-[#FF6B35] text-white font-bold rounded-2xl shadow hover:bg-[#e55a2b] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
         >

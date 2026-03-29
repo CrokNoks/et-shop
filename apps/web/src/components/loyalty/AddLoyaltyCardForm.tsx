@@ -3,20 +3,14 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCreateLoyaltyCard } from "../../hooks/useLoyaltyCards";
+import { useStores } from "../../hooks/useStores";
 import { BarcodeFormat } from "../../types/loyalty-card";
 import { BarcodeScanner } from "./BarcodeScanner";
-
-// Assuming you have a way to fetch stores, e.g., from a global context or another hook
-// For now, use a dummy list
-const DUMMY_STORES = [
-  { id: "store-abc", name: "Mon Supermarché" },
-  { id: "store-def", name: "Boulangerie du coin" },
-  { id: "store-ghi", name: "Pharmacie Principale" },
-];
 
 export function AddLoyaltyCardForm() {
   const router = useRouter();
   const createLoyaltyCard = useCreateLoyaltyCard();
+  const { data: stores = [] } = useStores();
 
   const [storeId, setStoreId] = useState<string>("");
   const [name, setName] = useState<string>("");
@@ -71,13 +65,14 @@ export function AddLoyaltyCardForm() {
           </label>
           <select
             id="storeId"
+            data-cy="loyalty-store"
             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
             value={storeId}
             onChange={(e) => setStoreId(e.target.value)}
             required
           >
             <option value="">Sélectionner un magasin</option>
-            {DUMMY_STORES.map((store) => (
+            {stores.map((store) => (
               <option key={store.id} value={store.id}>
                 {store.name}
               </option>
@@ -92,6 +87,7 @@ export function AddLoyaltyCardForm() {
           <input
             type="text"
             id="name"
+            data-cy="loyalty-name"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -107,6 +103,7 @@ export function AddLoyaltyCardForm() {
           <input
             type="text"
             id="description"
+            data-cy="loyalty-description"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -124,6 +121,7 @@ export function AddLoyaltyCardForm() {
           <input
             type="text"
             id="cardData"
+            data-cy="loyalty-card-data"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             value={cardData}
             onChange={(e) => setCardData(e.target.value)}
@@ -140,6 +138,7 @@ export function AddLoyaltyCardForm() {
           </label>
           <select
             id="barcodeFormat"
+            data-cy="loyalty-barcode-format"
             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
             value={barcodeFormat}
             onChange={(e) => setBarcodeFormat(e.target.value as BarcodeFormat)}
@@ -163,6 +162,7 @@ export function AddLoyaltyCardForm() {
           <input
             type="text"
             id="customColor"
+            data-cy="loyalty-color"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             value={customColor}
             onChange={(e) => setCustomColor(e.target.value)}
@@ -173,6 +173,7 @@ export function AddLoyaltyCardForm() {
         <div className="flex justify-between items-center">
           <button
             type="button"
+            data-cy="loyalty-scan"
             onClick={() => setShowScanner(true)}
             className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           >
@@ -180,6 +181,7 @@ export function AddLoyaltyCardForm() {
           </button>
           <button
             type="submit"
+            data-cy="loyalty-submit"
             className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             disabled={createLoyaltyCard.isPending}
           >
@@ -190,7 +192,7 @@ export function AddLoyaltyCardForm() {
         </div>
 
         {createLoyaltyCard.isError && (
-          <p className="text-red-500 text-sm mt-2">
+          <p data-cy="loyalty-error" className="text-red-500 text-sm mt-2">
             Erreur: {createLoyaltyCard.error?.message}
           </p>
         )}

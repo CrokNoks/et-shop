@@ -41,6 +41,7 @@ export const UserBadge: React.FC<UserBadgeProps> = ({
       </div>
       <button
         onClick={handleLogout}
+        data-cy="logout-button"
         className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
         title="Se déconnecter"
       >

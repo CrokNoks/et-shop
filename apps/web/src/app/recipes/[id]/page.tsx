@@ -55,7 +55,12 @@ export default function RecipePage({ params }: RecipePageProps) {
       await addRecipeItem(id, data);
       await invalidate();
       toast.success("Produit ajouté !");
-    } catch {
+    } catch (error: any) {
+      console.error("Failed to add recipe item:", error);
+      // Debug pour Cypress
+      if (typeof window !== "undefined" && (window as any).Cypress) {
+        window.alert("RECIPE_ITEM_ERROR: " + JSON.stringify(error));
+      }
       toast.error("Erreur lors de l'ajout du produit.");
     } finally {
       setIsAddingItem(false);

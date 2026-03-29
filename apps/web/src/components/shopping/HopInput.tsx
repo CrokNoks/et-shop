@@ -140,8 +140,10 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
       if (isSheetOpen) setIsSheetOpen(false);
       onItemAdded?.();
       inputRef.current?.focus();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to add item:", error);
+      const err = error as { message?: string };
+      toast.error(err.message || "Erreur lors de l'ajout de l'article");
     } finally {
       setIsAdding(false);
     }
@@ -217,6 +219,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
       >
         <input
           ref={inputRef}
+          data-cy="hop-input"
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
@@ -241,6 +244,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
         <div className="flex items-center gap-0.5 sm:gap-1 pr-1">
           <button
             onClick={startVoiceDictation}
+            data-cy="hop-voice"
             className={`p-1.5 sm:p-2 rounded-full transition-colors ${isListening ? "bg-[#FF6B35] text-white" : "hover:bg-gray-100 text-gray-500"}`}
             title="Dictée Vocale"
           >
@@ -248,6 +252,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
           </button>
           <button
             onClick={() => setIsBarcodeSheetOpen(true)}
+            data-cy="hop-barcode"
             className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
             title="Scanner un code-barres"
           >
@@ -261,6 +266,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
           {suggestions.map((item, index) => (
             <button
               key={index}
+              data-cy={`hop-suggestion-${index}`}
               onClick={() =>
                 handleAdd(
                   item.name,
@@ -288,6 +294,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
           ))}
           <button
             onClick={openCreateSheet}
+            data-cy="hop-create-product"
             className="w-full flex items-center gap-2 px-4 py-3 bg-gray-50 hover:bg-[#FF6B35]/10 text-[#FF6B35] text-left transition-colors font-bold"
           >
             <PlusIcon className="w-5 h-5" strokeWidth={2.5} />
@@ -376,6 +383,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
               </Label>
               <Input
                 id="scan-barcode"
+                data-cy="barcode-input"
                 value={scannedBarcode}
                 onChange={(e) => setScannedBarcode(e.target.value)}
                 placeholder="Ex: 3017620422003"
@@ -387,6 +395,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
             <SheetFooter className="mt-8 pt-4 sm:justify-start">
               <Button
                 type="submit"
+                data-cy="barcode-submit"
                 disabled={isAdding}
                 className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl"
               >

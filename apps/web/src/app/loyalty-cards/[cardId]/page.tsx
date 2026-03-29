@@ -76,7 +76,7 @@ export default function LoyaltyCardDetailPage() {
           name: editedName,
           description: editedDescription || undefined,
           cardData: editedCardData,
-          customColor: editedCustomColor,
+          customColor: editedCustomColor || undefined,
           barcodeFormat: editedBarcodeFormat,
         },
       });
@@ -107,6 +107,7 @@ export default function LoyaltyCardDetailPage() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/loyalty-cards")}
+            data-cy="loyalty-back"
             className="text-gray-500 hover:text-gray-800 transition-colors"
             aria-label="Retour à la liste"
           >
@@ -119,6 +120,7 @@ export default function LoyaltyCardDetailPage() {
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
+            data-cy="loyalty-edit"
             className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Modifier
@@ -137,6 +139,7 @@ export default function LoyaltyCardDetailPage() {
               <input
                 type="text"
                 id="editedName"
+                data-cy="loyalty-edit-name"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 value={editedName}
                 onChange={(e) => setEditedName(e.target.value)}
@@ -150,6 +153,7 @@ export default function LoyaltyCardDetailPage() {
               <input
                 type="text"
                 id="editedDescription"
+                data-cy="loyalty-edit-description"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 value={editedDescription}
                 onChange={(e) => setEditedDescription(e.target.value)}
@@ -165,6 +169,7 @@ export default function LoyaltyCardDetailPage() {
               <input
                 type="text"
                 id="editedCardData"
+                data-cy="loyalty-edit-card-data"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 value={editedCardData}
                 onChange={(e) => setEditedCardData(e.target.value)}
@@ -180,6 +185,7 @@ export default function LoyaltyCardDetailPage() {
               <input
                 type="text"
                 id="editedCustomColor"
+                data-cy="loyalty-edit-color"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 value={editedCustomColor}
                 onChange={(e) => setEditedCustomColor(e.target.value)}
@@ -195,6 +201,7 @@ export default function LoyaltyCardDetailPage() {
               </label>
               <select
                 id="editedBarcodeFormat"
+                data-cy="loyalty-edit-barcode-format"
                 className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
                 value={editedBarcodeFormat}
                 onChange={(e) =>
@@ -211,12 +218,14 @@ export default function LoyaltyCardDetailPage() {
             <div className="flex justify-end space-x-2">
               <button
                 onClick={() => setIsEditing(false)}
+                data-cy="loyalty-cancel"
                 className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
               >
                 Annuler
               </button>
               <button
                 onClick={handleUpdate}
+                data-cy="loyalty-save"
                 className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                 disabled={updateLoyaltyCard.isPending}
               >
@@ -263,6 +272,7 @@ export default function LoyaltyCardDetailPage() {
             <div className="flex justify-end mt-4">
               <button
                 onClick={handleDelete}
+                data-cy="loyalty-delete"
                 className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                 disabled={deleteLoyaltyCard.isPending}
               >

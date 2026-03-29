@@ -59,6 +59,7 @@ export const RecipeDetail: React.FC<RecipeDetailProps> = ({
 
         <Button
           onClick={() => setIsSendDialogOpen(true)}
+          data-cy="recipe-send"
           disabled={items.length === 0}
           className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold rounded-2xl px-6 py-6 shadow-lg transition-all border-none flex-shrink-0"
         >

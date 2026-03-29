@@ -52,7 +52,7 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signUp({
+    const { error, data } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -62,10 +62,27 @@ export default function LoginPage() {
 
     if (error) {
       setError(error.message);
+      setLoading(false);
+    } else if (data.session) {
+      // Si autoconfirm est activé, on redirige comme pour le login
+      try {
+        const { fetchApi } = await import("@/lib/api");
+        const households = await fetchApi("/households/me");
+
+        if (households && households.length > 0) {
+          localStorage.setItem("active_household_id", households[0].id);
+          router.push("/");
+        } else {
+          router.push("/household/setup");
+        }
+      } catch {
+        router.push("/household/setup");
+      }
+      router.refresh();
     } else {
       toast.success("Vérifiez vos e-mails pour confirmer votre inscription !");
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -83,6 +100,7 @@ export default function LoginPage() {
             </label>
             <input
               type="email"
+              data-cy="login-email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all"
@@ -97,6 +115,7 @@ export default function LoginPage() {
             </label>
             <input
               type="password"
+              data-cy="login-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all"
@@ -106,13 +125,14 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <p className="text-red-500 text-sm font-bold text-center px-2">
+            <p data-cy="login-error" className="text-red-500 text-sm font-bold text-center px-2">
               {error}
             </p>
           )}
 
           <button
             type="submit"
+            data-cy="login-submit"
             disabled={loading}
             className="mt-4 w-full py-4 bg-[#FF6B35] text-white rounded-2xl font-black text-lg shadow-lg hover:bg-[#e55a2b] disabled:opacity-50 transition-all"
           >
@@ -131,6 +151,7 @@ export default function LoginPage() {
 
           <button
             onClick={handleSignUp}
+            data-cy="login-signup"
             disabled={loading}
             className="w-full py-4 bg-white text-[#1A365D] border-2 border-gray-100 rounded-2xl font-black text-lg hover:bg-gray-50 transition-all"
           >

@@ -133,6 +133,7 @@ export default function StoresPage() {
             </div>
             <Button
               onClick={handleOpenCreateStore}
+              data-cy="stores-new"
               className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold rounded-2xl px-6 py-6 shadow-lg transition-all border-none"
             >
               <PlusIcon className="w-5 h-5 mr-2" strokeWidth={3} />
@@ -154,6 +155,7 @@ export default function StoresPage() {
                 <Link
                   key={store.id}
                   href={`/stores/${store.id}`}
+                  data-cy={`store-${store.id}`}
                   className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex items-center justify-between group"
                 >
                   <div className="flex items-center gap-6">
@@ -171,6 +173,7 @@ export default function StoresPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={(e) => handleOpenLoyaltyCard(e, store)}
+                      data-cy={`store-${store.id}-loyalty`}
                       className="p-3 text-gray-300 hover:text-[#FF6B35] hover:bg-orange-50 rounded-2xl transition-all"
                       title="Carte de fidélité"
                     >
@@ -178,6 +181,7 @@ export default function StoresPage() {
                     </button>
                     <button
                       onClick={(e) => handleOpenEditStore(e, store)}
+                      data-cy={`store-${store.id}-edit`}
                       className="p-3 text-gray-300 hover:text-[#1A365D] hover:bg-gray-50 rounded-2xl transition-all"
                       title="Modifier le nom"
                     >
@@ -187,6 +191,7 @@ export default function StoresPage() {
                       onClick={(e) =>
                         handleStoreDelete(e, store.id, store.name)
                       }
+                      data-cy={`store-${store.id}-delete`}
                       className="p-3 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all opacity-0 group-hover:opacity-100"
                       title="Supprimer"
                     >
@@ -233,6 +238,7 @@ export default function StoresPage() {
                 </label>
                 <input
                   type="text"
+                  data-cy="store-name-input"
                   required
                   value={storeName}
                   onChange={(e) => setStoreName(e.target.value)}
@@ -242,6 +248,7 @@ export default function StoresPage() {
               </div>
               <Button
                 type="submit"
+                data-cy="store-submit"
                 disabled={isSubmitting}
                 className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl shadow-lg"
               >

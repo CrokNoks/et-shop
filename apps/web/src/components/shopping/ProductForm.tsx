@@ -46,6 +46,7 @@ const EMOJI_OPTIONS = [
   "🍋",
   "🥚",
   "🥛",
+  "❄️",
 ];
 
 interface ProductFormProps {
@@ -116,6 +117,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           placeholder={
             isCategoryForm ? "Ex: Surgelés, Fruits..." : "Nom du produit"
           }
+          data-cy="product-form-name"
           className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
           required
         />
@@ -132,6 +134,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 key={emoji}
                 type="button"
                 onClick={() => setIcon(emoji)}
+                data-cy={`product-form-icon-${emoji}`}
                 className={`text-2xl p-2 rounded-xl transition-all hover:scale-110 active:scale-95 ${
                   icon === emoji
                     ? "bg-[#FF6B35] shadow-md scale-110"
@@ -158,6 +161,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             type="number"
             value={sortOrder}
             onChange={(e) => setSortOrder(parseInt(e.target.value) || 0)}
+            data-cy="product-form-sort-order"
             className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
             required
           />
@@ -330,6 +334,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         <Button
           type="submit"
           disabled={isSubmitting}
+          data-cy="product-form-submit"
           className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl"
         >
           {isSubmitting ? "Traitement..." : submitLabel}
