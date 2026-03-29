@@ -279,7 +279,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
     };
   }, [items, isShoppingMode]);
 
-  const { data: relevantLoyaltyCards, isLoading: isLoadingLoyaltyCards } = useLoyaltyCards(relevantStoreIds);
+  const { data: relevantLoyaltyCards } = useLoyaltyCards(relevantStoreIds);
   const storeMap = useStoreMap();
   const [activeCard, setActiveCard] = useState<LoyaltyCardFrontend | null>(null);
 
@@ -384,35 +384,6 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
           onClose={() => setActiveCard(null)}
         />
       )}
-
-      {!isLoadingLoyaltyCards &&
-        relevantLoyaltyCards &&
-        relevantLoyaltyCards.length > 0 && (
-          <div className="bg-gray-50 rounded-2xl p-4 mb-8 border border-gray-100 text-[var(--color-brand)]">
-            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest px-2 mb-4">
-              Cartes de fidélité pertinentes
-            </h3>
-            <div className="space-y-2">
-              {relevantLoyaltyCards.map((card) => (
-                <Link
-                  key={card.id}
-                  href={`/loyalty-cards/${card.id}`}
-                  className="block"
-                >
-                  <div className="flex items-center gap-2 p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                    <span className="text-sm font-semibold">
-                      {storeMap[card.storeId] ?? card.storeId}:
-                    </span>
-                    <span className="text-sm text-gray-600">
-                      {card.cardData}
-                    </span>
-                    <ChevronRightIcon className="w-4 h-4 ml-auto text-gray-400" />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
 
       <div className="space-y-12 text-[var(--color-brand)]">
         {items.length === 0 ? (
