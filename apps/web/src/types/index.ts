@@ -63,7 +63,7 @@ export interface RecipeItem {
 
 export interface ShoppingListItem {
   id: string;
-  is_checked: boolean;
+  is_purchased: boolean;
   quantity: number;
   price: number;
   unit?: string;

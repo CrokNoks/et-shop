@@ -136,7 +136,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
     try {
       setItems((prev) =>
         prev.map((item) =>
-          item.id === id ? { ...item, is_checked: !currentChecked } : item,
+          item.id === id ? { ...item, is_purchased: !currentChecked } : item,
         ),
       );
       await fetchApi(`/shopping-lists/items/${id}/toggle`, {
@@ -232,7 +232,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
     const done: ShoppingListItem[] = [];
 
     items.forEach((item) => {
-      if (isShoppingMode && item.is_checked) done.push(item);
+      if (isShoppingMode && item.is_purchased) done.push(item);
       else {
         const { category, store } = getCatalogInfo(item);
         const storeName = store?.name || "Sans magasin";
@@ -301,7 +301,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
   const checkedTotal = useMemo(
     () =>
       items
-        .filter((i) => i.is_checked)
+        .filter((i) => i.is_purchased)
         .reduce(
           (acc, item) => acc + Number(item.price) * (item.quantity || 1),
           0,
@@ -310,7 +310,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
   );
   const progress =
     items.length > 0
-      ? (items.filter((i) => i.is_checked).length / items.length) * 100
+      ? (items.filter((i) => i.is_purchased).length / items.length) * 100
       : 0;
 
   if (isLoading && items.length === 0)
@@ -425,12 +425,12 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                               key={item.id}
                               data-cy={`item-${item.id}`}
                               onClick={() =>
-                                toggleCheck(item.id, item.is_checked)
+                                toggleCheck(item.id, item.is_purchased)
                               }
                               className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer group/item ${isShoppingMode ? "p-5 sm:p-6 bg-white border-gray-100 shadow-sm hover:border-[var(--color-accent)]" : "bg-white border-gray-100"}`}
                             >
                               <button className="flex-shrink-0">
-                                {item.is_checked ? (
+                                {item.is_purchased ? (
                                   <CheckCircleSolidIcon className="w-8 h-8 sm:w-10 sm:h-10 text-[var(--color-accent)]" />
                                 ) : (
                                   <CheckCircleIcon className="w-8 h-8 sm:w-10 sm:h-10 text-gray-200 group-hover/item:text-[var(--color-accent)]/30 transition-colors" />
@@ -438,7 +438,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                               </button>
                               <div className="flex-1 min-w-0 flex flex-col gap-0.5 text-left">
                                 <p
-                                  className={`font-bold truncate ${isShoppingMode ? "text-xl sm:text-2xl" : "text-sm sm:text-base"} ${item.is_checked ? "line-through text-gray-400" : ""}`}
+                                  className={`font-bold truncate ${isShoppingMode ? "text-xl sm:text-2xl" : "text-sm sm:text-base"} ${item.is_purchased ? "line-through text-gray-400" : ""}`}
                                 >
                                   {name}
                                 </p>
@@ -507,7 +507,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                                 )}
                                 <div
                                   onClick={() => openEditSheet(item)}
-                                  className={`text-base sm:text-xl font-bold whitespace-nowrap ${item.is_checked ? "text-gray-300" : "text-[var(--color-accent)] bg-[var(--color-accent)]/5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg border border-[var(--color-accent)]/10"}`}
+                                  className={`text-base sm:text-xl font-bold whitespace-nowrap ${item.is_purchased ? "text-gray-300" : "text-[var(--color-accent)] bg-[var(--color-accent)]/5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg border border-[var(--color-accent)]/10"}`}
                                 >
                                   {(
                                     Number(item.price) * (item.quantity || 1)
@@ -540,7 +540,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               return (
                 <div
                   key={item.id}
-                  onClick={() => toggleCheck(item.id, item.is_checked)}
+                  onClick={() => toggleCheck(item.id, item.is_purchased)}
                   className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-transparent cursor-pointer"
                 >
                   <CheckCircleSolidIcon className="w-8 h-8 text-[var(--color-accent)]" />

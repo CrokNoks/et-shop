@@ -295,7 +295,7 @@ export class ShoppingListsService {
             .from('shopping_list_items')
             .update({
               quantity: Number(existingListItem.quantity) + Number(quantity),
-              is_checked: false,
+              is_purchased: false,
               unit: finalUnit,
             })
             .eq('id', existingListItem.id)
@@ -313,7 +313,7 @@ export class ShoppingListsService {
             name: name || directCatalogItem.name,
             category_id: category_id || directCatalogItem.category_id || null,
             quantity,
-            is_checked: false,
+            is_purchased: false,
             unit: finalUnit,
             barcode: barcode || directCatalogItem.barcode || null,
             price: 0,
@@ -402,7 +402,7 @@ export class ShoppingListsService {
         .from('shopping_list_items')
         .update({
           quantity: Number(existingListItem.quantity) + Number(quantity),
-          is_checked: false,
+          is_purchased: false,
           unit: finalUnit,
         })
         .eq('id', existingListItem.id)
@@ -426,7 +426,7 @@ export class ShoppingListsService {
         name: finalName,
         category_id: category_id || catalogItem.category_id || null,
         quantity,
-        is_checked: false,
+        is_purchased: false,
         unit: finalUnit,
         barcode: barcode || catalogItem.barcode || null,
         price: 0,
@@ -479,7 +479,7 @@ export class ShoppingListsService {
         .from('shopping_list_items')
         .update({
           quantity: Number(existingListItem.quantity) + 1,
-          is_checked: false,
+          is_purchased: false,
         })
         .eq('id', existingListItem.id)
         .select()
@@ -503,7 +503,7 @@ export class ShoppingListsService {
         name: finalName,
         category_id: catalogItem.category_id || null,
         quantity: 1,
-        is_checked: false,
+        is_purchased: false,
         unit: catalogItem.unit,
         barcode,
         price: 0,
@@ -532,7 +532,7 @@ export class ShoppingListsService {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('shopping_list_items')
-      .update({ is_checked: isChecked })
+      .update({ is_purchased: isChecked })
       .eq('id', itemId)
       .select()
       .single();
