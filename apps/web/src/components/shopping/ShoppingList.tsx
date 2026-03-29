@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import Link from "next/link";
 import {
   CheckCircleIcon,
   ShoppingCartIcon,

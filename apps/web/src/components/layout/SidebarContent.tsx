@@ -5,6 +5,8 @@ import {
   PlusIcon,
   UsersIcon,
   BuildingStorefrontIcon,
+  ClockIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { ChefHat } from "lucide-react";
 import { fetchApi } from "@/lib/api";
@@ -169,6 +171,44 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({
               className={`font-bold ${pathname.startsWith("/recipes") ? "text-[var(--color-brand)]" : ""}`}
             >
               Recettes
+            </span>
+          </Link>
+          <Link
+            href="/historique"
+            onClick={() => onClose?.()}
+            className={`flex items-center gap-3 p-3 rounded-xl transition-all group ${
+              pathname.startsWith("/historique")
+                ? "bg-white shadow-md border-l-4 border-[var(--color-accent)]"
+                : "hover:bg-gray-50 border-l-4 border-transparent text-gray-500"
+            }`}
+          >
+            <ClockIcon
+              className={`w-5 h-5 ${pathname.startsWith("/historique") ? "text-[var(--color-accent)]" : "text-gray-400"}`}
+              strokeWidth={2}
+            />
+            <span
+              className={`font-bold ${pathname.startsWith("/historique") ? "text-[var(--color-brand)]" : ""}`}
+            >
+              Historique
+            </span>
+          </Link>
+          <Link
+            href="/statistiques"
+            onClick={() => onClose?.()}
+            className={`flex items-center gap-3 p-3 rounded-xl transition-all group ${
+              pathname.startsWith("/statistiques")
+                ? "bg-white shadow-md border-l-4 border-[var(--color-accent)]"
+                : "hover:bg-gray-50 border-l-4 border-transparent text-gray-500"
+            }`}
+          >
+            <ChartBarIcon
+              className={`w-5 h-5 ${pathname.startsWith("/statistiques") ? "text-[var(--color-accent)]" : "text-gray-400"}`}
+              strokeWidth={2}
+            />
+            <span
+              className={`font-bold ${pathname.startsWith("/statistiques") ? "text-[var(--color-brand)]" : ""}`}
+            >
+              Statistiques
             </span>
           </Link>
         </div>
