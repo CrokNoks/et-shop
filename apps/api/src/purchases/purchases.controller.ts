@@ -65,6 +65,37 @@ export class PurchasesController {
     return this.getStatisticsUseCase.execute(from, to);
   }
 
+  @Get('by-item/:catalogItemId')
+  @ApiOperation({ summary: "Historique d'achat d'un produit spécifique" })
+  @ApiParam({ name: 'catalogItemId', type: String })
+  @ApiQuery({ name: 'x-household-id', required: true })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Purchase history for a specific catalog item',
+  })
+  async getByItem(@Param('catalogItemId') catalogItemId: string) {
+    const result = await this.getPurchaseHistoryUseCase.execute({
+      catalogItemId,
+      page: 1,
+      limit: 100,
+    });
+
+    const records = result.data;
+    const purchaseCount = result.total;
+    const lastPurchasedAt =
+      records.length > 0
+        ? records.reduce((latest, r) =>
+            r.purchasedAt > latest.purchasedAt ? r : latest,
+          ).purchasedAt
+        : null;
+    const avgPrice =
+      records.length > 0
+        ? records.reduce((sum, r) => sum + r.pricePerUnit, 0) / records.length
+        : 0;
+
+    return { records, purchaseCount, lastPurchasedAt, avgPrice };
+  }
+
   @Post('lists/:listId/items/:itemId/purchase')
   @ApiOperation({
     summary:

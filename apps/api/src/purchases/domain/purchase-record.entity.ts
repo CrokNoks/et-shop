@@ -6,10 +6,11 @@ export interface PurchaseRecordProps {
   listId: string;
   householdId: string;
   catalogItemId: string;
-  productName: string;
+  itemName: string;
+  categoryName?: string;
+  pricePerUnit: number;
   quantity: number;
   unit: string;
-  price: number;
   categoryId?: string;
   storeId?: string;
   purchasedAt: Date;
@@ -38,8 +39,16 @@ export class PurchaseRecord {
     return this.props.catalogItemId;
   }
 
-  get productName(): string {
-    return this.props.productName;
+  get itemName(): string {
+    return this.props.itemName;
+  }
+
+  get categoryName(): string | undefined {
+    return this.props.categoryName;
+  }
+
+  get pricePerUnit(): number {
+    return this.props.pricePerUnit;
   }
 
   get quantity(): number {
@@ -48,10 +57,6 @@ export class PurchaseRecord {
 
   get unit(): string {
     return this.props.unit;
-  }
-
-  get price(): number {
-    return this.props.price;
   }
 
   get categoryId(): string | undefined {
@@ -67,7 +72,7 @@ export class PurchaseRecord {
   }
 
   get totalAmount(): number {
-    return this.props.price * this.props.quantity;
+    return this.props.pricePerUnit * this.props.quantity;
   }
 
   static create(

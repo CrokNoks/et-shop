@@ -13,10 +13,10 @@ describe('RecordPurchaseUseCase', () => {
     listId: 'list-001',
     householdId: 'household-001',
     catalogItemId: 'catalog-001',
-    productName: 'Lait',
+    itemName: 'Lait',
     quantity: 1,
     unit: 'L',
-    price: 1.5,
+    pricePerUnit: 1.5,
   });
 
   const mockItem = {

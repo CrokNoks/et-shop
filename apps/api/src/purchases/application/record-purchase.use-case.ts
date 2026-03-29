@@ -65,10 +65,11 @@ export class RecordPurchaseUseCase {
       listId: item.list_id,
       householdId,
       catalogItemId: item.catalog_item_id,
-      productName: item.name ?? '',
+      itemName: item.name ?? '',
+      pricePerUnit:
+        priceOverride !== undefined ? priceOverride : (item.price ?? 0),
       quantity: item.quantity ?? 1,
       unit: item.unit ?? 'pcs',
-      price: priceOverride !== undefined ? priceOverride : (item.price ?? 0),
       categoryId: item.category_id ?? undefined,
       storeId: list.store_id ?? undefined,
     });

@@ -6,10 +6,11 @@ describe('PurchaseRecord Entity', () => {
     listId: 'list-001',
     householdId: 'household-001',
     catalogItemId: 'catalog-001',
-    productName: 'Lait entier',
+    itemName: 'Lait entier',
+    categoryName: 'Produits laitiers',
+    pricePerUnit: 1.5,
     quantity: 2,
     unit: 'L',
-    price: 1.5,
     categoryId: 'cat-001',
     storeId: 'store-001',
   };
@@ -48,17 +49,20 @@ describe('PurchaseRecord Entity', () => {
       expect(record.listId).toBe(baseProps.listId);
       expect(record.householdId).toBe(baseProps.householdId);
       expect(record.catalogItemId).toBe(baseProps.catalogItemId);
-      expect(record.productName).toBe(baseProps.productName);
+      expect(record.itemName).toBe(baseProps.itemName);
+      expect(record.categoryName).toBe(baseProps.categoryName);
+      expect(record.pricePerUnit).toBe(baseProps.pricePerUnit);
       expect(record.quantity).toBe(baseProps.quantity);
       expect(record.unit).toBe(baseProps.unit);
-      expect(record.price).toBe(baseProps.price);
       expect(record.categoryId).toBe(baseProps.categoryId);
       expect(record.storeId).toBe(baseProps.storeId);
     });
 
-    it('should compute totalAmount as price * quantity', () => {
+    it('should compute totalAmount as pricePerUnit * quantity', () => {
       const record = PurchaseRecord.create(baseProps);
-      expect(record.totalAmount).toBe(baseProps.price * baseProps.quantity);
+      expect(record.totalAmount).toBe(
+        baseProps.pricePerUnit * baseProps.quantity,
+      );
     });
 
     it('should work without optional fields', () => {
@@ -67,10 +71,10 @@ describe('PurchaseRecord Entity', () => {
         listId: 'list-002',
         householdId: 'household-002',
         catalogItemId: 'catalog-002',
-        productName: 'Pain',
+        itemName: 'Pain',
         quantity: 1,
         unit: 'pcs',
-        price: 2.0,
+        pricePerUnit: 2.0,
       });
 
       expect(record.categoryId).toBeUndefined();
@@ -98,9 +102,9 @@ describe('PurchaseRecord Entity', () => {
       const json = record.toJSON();
 
       expect(json.id).toBe('test-id');
-      expect(json.productName).toBe(baseProps.productName);
+      expect(json.itemName).toBe(baseProps.itemName);
       expect(json.quantity).toBe(baseProps.quantity);
-      expect(json.price).toBe(baseProps.price);
+      expect(json.pricePerUnit).toBe(baseProps.pricePerUnit);
     });
   });
 });
