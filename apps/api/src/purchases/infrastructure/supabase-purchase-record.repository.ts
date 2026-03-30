@@ -15,7 +15,7 @@ export class SupabasePurchaseRecordRepository implements PurchaseRecordRepositor
   private mapToEntity(row: Record<string, unknown>): PurchaseRecord {
     return PurchaseRecord.reconstitute({
       id: row.id as string,
-      shoppingListItemId: row.shopping_list_item_id as string,
+      shoppingListItemId: (row.shopping_list_item_id as string) ?? '',
       listId: row.list_id as string,
       householdId: row.household_id as string,
       catalogItemId: row.catalog_item_id as string,
@@ -41,19 +41,17 @@ export class SupabasePurchaseRecordRepository implements PurchaseRecordRepositor
     const client = this.supabaseService.getClient();
 
     const { data, error } = await client.rpc('record_purchase_atomic', {
-      p_item_id: itemId,
-      p_record_id: record.id,
-      p_list_id: record.listId,
       p_household_id: record.householdId,
+      p_list_item_id: itemId,
       p_catalog_item_id: record.catalogItemId,
       p_item_name: record.itemName,
+      p_category_id: record.categoryId ?? null,
       p_category_name: record.categoryName ?? null,
+      p_store_id: record.storeId ?? null,
+      p_list_id: record.listId,
       p_quantity: record.quantity,
       p_unit: record.unit,
       p_price_per_unit: record.pricePerUnit,
-      p_category_id: record.categoryId ?? null,
-      p_store_id: record.storeId ?? null,
-      p_purchased_at: record.purchasedAt.toISOString(),
     });
 
     if (error) {
@@ -69,7 +67,7 @@ export class SupabasePurchaseRecordRepository implements PurchaseRecordRepositor
     const client = this.supabaseService.getClient();
 
     const { error } = await client.rpc('cancel_purchase_atomic', {
-      p_item_id: itemId,
+      p_list_item_id: itemId,
     });
 
     if (error) {
