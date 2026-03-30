@@ -226,6 +226,7 @@ export class ShoppingListsController {
       category_id?: string;
       unit?: string;
       store_id?: string;
+      catalog_item_id?: string;
     },
   ) {
     return this.shoppingListsService.addItem(listId, payload);

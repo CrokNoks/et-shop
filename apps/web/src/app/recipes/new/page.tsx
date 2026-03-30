@@ -58,6 +58,7 @@ export default function NewRecipePage() {
               </label>
               <input
                 type="text"
+                data-cy="recipe-name-input"
                 required
                 autoFocus
                 value={name}
@@ -91,6 +92,7 @@ export default function NewRecipePage() {
               </Button>
               <Button
                 type="submit"
+                data-cy="recipe-submit"
                 disabled={isSubmitting || !name.trim()}
                 className="flex-1 bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl shadow-lg"
               >

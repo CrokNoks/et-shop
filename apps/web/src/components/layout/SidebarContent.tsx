@@ -179,6 +179,7 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({
           </h3>
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
+            data-cy="sidebar-new-list"
             className={`p-1 hover:bg-gray-100 rounded-lg transition-colors ${showCreateForm ? "text-gray-400" : "text-[var(--color-accent)]"}`}
           >
             <PlusIcon className="w-5 h-5" strokeWidth={2.5} />
@@ -192,6 +193,7 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({
           >
             <input
               autoFocus
+              data-cy="sidebar-list-input"
               type="text"
               value={newListName}
               onChange={(e) => setNewListName(e.target.value)}
@@ -215,6 +217,7 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({
               <Link
                 key={list.id}
                 href={`/`}
+                data-cy={`sidebar-list-${list.id}`}
                 onClick={() => handleListClick(list.id)}
                 className={`flex items-center justify-between p-3 rounded-xl transition-all group ${
                   activeListId === list.id

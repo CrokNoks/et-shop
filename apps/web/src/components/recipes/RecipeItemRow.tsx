@@ -74,12 +74,14 @@ export const RecipeItemRow: React.FC<RecipeItemRowProps> = ({
           <>
             <button
               onClick={handleSave}
+              data-cy={`recipe-item-${item.id}-save`}
               className="p-2 text-green-500 hover:bg-green-50 rounded-xl transition-all"
             >
               <Check className="w-4 h-4" />
             </button>
             <button
               onClick={handleCancel}
+              data-cy={`recipe-item-${item.id}-cancel`}
               className="p-2 text-gray-400 hover:bg-gray-100 rounded-xl transition-all"
             >
               <X className="w-4 h-4" />
@@ -89,12 +91,14 @@ export const RecipeItemRow: React.FC<RecipeItemRowProps> = ({
           <>
             <button
               onClick={() => setIsEditing(true)}
+              data-cy={`recipe-item-${item.id}-edit`}
               className="p-2 text-gray-300 hover:text-[#1A365D] hover:bg-gray-100 rounded-xl transition-all opacity-0 group-hover:opacity-100"
             >
               <Pencil className="w-4 h-4" />
             </button>
             <button
               onClick={() => onDelete(item.id)}
+              data-cy={`recipe-item-${item.id}-delete`}
               className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
             >
               <Trash2 className="w-4 h-4" />

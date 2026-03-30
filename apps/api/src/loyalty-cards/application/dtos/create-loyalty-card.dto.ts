@@ -16,6 +16,7 @@ export class CreateLoyaltyCardDto {
     format: 'uuid',
     readOnly: true, // Mark as read-only for Swagger documentation
   })
+  @IsOptional() // Set server-side from the authenticated user — never sent by the client
   @IsUUID()
   userId: string; // Will be taken from auth.uid()
 

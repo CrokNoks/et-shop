@@ -38,6 +38,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onDelete }) => {
       <div className="flex items-center gap-2">
         <button
           onClick={(e) => onDelete(e, recipe.id, recipe.name)}
+          data-cy="recipe-delete"
           className="p-3 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all opacity-0 group-hover:opacity-100"
           title="Supprimer"
         >

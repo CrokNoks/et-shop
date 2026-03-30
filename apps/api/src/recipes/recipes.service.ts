@@ -15,12 +15,15 @@ export class RecipesService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
   private handleError(error: any) {
-    console.error('Supabase Error Details:', error);
+    console.error('Supabase Error Details:', JSON.stringify(error, null, 2));
     if (error.code === 'PGRST116')
       throw new NotFoundException('Resource not found');
     if (error.code === '42501')
       throw new UnauthorizedException('You do not have permission');
-    throw new InternalServerErrorException(error.message || 'Supabase error');
+    throw new InternalServerErrorException(
+      error.message || 'Supabase error',
+      { cause: error },
+    );
   }
 
   private getHouseholdIdOrThrow(): string {
@@ -122,7 +125,7 @@ export class RecipesService {
       .getClient()
       .from('recipes')
       .select('id')
-      .eq('id', recipeId)
+      .eq('id', String(recipeId))
       .eq('household_id', householdId)
       .single();
 
@@ -131,7 +134,12 @@ export class RecipesService {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('recipe_items')
-      .insert({ recipe_id: recipeId, ...dto })
+      .insert({
+        recipe_id: recipeId,
+        catalog_item_id: dto.catalog_item_id,
+        quantity: dto.quantity,
+        unit: dto.unit,
+      })
       .select(
         `*, items_catalog(id, name, unit, store_id, categories(name, sort_order), stores(id, name))`,
       )
@@ -152,7 +160,7 @@ export class RecipesService {
       .getClient()
       .from('recipes')
       .select('id')
-      .eq('id', recipeId)
+      .eq('id', String(recipeId))
       .eq('household_id', householdId)
       .single();
 
@@ -180,7 +188,7 @@ export class RecipesService {
       .getClient()
       .from('recipes')
       .select('id')
-      .eq('id', recipeId)
+      .eq('id', String(recipeId))
       .eq('household_id', householdId)
       .single();
 

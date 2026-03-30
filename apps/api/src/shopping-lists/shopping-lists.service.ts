@@ -161,14 +161,15 @@ export class ShoppingListsService {
 
   async remove(id: string) {
     const householdId = this.getHouseholdIdOrThrow();
-    const { error } = await this.supabaseService
+    const { error, count } = await this.supabaseService
       .getClient()
       .from('shopping_lists')
-      .delete()
+      .delete({ count: 'exact' })
       .eq('id', id)
       .eq('household_id', householdId);
 
     if (error) this.handleError(error);
+    if (count === 0) throw new NotFoundException('Shopping list not found');
     return { success: true };
   }
 
@@ -254,6 +255,7 @@ export class ShoppingListsService {
       category_id?: string;
       unit?: string;
       store_id?: string;
+      catalog_item_id?: string;
     },
   ) {
     const client = this.supabaseService.getClient();
@@ -265,9 +267,63 @@ export class ShoppingListsService {
       category_id,
       unit,
       store_id: payloadStoreId,
+      catalog_item_id: payloadCatalogItemId,
     } = payload;
 
-    // 0. Récupérer le store_id de la liste si non précisé
+    // 0. Si catalog_item_id est fourni directement, l'utiliser sans lookup par nom
+    if (payloadCatalogItemId) {
+      const { data: directCatalogItem } = await client
+        .from('items_catalog')
+        .select('id, name, unit, category_id, barcode')
+        .eq('id', payloadCatalogItemId)
+        .maybeSingle();
+
+      if (directCatalogItem) {
+        const finalUnit =
+          (unit && unit !== 'pcs' ? unit : directCatalogItem.unit) || unit || 'pcs';
+        const { data: existingListItem } = await client
+          .from('shopping_list_items')
+          .select('id, quantity')
+          .eq('list_id', listId)
+          .eq('catalog_item_id', directCatalogItem.id)
+          .maybeSingle();
+
+        if (existingListItem) {
+          const { data, error } = await client
+            .from('shopping_list_items')
+            .update({
+              quantity: Number(existingListItem.quantity) + Number(quantity),
+              is_checked: false,
+              unit: finalUnit,
+            })
+            .eq('id', existingListItem.id)
+            .select()
+            .single();
+          if (error) this.handleError(error);
+          return data;
+        }
+
+        const { data, error } = await client
+          .from('shopping_list_items')
+          .insert({
+            list_id: listId,
+            catalog_item_id: directCatalogItem.id,
+            name: name || directCatalogItem.name,
+            category_id: category_id || directCatalogItem.category_id || null,
+            quantity,
+            is_checked: false,
+            unit: finalUnit,
+            barcode: barcode || directCatalogItem.barcode || null,
+            price: 0,
+          })
+          .select()
+          .single();
+        if (error) this.handleError(error);
+        return data;
+      }
+    }
+
+    // 0b. Récupérer le store_id de la liste si non précisé
     let finalStoreId = payloadStoreId;
     if (!finalStoreId) {
       const { data: list } = await client
@@ -459,12 +515,13 @@ export class ShoppingListsService {
 
   async removeItem(itemId: string) {
     const client = this.supabaseService.getClient();
-    const { error } = await client
+    const { error, count } = await client
       .from('shopping_list_items')
-      .delete()
+      .delete({ count: 'exact' })
       .eq('id', itemId);
 
     if (error) this.handleError(error);
+    if (count === 0) throw new NotFoundException('Shopping list item not found');
     return { success: true };
   }
 
@@ -572,7 +629,7 @@ export class ShoppingListsService {
       .getClient()
       .from('items_catalog')
       .select(
-        'name, category_id, store_id, categories(name), stores(name), unit',
+        'id, name, category_id, store_id, categories(name), stores(name), unit',
       )
       .eq('household_id', householdId)
       .ilike('name', `%${query}%`)

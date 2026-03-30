@@ -133,6 +133,7 @@ export const ListHeader: React.FC<ListHeaderProps> = ({
       <div className="hidden sm:flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger
+            data-cy="list-options"
             className="p-2 hover:bg-white rounded-xl transition-all border border-transparent hover:border-gray-100 text-gray-400 hover:text-[#1A365D] outline-none"
             title="Plus d'options"
           >
@@ -144,6 +145,7 @@ export const ListHeader: React.FC<ListHeaderProps> = ({
           >
             <DropdownMenuItem
               onClick={handleOpenRename}
+              data-cy="list-edit"
               className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-gray-50 focus:bg-gray-50 font-bold transition-colors"
             >
               <PencilIcon className="w-4 h-4 text-gray-400" />
@@ -152,6 +154,7 @@ export const ListHeader: React.FC<ListHeaderProps> = ({
             <DropdownMenuSeparator className="bg-gray-50" />
             <DropdownMenuItem
               onClick={handleDelete}
+              data-cy="list-delete"
               className="flex items-center gap-3 p-3 rounded-xl cursor-pointer text-red-500 hover:bg-red-50 focus:bg-red-50 font-bold transition-colors"
             >
               <TrashIcon className="w-4 h-4" />
@@ -186,6 +189,7 @@ export const ListHeader: React.FC<ListHeaderProps> = ({
               </Label>
               <Input
                 id="list-name"
+                data-cy="list-name-input"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
@@ -234,6 +238,7 @@ export const ListHeader: React.FC<ListHeaderProps> = ({
             <SheetFooter className="mt-8 pt-4 sm:justify-start">
               <Button
                 type="submit"
+                data-cy="list-name-submit"
                 disabled={isRenaming}
                 className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl"
               >

@@ -279,7 +279,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
     };
   }, [items, isShoppingMode]);
 
-  const { data: relevantLoyaltyCards, isLoading: isLoadingLoyaltyCards } = useLoyaltyCards(relevantStoreIds);
+  const { data: relevantLoyaltyCards } = useLoyaltyCards(relevantStoreIds);
   const storeMap = useStoreMap();
   const [activeCard, setActiveCard] = useState<LoyaltyCardFrontend | null>(null);
 
@@ -331,6 +331,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
         </h2>
         <button
           onClick={() => setIsShoppingMode(!isShoppingMode)}
+          data-cy="shopping-mode-toggle"
           className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold transition-all shadow-md ${
             isShoppingMode
               ? "bg-[var(--color-brand)] text-white"
@@ -385,35 +386,6 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
         />
       )}
 
-      {!isLoadingLoyaltyCards &&
-        relevantLoyaltyCards &&
-        relevantLoyaltyCards.length > 0 && (
-          <div className="bg-gray-50 rounded-2xl p-4 mb-8 border border-gray-100 text-[var(--color-brand)]">
-            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest px-2 mb-4">
-              Cartes de fidélité pertinentes
-            </h3>
-            <div className="space-y-2">
-              {relevantLoyaltyCards.map((card) => (
-                <Link
-                  key={card.id}
-                  href={`/loyalty-cards/${card.id}`}
-                  className="block"
-                >
-                  <div className="flex items-center gap-2 p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                    <span className="text-sm font-semibold">
-                      {storeMap[card.storeId] ?? card.storeId}:
-                    </span>
-                    <span className="text-sm text-gray-600">
-                      {card.cardData}
-                    </span>
-                    <ChevronRightIcon className="w-4 h-4 ml-auto text-gray-400" />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
       <div className="space-y-12 text-[var(--color-brand)]">
         {items.length === 0 ? (
           <div className="text-center py-12 opacity-40 italic">
@@ -452,6 +424,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                           return (
                             <div
                               key={item.id}
+                              data-cy={`item-${item.id}`}
                               onClick={() =>
                                 toggleCheck(item.id, item.is_checked)
                               }
@@ -483,11 +456,13 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                                           -1,
                                         )
                                       }
+                                      data-cy={`item-${item.id}-minus`}
                                       className="p-0.5 sm:p-1 hover:bg-white rounded-md text-gray-400 transition-colors"
                                     >
                                       <MinusIcon className="w-3 h-3" />
                                     </button>
                                     <span
+                                      data-cy={`item-${item.id}-qty`}
                                       className={`text-xs sm:text-sm font-black min-w-[16px] sm:min-w-[20px] text-center ${isShoppingMode ? "text-base sm:text-lg" : ""}`}
                                     >
                                       {item.quantity}
@@ -500,6 +475,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                                           1,
                                         )
                                       }
+                                      data-cy={`item-${item.id}-plus`}
                                       className="p-0.5 sm:p-1 hover:bg-white rounded-md text-gray-400 transition-colors"
                                     >
                                       <PlusIcon className="w-3 h-3" />
@@ -510,6 +486,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                                       e.stopPropagation();
                                       openEditSheet(item);
                                     }}
+                                    data-cy={`item-${item.id}-edit`}
                                     className="text-[9px] sm:text-[10px] font-black uppercase text-gray-400 tracking-wider hover:text-[var(--color-accent)] transition-colors"
                                   >
                                     {unit}
@@ -523,6 +500,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                                 {!isShoppingMode && (
                                   <button
                                     onClick={() => handleDeleteItem(item.id)}
+                                    data-cy={`item-${item.id}-delete`}
                                     className="p-1.5 sm:p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-100 sm:opacity-0 sm:group-hover/item:opacity-100"
                                   >
                                     <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -581,6 +559,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
         <div className="fixed bottom-6 left-6 right-6 flex gap-4">
           <button
             onClick={() => setIsShoppingMode(false)}
+            data-cy="shopping-finish"
             className="flex-1 bg-[var(--color-brand)] text-white py-5 rounded-2xl font-black text-xl shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
           >
             Terminer
@@ -616,6 +595,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               </Label>
               <Input
                 id="item-price"
+                data-cy="edit-price"
                 type="number"
                 step="0.01"
                 value={editPrice}
@@ -634,6 +614,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               </Label>
               <Input
                 id="item-unit"
+                data-cy="edit-unit"
                 value={editUnit}
                 onChange={(e) => setEditUnit(e.target.value)}
                 className="text-lg font-bold border-gray-200 focus-visible:ring-[var(--color-accent)]"
@@ -660,6 +641,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
             <SheetFooter className="mt-8 pt-4 sm:justify-start">
               <Button
                 type="submit"
+                data-cy="edit-submit"
                 disabled={isUpdating}
                 className="w-full bg-[var(--color-accent)] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl"
               >

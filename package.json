@@ -12,7 +12,9 @@
     "release:minor": "node scripts/release.js minor",
     "release:major": "node scripts/release.js major",
     "deploy": "firebase deploy",
-    "deploy:api": "firebase deploy --only functions"
+    "deploy:api": "firebase deploy --only functions",
+    "test:e2e": "turbo run test:e2e",
+    "cypress:open": "pnpm --filter et-shop-e2e cypress:open"
   },
   "devDependencies": {
     "@img/sharp-libvips-linux-x64": "1.2.4",

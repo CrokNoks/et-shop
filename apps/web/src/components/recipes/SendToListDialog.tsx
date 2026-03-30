@@ -73,6 +73,7 @@ export const SendToListDialog: React.FC<SendToListDialogProps> = ({
             {lists.map((list) => (
               <button
                 key={list.id}
+                data-cy={`send-to-list-${list.id}`}
                 onClick={() => setSelectedListId(list.id)}
                 className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left ${
                   selectedListId === list.id
@@ -91,6 +92,7 @@ export const SendToListDialog: React.FC<SendToListDialogProps> = ({
 
         <Button
           onClick={handleSend}
+          data-cy="send-to-list-submit"
           disabled={!selectedListId || isSending || isLoading}
           className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl shadow-lg"
         >

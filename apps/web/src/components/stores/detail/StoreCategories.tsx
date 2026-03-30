@@ -251,6 +251,7 @@ export const StoreCategories: React.FC<StoreCategoriesProps> = ({
           </Button>
           <Button
             onClick={handleOpenCreate}
+            data-cy="store-category-new"
             className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold rounded-2xl px-6 py-6 shadow-lg transition-all border-none"
           >
             <PlusIcon className="w-5 h-5 mr-2" strokeWidth={3} />
@@ -292,12 +293,14 @@ export const StoreCategories: React.FC<StoreCategoriesProps> = ({
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => handleOpenEdit(category)}
+                        data-cy="store-category-edit"
                         className="p-2 text-gray-400 hover:text-[#1A365D] transition-colors"
                       >
                         <PencilIcon className="w-5 h-5" />
                       </button>
                       <button
                         onClick={() => handleDelete(category.id, category.name)}
+                        data-cy="store-category-delete"
                         className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                       >
                         <TrashIcon className="w-5 h-5" />

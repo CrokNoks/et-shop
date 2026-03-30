@@ -92,6 +92,7 @@ export default function StoreDetailPage() {
           <div className="flex gap-2 p-1.5 bg-gray-100 rounded-2xl w-fit">
             <button
               onClick={() => setActiveTab("rayons")}
+              data-cy="store-tab-rayons"
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
                 activeTab === "rayons"
                   ? "bg-white text-[#1A365D] shadow-sm"
@@ -103,6 +104,7 @@ export default function StoreDetailPage() {
             </button>
             <button
               onClick={() => setActiveTab("produits")}
+              data-cy="store-tab-produits"
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
                 activeTab === "produits"
                   ? "bg-white text-[#1A365D] shadow-sm"
@@ -114,6 +116,7 @@ export default function StoreDetailPage() {
             </button>
             <button
               onClick={() => setActiveTab("cartes")}
+              data-cy="store-tab-cartes"
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
                 activeTab === "cartes"
                   ? "bg-white text-[#1A365D] shadow-sm"
