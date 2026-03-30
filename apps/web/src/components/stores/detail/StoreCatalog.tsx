@@ -5,6 +5,7 @@ import { fetchApi } from "@/lib/api";
 import { CatalogSearch } from "@/components/catalog/CatalogSearch";
 import { CatalogItemCard } from "@/components/catalog/CatalogItemCard";
 import { ProductForm } from "@/components/shopping/ProductForm";
+import { ProductPurchaseHistory } from "@/components/purchases/ProductPurchaseHistory";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import {
   Sheet,
@@ -305,6 +306,15 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
             submitLabel={editingItem ? "Mettre à jour" : "Ajouter au catalogue"}
             onSubmit={handleSubmit}
           />
+
+          {editingItem && (
+            <div className="mt-10">
+              <ProductPurchaseHistory
+                catalogItemId={editingItem.id}
+                productName={editingItem.name}
+              />
+            </div>
+          )}
         </SheetContent>
       </Sheet>
     </div>

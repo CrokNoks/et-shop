@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { PurchaseHistoryList } from "@/components/purchases/PurchaseHistoryList";
 import { PurchaseHistoryQuery } from "@/lib/api/purchases";
+import { useStores } from "@/hooks/useStores";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,7 @@ export default function HistoriquePage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [storeId, setStoreId] = useState("");
+  const { data: stores = [] } = useStores();
 
   const handlePageChange = (page: number) => {
     setQuery((prev) => ({ ...prev, page }));
@@ -75,6 +77,9 @@ export default function HistoriquePage() {
                 className="p-3 bg-white border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium"
               >
                 <option value="">Tous</option>
+                {stores.map((store) => (
+                  <option key={store.id} value={store.id}>{store.name}</option>
+                ))}
               </select>
             </div>
             <button

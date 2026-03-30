@@ -28,7 +28,8 @@ export const CatalogItemCard: React.FC<CatalogItemCardProps> = ({
   return (
     <div
       data-cy={`catalog-item-${item.id}`}
-      className={`bg-white p-6 rounded-3xl border transition-all flex flex-col gap-4 group text-[#1A365D] relative ${
+      onClick={() => onEdit(item)}
+      className={`bg-white p-6 rounded-3xl border transition-all flex flex-col gap-4 group text-[#1A365D] relative cursor-pointer ${
         isSelected
           ? "border-[#FF6B35] shadow-md ring-1 ring-[#FF6B35]"
           : "border-gray-50 shadow-sm hover:shadow-md"
@@ -59,7 +60,7 @@ export const CatalogItemCard: React.FC<CatalogItemCardProps> = ({
             <PencilIcon className="w-5 h-5" />
           </button>
           <button
-            onClick={() => onDelete(item.id, item.name)}
+            onClick={(e) => { e.stopPropagation(); onDelete(item.id, item.name); }}
             className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
             title="Supprimer"
           >

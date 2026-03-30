@@ -103,15 +103,10 @@ describe("Flux d'achat depuis une liste de courses", () => {
       .its("response.statusCode")
       .should("eq", 200);
 
-    // L'article doit apparaître dans la section "Déjà dans le panier" (barré)
-    cy.get(`[data-cy=item-${itemId1}]`)
-      .find(".line-through")
-      .should("exist")
-      .or(
-        cy
-          .get("[data-cy=shopping-done-section]")
-          .contains("Tomates"),
-      );
+    // L'article doit apparaître dans la section "Déjà dans le panier"
+    cy.get("[data-cy=shopping-done-section]", { timeout: 10000 })
+      .should("be.visible")
+      .contains("Tomates");
   });
 
   it("annuler un achat remet l'article à l'état initial", () => {

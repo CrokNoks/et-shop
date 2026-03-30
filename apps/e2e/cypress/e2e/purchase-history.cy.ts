@@ -169,6 +169,7 @@ describe("Page Historique des Achats (/historique)", () => {
 
     cy.visit("/historique");
     cy.wait("@getHistoryInit");
+    cy.wait("@getStores");
 
     cy.intercept("GET", "**/purchases/history**", (req) => {
       expect(req.url).to.include("storeId=store-abc");
@@ -178,8 +179,9 @@ describe("Page Historique des Achats (/historique)", () => {
       });
     }).as("getHistoryByStore");
 
-    // Sélectionner un magasin dans le filtre
+    // Sélectionner un magasin dans le filtre et soumettre
     cy.get("[data-cy=history-filter-store]").should("be.visible").select("store-abc");
+    cy.get("[data-cy=history-filter-submit]").click();
 
     cy.wait("@getHistoryByStore");
   });

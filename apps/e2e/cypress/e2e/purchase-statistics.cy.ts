@@ -215,11 +215,11 @@ describe("Page Statistiques (/statistiques)", () => {
     }).as("getStatsError");
 
     cy.visit("/statistiques");
-    cy.wait("@getStatsError");
 
-    cy.contains("Erreur lors du chargement des statistiques").should(
-      "be.visible",
-    );
+    // React Query retente 3 fois avant d'afficher l'erreur
+    cy.contains("Erreur lors du chargement des statistiques", {
+      timeout: 20000,
+    }).should("be.visible");
   });
 
   it("changer le filtre de période recharge les statistiques avec les nouvelles dates", () => {
@@ -231,16 +231,33 @@ describe("Page Statistiques (/statistiques)", () => {
     cy.visit("/statistiques");
     cy.wait("@getStatsInit");
 
-    cy.intercept("GET", "**/purchases/statistics**", (req) => {
-      expect(req.url).to.include("from=2026-01-01");
-      expect(req.url).to.include("to=2026-06-30");
-      req.reply({ statusCode: 200, body: MOCK_STATISTICS });
-    }).as("getStatsFiltered");
+    // Intercepter uniquement la requête avec les DEUX filtres définis
+    cy.intercept(
+      {
+        method: "GET",
+        url: "**/purchases/statistics**",
+        query: { from: "2026-03-01", to: "2026-06-30" },
+      },
+      { statusCode: 200, body: MOCK_STATISTICS },
+    ).as("getStatsFiltered");
 
-    // Modifier le filtre "Du"
-    cy.get("input[type=date]").first().clear().type("2026-01-01");
-    // Modifier le filtre "Au"
-    cy.get("input[type=date]").last().clear().type("2026-06-30");
+    // Modifier les filtres via le setter natif pour que React détecte le changement
+    cy.get("[data-cy=stats-filter-from]").then(($el) => {
+      const setter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        "value",
+      )!.set;
+      setter!.call($el[0], "2026-03-01");
+      $el[0].dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    cy.get("[data-cy=stats-filter-to]").then(($el) => {
+      const setter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        "value",
+      )!.set;
+      setter!.call($el[0], "2026-06-30");
+      $el[0].dispatchEvent(new Event("input", { bubbles: true }));
+    });
 
     cy.wait("@getStatsFiltered");
   });
