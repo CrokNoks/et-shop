@@ -139,10 +139,24 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
           item.id === id ? { ...item, is_purchased: !currentChecked } : item,
         ),
       );
-      await fetchApi(`/shopping-lists/items/${id}/toggle`, {
-        method: "PATCH",
-        body: JSON.stringify({ isChecked: !currentChecked }),
-      });
+      if (isShoppingMode) {
+        if (!currentChecked) {
+          const item = items.find((i) => i.id === id);
+          await fetchApi(`/shopping-lists/${listId}/items/${id}/purchase`, {
+            method: "PATCH",
+            body: JSON.stringify({ price: item?.price ?? 0 }),
+          });
+        } else {
+          await fetchApi(`/shopping-lists/${listId}/items/${id}/unpurchase`, {
+            method: "PATCH",
+          });
+        }
+      } else {
+        await fetchApi(`/shopping-lists/items/${id}/toggle`, {
+          method: "PATCH",
+          body: JSON.stringify({ isChecked: !currentChecked }),
+        });
+      }
     } catch {
       fetchItems();
     }
