@@ -27,6 +27,7 @@ export const CatalogItemCard: React.FC<CatalogItemCardProps> = ({
 }) => {
   return (
     <div
+      data-cy={`catalog-item-${item.id}`}
       className={`bg-white p-6 rounded-3xl border transition-all flex flex-col gap-4 group text-[#1A365D] relative ${
         isSelected
           ? "border-[#FF6B35] shadow-md ring-1 ring-[#FF6B35]"

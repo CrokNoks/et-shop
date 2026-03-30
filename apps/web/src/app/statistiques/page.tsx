@@ -35,6 +35,7 @@ export default function StatistiquesPage() {
                 Du
               </label>
               <input
+                data-cy="stats-filter-from"
                 type="date"
                 value={from}
                 onChange={(e) => setFrom(e.target.value)}
@@ -46,6 +47,7 @@ export default function StatistiquesPage() {
                 Au
               </label>
               <input
+                data-cy="stats-filter-to"
                 type="date"
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
@@ -74,7 +76,7 @@ export default function StatistiquesPage() {
                   <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
                     Total dépensé
                   </p>
-                  <p className="text-4xl font-black text-[#FF6B35]">
+                  <p data-cy="stats-total-spent" className="text-4xl font-black text-[#FF6B35]">
                     {data.totalSpent.toFixed(2)} €
                   </p>
                 </div>
@@ -82,14 +84,14 @@ export default function StatistiquesPage() {
                   <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
                     Achats enregistrés
                   </p>
-                  <p className="text-4xl font-black text-[#1A365D]">
+                  <p data-cy="stats-total-items" className="text-4xl font-black text-[#1A365D]">
                     {data.totalItems}
                   </p>
                 </div>
               </div>
 
               {/* By category */}
-              <section className="flex flex-col gap-4">
+              <section data-cy="stats-section-by-category" className="flex flex-col gap-4">
                 <h2 className="text-xl font-black">Dépenses par catégorie</h2>
                 <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
                   <SpendingByCategory categories={data.byCategory} />
@@ -97,7 +99,7 @@ export default function StatistiquesPage() {
               </section>
 
               {/* Top items */}
-              <section className="flex flex-col gap-4">
+              <section data-cy="stats-section-top-items" className="flex flex-col gap-4">
                 <h2 className="text-xl font-black">
                   Produits les plus achetés
                 </h2>
@@ -106,7 +108,7 @@ export default function StatistiquesPage() {
 
               {/* By month */}
               {data.byMonth.length > 0 && (
-                <section className="flex flex-col gap-4">
+                <section data-cy="stats-section-by-month" className="flex flex-col gap-4">
                   <h2 className="text-xl font-black">Évolution mensuelle</h2>
                   <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
                     <div className="flex flex-col gap-3">

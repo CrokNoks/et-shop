@@ -28,7 +28,7 @@ export const PurchaseHistoryItem: React.FC<PurchaseHistoryItemProps> = ({
   );
 
   return (
-    <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+    <div data-cy={`purchase-history-item-${record.id}`} className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
       <div className="flex flex-col gap-1 min-w-0">
         <span className="font-bold text-[#1A365D] truncate">
           {record.productName}

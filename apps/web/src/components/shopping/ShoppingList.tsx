@@ -349,6 +349,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
       {isShoppingMode && (
         <div className="w-full h-3 bg-gray-100 rounded-full mb-8 overflow-hidden border border-gray-50">
           <div
+            data-cy="shopping-progress-bar"
             className="h-full bg-[var(--color-accent)] transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
           />
@@ -529,7 +530,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
       </div>
 
       {isShoppingMode && doneItems.length > 0 && (
-        <div className="mt-12 pt-12 border-t border-dashed border-gray-200">
+        <div data-cy="shopping-done-section" className="mt-12 pt-12 border-t border-dashed border-gray-200">
           <h3 className="text-xs font-black text-gray-300 uppercase tracking-widest px-2 mb-4 flex items-center gap-2">
             <ArchiveBoxIcon className="w-4 h-4" />
             Déjà dans le panier ({doneItems.length})
@@ -540,6 +541,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               return (
                 <div
                   key={item.id}
+                  data-cy={`shopping-done-item-${item.id}`}
                   onClick={() => toggleCheck(item.id, item.is_purchased)}
                   className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-transparent cursor-pointer"
                 >

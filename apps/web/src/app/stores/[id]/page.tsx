@@ -104,7 +104,7 @@ export default function StoreDetailPage() {
             </button>
             <button
               onClick={() => setActiveTab("produits")}
-              data-cy="store-tab-produits"
+              data-cy="store-tab-catalogue"
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
                 activeTab === "produits"
                   ? "bg-white text-[#1A365D] shadow-sm"
