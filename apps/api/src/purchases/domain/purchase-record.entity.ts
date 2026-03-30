@@ -90,7 +90,12 @@ export class PurchaseRecord {
     return new PurchaseRecord(props);
   }
 
-  toJSON(): PurchaseRecordProps {
-    return { ...this.props };
+  toJSON() {
+    return {
+      ...this.props,
+      productName: this.props.itemName,
+      price: this.props.pricePerUnit,
+      totalAmount: this.props.pricePerUnit * this.props.quantity,
+    };
   }
 }
