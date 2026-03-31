@@ -48,6 +48,11 @@ export class StoresController {
     return this.storesService.remove(id);
   }
 
+  @Get(':id/impact')
+  async getImpact(@Param('id') id: string) {
+    return this.storesService.getImpact(id);
+  }
+
   @Get(':id/categories')
   async getCategories(@Param('id') id: string) {
     return this.storesService.getCategories(id);

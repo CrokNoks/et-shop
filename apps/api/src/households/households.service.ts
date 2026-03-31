@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
@@ -140,6 +141,30 @@ export class HouseholdsService {
       throw new UnauthorizedException(
         'Vous devez être administrateur pour supprimer un membre',
       );
+    }
+
+    // 2. Si la cible est admin, vérifier qu'il n'est pas le dernier
+    const { data: targetMember } = await client
+      .from('household_members')
+      .select('role')
+      .eq('household_id', householdId)
+      .eq('user_id', userId)
+      .single();
+
+    if ((targetMember as HouseholdMember)?.role === 'admin') {
+      const { count, error: countError } = await client
+        .from('household_members')
+        .select('*', { count: 'exact', head: true })
+        .eq('household_id', householdId)
+        .eq('role', 'admin');
+
+      if (countError) throw countError;
+
+      if ((count ?? 0) <= 1) {
+        throw new ForbiddenException(
+          'Impossible de supprimer le dernier administrateur du foyer. Promouvez un autre membre avant de procéder.',
+        );
+      }
     }
 
     // 3. Supprimer le membre

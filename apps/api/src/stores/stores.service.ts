@@ -56,6 +56,17 @@ export class StoresService {
     return { success: true };
   }
 
+  async getImpact(
+    id: string,
+  ): Promise<{ loyalty_cards_count: number; affected_users: number }> {
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .rpc('get_store_impact', { p_store_id: id });
+
+    if (error) throw error;
+    return data;
+  }
+
   async getCategories(storeId: string) {
     const { data, error } = await this.supabaseService
       .getClient()

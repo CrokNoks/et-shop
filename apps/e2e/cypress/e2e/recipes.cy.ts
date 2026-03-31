@@ -177,7 +177,7 @@ describe("Recettes — sendToList (logique de merge)", () => {
           catalog_item_id: cId,
           quantity: 10
         }).then((listItem: any) => {
-          return cy.apiRequest("PATCH", `/shopping-lists/items/${listItem.id}/toggle`, { isChecked: true });
+          return cy.apiRequest("PATCH", `/shopping-lists/${listItem.list_id}/items/${listItem.id}/purchase`);
         }).then(() => {
           return cy.addRecipeItemViaApi(recipeId, cId, 2, "pcs");
         }).then(() => {

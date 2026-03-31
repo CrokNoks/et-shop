@@ -309,13 +309,16 @@ export class RecipesService {
 
     // 5. Execute all updates and inserts
     if (updates.length > 0) {
-      for (const upd of updates) {
-        const { error: uError } = await client
-          .from('shopping_list_items')
-          .update({ quantity: upd.quantity, is_purchased: upd.is_purchased })
-          .eq('id', upd.id);
-        if (uError) this.handleError(uError);
-      }
+      const updateResults = await Promise.all(
+        updates.map((upd) =>
+          client
+            .from('shopping_list_items')
+            .update({ quantity: upd.quantity, is_purchased: upd.is_purchased })
+            .eq('id', upd.id),
+        ),
+      );
+      const firstUpdateError = updateResults.find((r) => r.error)?.error;
+      if (firstUpdateError) this.handleError(firstUpdateError);
     }
 
     if (inserts.length > 0) {

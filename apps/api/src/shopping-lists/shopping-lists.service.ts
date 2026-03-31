@@ -528,18 +528,6 @@ export class ShoppingListsService {
     return { success: true };
   }
 
-  async toggleItem(itemId: string, isChecked: boolean) {
-    const { data, error } = await this.supabaseService
-      .getClient()
-      .from('shopping_list_items')
-      .update({ is_purchased: isChecked })
-      .eq('id', itemId)
-      .select()
-      .single();
-    if (error) this.handleError(error);
-    return data;
-  }
-
   async updatePrice(itemId: string, price: number) {
     const { data, error } = await this.supabaseService
       .getClient()
