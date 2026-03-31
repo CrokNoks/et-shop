@@ -40,7 +40,8 @@ export class SupabaseLoyaltyCardRepository implements LoyaltyCardRepository {
   }
 
   async create(loyaltyCard: LoyaltyCard): Promise<LoyaltyCard> {
-    const { data, error } = await this.supabaseService.getClient()
+    const { data, error } = await this.supabaseService
+      .getClient()
       .from('loyalty_cards')
       .insert(this.mapToData(loyaltyCard))
       .select()
@@ -53,7 +54,8 @@ export class SupabaseLoyaltyCardRepository implements LoyaltyCardRepository {
   }
 
   async findById(id: string): Promise<LoyaltyCard | null> {
-    const { data, error } = await this.supabaseService.getClient()
+    const { data, error } = await this.supabaseService
+      .getClient()
       .from('loyalty_cards')
       .select('*')
       .eq('id', id)
@@ -70,7 +72,8 @@ export class SupabaseLoyaltyCardRepository implements LoyaltyCardRepository {
     userId: string,
     storeIds?: string[],
   ): Promise<LoyaltyCard[]> {
-    let query = this.supabaseService.getClient()
+    let query = this.supabaseService
+      .getClient()
       .from('loyalty_cards')
       .select('*')
       .eq('user_id', userId);
@@ -88,7 +91,8 @@ export class SupabaseLoyaltyCardRepository implements LoyaltyCardRepository {
   }
 
   async update(loyaltyCard: LoyaltyCard): Promise<LoyaltyCard> {
-    const { data, error } = await this.supabaseService.getClient()
+    const { data, error } = await this.supabaseService
+      .getClient()
       .from('loyalty_cards')
       .update(this.mapToData(loyaltyCard))
       .eq('id', loyaltyCard.id)
@@ -102,7 +106,8 @@ export class SupabaseLoyaltyCardRepository implements LoyaltyCardRepository {
   }
 
   async delete(id: string): Promise<void> {
-    const { error } = await this.supabaseService.getClient()
+    const { error } = await this.supabaseService
+      .getClient()
       .from('loyalty_cards')
       .delete()
       .eq('id', id);

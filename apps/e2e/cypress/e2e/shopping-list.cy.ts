@@ -49,7 +49,7 @@ describe("Liste de courses", () => {
 
   it("coche un article", () => {
     cy.intercept("POST", "**/shopping-lists/*/items").as("addItem");
-    cy.intercept("PATCH", "**/items/*/toggle").as("toggleItem");
+    cy.intercept("PATCH", /\/items\/[^/]+\/(purchase|unpurchase)/).as("toggleItem");
 
     cy.get("[data-cy=sidebar-new-list]").click();
     const listName = `Liste check ${Date.now()}`;

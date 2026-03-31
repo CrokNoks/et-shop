@@ -87,9 +87,9 @@ export const loyaltyCardsApi = {
   },
 
   async getLoyaltyCards(storeIds?: string[]): Promise<LoyaltyCardFrontend[]> {
-    return fetchApi<LoyaltyCardFrontend[]>("GET", "/loyalty-cards", undefined, {
-      storeIds,
-    });
+    const params: Record<string, string | number | boolean | string[]> = {};
+    if (storeIds !== undefined) params.storeIds = storeIds;
+    return fetchApi<LoyaltyCardFrontend[]>("GET", "/loyalty-cards", undefined, params);
   },
 
   async getLoyaltyCardById(id: string): Promise<LoyaltyCardFrontend> {

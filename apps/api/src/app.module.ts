@@ -8,6 +8,7 @@ import { HouseholdsModule } from './households/households.module';
 import { StoresModule } from './stores/stores.module';
 import { LoyaltyCardsModule } from './loyalty-cards/loyalty-cards.module';
 import { RecipesModule } from './recipes/recipes.module';
+import { PurchasesModule } from './purchases/purchases.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { RecipesModule } from './recipes/recipes.module';
     StoresModule,
     LoyaltyCardsModule,
     RecipesModule,
+    PurchasesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -9,16 +9,33 @@ import {
   Logger,
   UseGuards,
   Query,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { ShoppingListsService } from './shopping-lists.service';
 import { SupabaseAuthGuard } from '../supabase/supabase.guard';
+import { RecordPurchaseUseCase } from '../purchases/application/record-purchase.use-case';
+import { CancelPurchaseUseCase } from '../purchases/application/cancel-purchase.use-case';
 
+@ApiTags('shopping-lists')
+@ApiBearerAuth()
 @Controller('shopping-lists')
 @UseGuards(SupabaseAuthGuard)
 export class ShoppingListsController {
   private readonly logger = new Logger(ShoppingListsController.name);
 
-  constructor(private readonly shoppingListsService: ShoppingListsService) {}
+  constructor(
+    private readonly shoppingListsService: ShoppingListsService,
+    private readonly recordPurchaseUseCase: RecordPurchaseUseCase,
+    private readonly cancelPurchaseUseCase: CancelPurchaseUseCase,
+  ) {}
 
   // 1. Routes Statiques (Prioritaires)
   @Get('catalog')
@@ -238,5 +255,41 @@ export class ShoppingListsController {
     @Body('barcode') barcode: string,
   ) {
     return this.shoppingListsService.addItemByBarcode(listId, barcode);
+  }
+
+  @Patch(':listId/items/:itemId/purchase')
+  @ApiOperation({
+    summary: 'Mark item as purchased and record the purchase (atomic)',
+  })
+  @ApiParam({ name: 'listId', description: 'Shopping list ID' })
+  @ApiParam({ name: 'itemId', description: 'Shopping list item ID' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Purchase recorded successfully',
+  })
+  async purchaseItem(
+    @Param('listId') listId: string,
+    @Param('itemId') itemId: string,
+    @Body('price') price?: number,
+  ) {
+    return this.recordPurchaseUseCase.execute(listId, itemId, price);
+  }
+
+  @Patch(':listId/items/:itemId/unpurchase')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Cancel a purchase and unmark item as purchased (atomic)',
+  })
+  @ApiParam({ name: 'listId', description: 'Shopping list ID' })
+  @ApiParam({ name: 'itemId', description: 'Shopping list item ID' })
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'Purchase cancelled successfully',
+  })
+  async unpurchaseItem(
+    @Param('listId') listId: string,
+    @Param('itemId') itemId: string,
+  ): Promise<void> {
+    return this.cancelPurchaseUseCase.execute(listId, itemId);
   }
 }

@@ -20,10 +20,9 @@ export class RecipesService {
       throw new NotFoundException('Resource not found');
     if (error.code === '42501')
       throw new UnauthorizedException('You do not have permission');
-    throw new InternalServerErrorException(
-      error.message || 'Supabase error',
-      { cause: error },
-    );
+    throw new InternalServerErrorException(error.message || 'Supabase error', {
+      cause: error,
+    });
   }
 
   private getHouseholdIdOrThrow(): string {
@@ -244,7 +243,7 @@ export class RecipesService {
     const catalogIds = recipeItems.map((ri) => ri.catalog_item_id);
     const { data: existingItems, error: eError } = await client
       .from('shopping_list_items')
-      .select('id, catalog_item_id, quantity, is_checked')
+      .select('id, catalog_item_id, quantity, is_purchased')
       .eq('list_id', shoppingListId)
       .in('catalog_item_id', catalogIds);
 
@@ -255,14 +254,15 @@ export class RecipesService {
     );
 
     // 4. Apply merge rules
-    const updates: { id: string; quantity: number; is_checked: boolean }[] = [];
+    const updates: { id: string; quantity: number; is_purchased: boolean }[] =
+      [];
     const inserts: {
       list_id: string;
       catalog_item_id: string;
       name: string;
       quantity: number;
       unit?: string;
-      is_checked: boolean;
+      is_purchased: boolean;
       price: number;
     }[] = [];
 
@@ -270,19 +270,19 @@ export class RecipesService {
       const existing = existingMap.get(ri.catalog_item_id);
 
       if (existing) {
-        if (existing.is_checked) {
+        if (existing.is_purchased) {
           // Rule 1: checked → uncheck and replace quantity
           updates.push({
             id: existing.id,
             quantity: ri.quantity,
-            is_checked: false,
+            is_purchased: false,
           });
         } else {
           // Rule 2: not checked → add quantities
           updates.push({
             id: existing.id,
             quantity: Number(existing.quantity) + Number(ri.quantity),
-            is_checked: false,
+            is_purchased: false,
           });
         }
       } else {
@@ -300,7 +300,7 @@ export class RecipesService {
             name: catalogItem.name,
             quantity: ri.quantity,
             unit: ri.unit || catalogItem.unit || 'pcs',
-            is_checked: false,
+            is_purchased: false,
             price: 0,
           });
         }
@@ -312,7 +312,7 @@ export class RecipesService {
       for (const upd of updates) {
         const { error: uError } = await client
           .from('shopping_list_items')
-          .update({ quantity: upd.quantity, is_checked: upd.is_checked })
+          .update({ quantity: upd.quantity, is_purchased: upd.is_purchased })
           .eq('id', upd.id);
         if (uError) this.handleError(uError);
       }
