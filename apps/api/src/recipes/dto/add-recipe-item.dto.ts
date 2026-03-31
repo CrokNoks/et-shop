@@ -1,8 +1,18 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class AddRecipeItemDto {
-  @ApiProperty({ description: 'ID du produit dans le catalogue', format: 'uuid' })
+  @ApiProperty({
+    description: 'ID du produit dans le catalogue',
+    format: 'uuid',
+  })
   @IsUUID()
   @IsNotEmpty()
   catalog_item_id: string;

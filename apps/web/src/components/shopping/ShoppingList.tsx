@@ -150,6 +150,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
           method: "PATCH",
         });
       }
+      fetchItems();
     } catch {
       fetchItems();
     }

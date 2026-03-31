@@ -38,13 +38,13 @@ export class RecipesController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Détail d\'une recette avec ses items' })
+  @ApiOperation({ summary: "Détail d'une recette avec ses items" })
   async findOne(@Param('id') id: string) {
     return this.recipesService.findOne(id);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Modifier le nom/description d\'une recette' })
+  @ApiOperation({ summary: "Modifier le nom/description d'une recette" })
   async update(@Param('id') id: string, @Body() dto: UpdateRecipeDto) {
     return this.recipesService.update(id, dto);
   }
@@ -62,7 +62,7 @@ export class RecipesController {
   }
 
   @Patch(':id/items/:itemId')
-  @ApiOperation({ summary: 'Modifier quantité/unité d\'un item' })
+  @ApiOperation({ summary: "Modifier quantité/unité d'un item" })
   async updateItem(
     @Param('id') recipeId: string,
     @Param('itemId') itemId: string,
@@ -82,10 +82,7 @@ export class RecipesController {
 
   @Post(':id/send')
   @ApiOperation({ summary: 'Envoyer la recette vers une liste de courses' })
-  async sendToList(
-    @Param('id') recipeId: string,
-    @Body() dto: SendToListDto,
-  ) {
+  async sendToList(@Param('id') recipeId: string, @Body() dto: SendToListDto) {
     return this.recipesService.sendToList(recipeId, dto.shopping_list_id);
   }
 }

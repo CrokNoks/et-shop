@@ -13,6 +13,7 @@ export class SupabasePurchaseRecordRepository implements PurchaseRecordRepositor
   constructor(private readonly supabaseService: SupabaseService) {}
 
   private mapToEntity(row: Record<string, unknown>): PurchaseRecord {
+    const categories = row.categories as { name: string } | null;
     return PurchaseRecord.reconstitute({
       id: row.id as string,
       shoppingListItemId: (row.shopping_list_item_id as string) ?? '',
@@ -20,7 +21,7 @@ export class SupabasePurchaseRecordRepository implements PurchaseRecordRepositor
       householdId: row.household_id as string,
       catalogItemId: row.catalog_item_id as string,
       itemName: (row.item_name as string) ?? '',
-      categoryName: (row.category_name as string | null) ?? undefined,
+      categoryName: categories?.name ?? undefined,
       pricePerUnit: (row.price_per_unit as number) ?? 0,
       quantity: (row.quantity as number) ?? 1,
       unit: (row.unit as string) ?? 'pcs',
@@ -46,7 +47,6 @@ export class SupabasePurchaseRecordRepository implements PurchaseRecordRepositor
       p_catalog_item_id: record.catalogItemId,
       p_item_name: record.itemName,
       p_category_id: record.categoryId ?? null,
-      p_category_name: record.categoryName ?? null,
       p_store_id: record.storeId ?? null,
       p_list_id: record.listId,
       p_quantity: record.quantity,
@@ -85,7 +85,7 @@ export class SupabasePurchaseRecordRepository implements PurchaseRecordRepositor
 
     let query = client
       .from('purchase_records')
-      .select('*', { count: 'exact' })
+      .select('*, categories(name)', { count: 'exact' })
       .eq('household_id', filters.householdId)
       .order('purchased_at', { ascending: false })
       .range(offset, offset + limit - 1);
@@ -130,7 +130,7 @@ export class SupabasePurchaseRecordRepository implements PurchaseRecordRepositor
     const { data, error } = await this.supabaseService
       .getClient()
       .from('purchase_records')
-      .select('*')
+      .select('*, categories(name)')
       .eq('catalog_item_id', catalogItemId)
       .eq('household_id', householdId)
       .order('purchased_at', { ascending: false })
