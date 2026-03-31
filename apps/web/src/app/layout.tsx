@@ -5,8 +5,6 @@ import { Providers } from "./providers";
 import { validateEnv } from "@/lib/env";
 import "./globals.css";
 
-validateEnv();
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -27,6 +25,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  validateEnv();
   return (
     <html
       lang="fr"

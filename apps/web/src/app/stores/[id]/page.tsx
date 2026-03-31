@@ -16,6 +16,8 @@ import {
 import { Store } from "@/types";
 import { StoreLoyaltyCards } from "@/components/stores/detail/StoreLoyaltyCards";
 
+export const dynamic = "force-dynamic";
+
 export default function StoreDetailPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
