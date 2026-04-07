@@ -1,7 +1,7 @@
 # Bug Report — Ordre des articles incorrect en mode classique
 
 ## Résumé
-En mode classique, les articles cochés restent dans leur groupe catégorie au lieu de passer en bas de liste, et les nouveaux articles ajoutés apparaissent après les cochés au lieu d'être insérés parmi les non-cochés.
+En mode classique, un article décoché ne remonte pas dans la section des non-cochés, et les nouveaux articles ajoutés depuis le catalogue apparaissent après les articles cochés au lieu d'être insérés parmi les non-cochés.
 
 ## Environnement
 - Stack : TypeScript, Next.js 16, React 19, NestJS 11, Supabase (PostgreSQL)
@@ -9,39 +9,37 @@ En mode classique, les articles cochés restent dans leur groupe catégorie au l
 - Date de détection : 2026-04-07
 
 ## Étapes pour reproduire
-1. Ouvrir la liste de courses en **mode classique** (pas le mode shopping)
-2. Cocher un produit dans la liste
-3. Observer que le produit reste à sa position d'origine dans son groupe magasin/catégorie
-4. Ajouter un nouveau produit depuis le catalogue
-5. Observer que le nouveau produit apparaît après les articles cochés au lieu d'apparaître parmi les non-cochés
+
+**Bug 1 — Décochage :**
+1. Ouvrir la liste en mode classique
+2. Cocher un article (il descend correctement en bas de liste)
+3. Décocher ce même article
+4. Observer que l'article reste en bas de liste au lieu de remonter parmi les non-cochés
+
+**Bug 2 — Ajout depuis le catalogue :**
+1. Avoir des articles cochés dans la liste
+2. Ajouter un nouveau produit depuis le catalogue
+3. Observer que le nouvel article apparaît après les articles cochés au lieu d'être placé dans la section des non-cochés
 
 ## Comportement observé
-- Les articles cochés (`is_purchased: true`) restent mélangés avec les articles non-cochés dans leur groupe magasin/catégorie
-- Les nouveaux articles ajoutés depuis le catalogue apparaissent après les cochés (en bas absolu de liste) au lieu d'être regroupés avec les non-cochés
+- **Décochage** : l'article reste positionné en bas de liste (à la suite des cochés) après avoir été décoché
+- **Ajout catalogue** : le nouvel article (non-coché) est inséré à la fin de la liste entière, après les articles cochés
 
 ## Comportement attendu
-- Les articles cochés doivent descendre en bas de liste (séparés des non-cochés), identique au comportement du mode shopping
-- Les nouveaux articles non-cochés doivent apparaître dans leur groupe catégorie, AVANT les articles cochés
+- **Décochage** : l'article doit remonter dans la section des articles non-cochés
+- **Ajout catalogue** : le nouvel article (non-coché) doit apparaître dans la section des non-cochés (avant les cochés)
 
 ## Impact
 - **Sévérité** : Majeur
 - **Utilisateurs impactés** : Tous les utilisateurs utilisant le mode classique
-- **Contournement disponible** : Oui — passer en mode shopping contourne le problème car la séparation cochés/non-cochés y est correcte
+- **Contournement disponible** : Non — le problème rend la liste confuse lors d'un ajout ou d'un changement d'avis sur un article
 
 ## Composant probable
 `apps/web/src/components/shopping/ShoppingList.tsx`
 
-**Cause racine identifiée** : Le `useMemo` (ligne 243) ne sépare les articles cochés vers `doneItems` que si `isShoppingMode` est `true` :
-
-```typescript
-// ACTUEL — séparation uniquement en mode shopping
-if (isShoppingMode && item.is_purchased) done.push(item);
-
-// ATTENDU — séparation dans les deux modes
-if (item.is_purchased) done.push(item);
-```
-
-De plus, le rendu de la section `doneItems` (ligne 540) est conditionnel à `isShoppingMode`, donc même si les items étaient séparés, ils ne seraient pas affichés en mode classique.
+**Piste principale** : La logique de tri/positionnement des articles dans la liste ne tient pas compte du statut `is_purchased` pour repositionner un article lors d'un changement d'état (coché → décoché) ou lors de l'ajout d'un nouvel article. L'ordre des items dans le state `items[]` n'est probablement pas recalculé après ces opérations — les items gardent leur position dans le tableau plutôt qu'être triés (non-cochés en premier, cochés en dernier).
 
 ## Contexte additionnel
-La logique de tri est correcte en mode shopping — la section "Déjà dans le panier" fonctionne bien. Le correctif consiste à étendre cette même logique au mode classique, en retirant la condition `isShoppingMode` du filtre dans le `useMemo` et en affichant la section `doneItems` dans les deux modes.
+- Le cochage fonctionne correctement (l'article descend en bas)
+- Le problème ne concerne que le retour en arrière (décochage) et l'insertion de nouveaux articles
+- La fonction `fetchItems()` est appelée après chaque action mais l'ordre retourné par le serveur détermine la position finale dans la liste
