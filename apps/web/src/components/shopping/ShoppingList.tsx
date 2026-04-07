@@ -261,13 +261,22 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
     });
 
     // Trier les magasins (alphabétique) puis les rayons par ordre
+    // En mode classique, trier les articles dans chaque rayon : non-cochés en premier, cochés en dernier
     const sortedGroups = Object.entries(todo)
       .map(([id, storeData]) => ({
         id,
         name: storeData.name,
-        categories: Object.entries(storeData.categories).sort(
-          (a, b) => a[1].order - b[1].order,
-        ),
+        categories: Object.entries(storeData.categories)
+          .sort((a, b) => a[1].order - b[1].order)
+          .map(([categoryName, categoryData]) => [
+            categoryName,
+            {
+              ...categoryData,
+              items: [...categoryData.items].sort(
+                (a, b) => Number(a.is_purchased) - Number(b.is_purchased),
+              ),
+            },
+          ] as [string, { items: ShoppingListItem[]; order: number }]),
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
 
