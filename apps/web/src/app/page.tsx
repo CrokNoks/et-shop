@@ -9,6 +9,12 @@ import { ListHeader } from "@/components/shopping/ListHeader";
 import { fetchApi } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { ShoppingList as ShoppingListType } from "@/types";
+import { useShoppingListItems } from "@/hooks/useShoppingListItems";
+import {
+  useActiveHousehold,
+  useHouseholdMembers,
+  getActiveHouseholdId,
+} from "@/hooks/useHousehold";
 
 export const dynamic = "force-dynamic";
 
@@ -73,21 +79,39 @@ export default function Home() {
     setActiveListId(id);
   };
 
+  const {
+    isLoading: itemsLoading,
+    storeGroups,
+    totalBudget,
+    checkedTotal,
+    toggleCheck,
+    handleQuantityUpdate,
+    handleDeleteItem,
+    fetchItems,
+  } = useShoppingListItems(activeListId, refreshTrigger);
+
+  const household = useActiveHousehold();
+  const { data: members = [] } = useHouseholdMembers(getActiveHouseholdId());
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-sans">
+    <div className="min-h-screen bg-[var(--es-bg)] flex flex-col sm:flex-row font-sans">
       <Sidebar
         activeListId={activeListId || ""}
         onListSelect={handleListSelect}
       />
 
-      <main className="flex-1 p-6 pt-24 pb-24 sm:p-12 flex justify-center">
-        <div className="w-full max-w-2xl flex flex-col gap-10">
+      <main className="flex-1 flex flex-col pb-24 sm:p-12 sm:items-center">
+        <div className="w-full sm:max-w-2xl flex flex-col">
           {activeListId ? (
             <ListHeader
               id={activeListId}
               name={activeListName}
               storeId={activeStoreId}
               isSynced={true}
+              householdName={household?.name || "Foyer"}
+              members={members}
+              totalBudget={totalBudget}
+              checkedTotal={checkedTotal}
               onUpdate={(newName, newStoreId) => {
                 setActiveListName(newName);
                 setActiveStoreId(newStoreId || null);
@@ -98,31 +122,38 @@ export default function Home() {
               }}
             />
           ) : (
-            <div className="flex flex-col gap-1 text-[#1A365D]">
+            <div className="flex flex-col gap-1 text-[var(--es-ink)] px-3.5 pt-6">
               <h1 className="text-3xl font-black">{activeListName}</h1>
             </div>
           )}
 
-          {activeListId ? (
-            <>
-              <div className="flex flex-col gap-4">
-                <HopInput listId={activeListId} onItemAdded={handleItemAdded} />
-              </div>
+          <div className="flex-1 overflow-y-auto px-3.5 py-3">
+            {activeListId ? (
               <ShoppingList
-                listId={activeListId}
-                storeId={activeStoreId || undefined}
-                refreshKey={refreshTrigger}
+                isLoading={itemsLoading}
+                storeGroups={storeGroups}
+                checkedTotal={checkedTotal}
+                toggleCheck={toggleCheck}
+                handleQuantityUpdate={handleQuantityUpdate}
+                handleDeleteItem={handleDeleteItem}
+                refetch={fetchItems}
               />
-            </>
-          ) : (
-            <div className="py-20 text-center text-[#1A365D]">
-              <p className="text-gray-400 italic font-medium">
-                Veuillez sélectionner ou créer une liste pour commencer.
-              </p>
+            ) : (
+              <div className="py-20 text-center text-[var(--es-ink)]">
+                <p className="text-[var(--es-tertiary)] italic font-medium">
+                  Veuillez sélectionner ou créer une liste pour commencer.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {activeListId && (
+            <div className="sticky bottom-16 sm:bottom-0 px-3.5 py-2 bg-[var(--es-bg)]">
+              <HopInput listId={activeListId} onItemAdded={handleItemAdded} />
             </div>
           )}
 
-          <footer className="mt-auto py-12 flex gap-6 flex-wrap items-center justify-center text-[#1A365D] opacity-40 text-xs text-center">
+          <footer className="hidden sm:flex mt-auto py-12 gap-6 flex-wrap items-center justify-center text-[var(--es-ink)] opacity-40 text-xs text-center">
             <p>© 2026 Et SHop! - Votre compagnon de courses propulsionné</p>
           </footer>
         </div>

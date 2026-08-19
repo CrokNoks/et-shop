@@ -26,7 +26,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { fetchApi } from "@/lib/api";
 import { toast } from "sonner";
-
 import {
   Select,
   SelectContent,
@@ -35,12 +34,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Store } from "@/types";
+import { MemberAvatars } from "./MemberAvatars";
+import { HouseholdMember } from "@/hooks/useHousehold";
 
 interface ListHeaderProps {
   id: string;
   name: string;
   storeId?: string | null;
   isSynced: boolean;
+  householdName: string;
+  members: HouseholdMember[];
+  totalBudget: number;
+  checkedTotal: number;
   onUpdate: (newName: string, newStoreId?: string | null) => void;
   onDelete: () => void;
 }
@@ -50,6 +55,10 @@ export const ListHeader: React.FC<ListHeaderProps> = ({
   name,
   storeId,
   isSynced,
+  householdName,
+  members,
+  totalBudget,
+  checkedTotal,
   onUpdate,
   onDelete,
 }) => {
@@ -79,16 +88,12 @@ export const ListHeader: React.FC<ListHeaderProps> = ({
 
   const handleRename = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setIsRenaming(true);
     try {
       const finalStoreId = selectedStoreId === "none" ? null : selectedStoreId;
       await fetchApi(`/shopping-lists/${id}`, {
         method: "PATCH",
-        body: JSON.stringify({
-          name: newName,
-          store_id: finalStoreId,
-        }),
+        body: JSON.stringify({ name: newName, store_id: finalStoreId }),
       });
       onUpdate(newName, finalStoreId);
       toast.success("Liste mise à jour !");
@@ -102,11 +107,8 @@ export const ListHeader: React.FC<ListHeaderProps> = ({
 
   const handleDelete = async () => {
     if (!confirm(`Supprimer définitivement la liste "${name}" ?`)) return;
-
     try {
-      await fetchApi(`/shopping-lists/${id}`, {
-        method: "DELETE",
-      });
+      await fetchApi(`/shopping-lists/${id}`, { method: "DELETE" });
       onDelete();
       toast.success("Liste supprimée !");
     } catch {
@@ -114,30 +116,27 @@ export const ListHeader: React.FC<ListHeaderProps> = ({
     }
   };
 
-  return (
-    <div className="flex items-center justify-between text-[#1A365D]">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-2">
-          <span className="text-[#FF6B35] font-black tracking-widest text-[10px] uppercase bg-[#FF6B35]/10 px-2 py-0.5 rounded-full">
-            {isSynced ? "En direct" : "Hors ligne"}
-          </span>
-          {storeId && (
-            <span className="text-[#1A365D] font-black tracking-widest text-[10px] uppercase bg-[#1A365D]/10 px-2 py-0.5 rounded-full">
-              {stores.find((s) => s.id === storeId)?.name || "Magasin lié"}
-            </span>
-          )}
-        </div>
-        <h1 className="text-3xl font-black">{name}</h1>
-      </div>
+  const budgetProgress =
+    totalBudget > 0 ? (checkedTotal / totalBudget) * 100 : 0;
 
-      <div className="hidden sm:flex items-center gap-2">
+  return (
+    <div className="bg-[var(--es-banner)] text-white px-3.5 py-3 flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[#FF6B35] dark:text-[#ffb694]">
+          <span
+            className="w-[5px] h-[5px] rounded-full bg-[#FF6B35]"
+            style={{ boxShadow: "0 0 0 3px rgba(255,107,53,.25)" }}
+          />
+          {isSynced ? "En direct" : "Hors ligne"} · {householdName}
+        </span>
+
         <DropdownMenu>
           <DropdownMenuTrigger
             data-cy="list-options"
-            className="p-2 hover:bg-white rounded-xl transition-all border border-transparent hover:border-gray-100 text-gray-400 hover:text-[#1A365D] outline-none"
+            className="p-1.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-colors outline-none"
             title="Plus d'options"
           >
-            <EllipsisHorizontalIcon className="w-6 h-6" />
+            <EllipsisHorizontalIcon className="w-5 h-5" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
@@ -162,6 +161,31 @@ export const ListHeader: React.FC<ListHeaderProps> = ({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+      </div>
+
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-[23px] font-semibold tracking-[-0.01em] truncate">
+          {name}
+        </h1>
+        <MemberAvatars members={members} />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-baseline gap-2">
+          <span className="text-[27px] font-semibold tabular-nums">
+            {totalBudget.toFixed(2)} €
+          </span>
+          <span className="text-[12.5px] text-white/60">Budget estimé</span>
+        </div>
+        <div className="h-0.5 rounded-full bg-white/16 overflow-hidden">
+          <div
+            className="h-full bg-[#FF6B35] transition-all duration-500 ease-out"
+            style={{ width: `${budgetProgress}%` }}
+          />
+        </div>
+        <span className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-white/50">
+          {checkedTotal.toFixed(2)} € dans le panier
+        </span>
       </div>
 
       {/* Rename Sheet */}

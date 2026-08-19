@@ -69,6 +69,7 @@ export interface ShoppingListItem {
   unit?: string;
   barcode?: string;
   name?: string;
+  updated_at?: string;
   items_catalog:
     | {
         name?: string;

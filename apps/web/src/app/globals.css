@@ -52,6 +52,7 @@
 
   /* Design tokens — refonte mobile (clair) */
   --es-bg: #f7f8fa;
+  --es-banner: #1a365d;
   --es-surface: #ffffff;
   --es-surface-high: #ffffff;
   --es-ink: #12243f;
@@ -107,6 +108,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --es-bg: #0e1726;
+    --es-banner: #16223a;
     --es-surface: #16223a;
     --es-surface-high: #1d2c49;
     --es-ink: #e8ecf4;
