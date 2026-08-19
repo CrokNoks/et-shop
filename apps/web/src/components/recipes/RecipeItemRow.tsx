@@ -100,14 +100,14 @@ export const RecipeItemRow: React.FC<RecipeItemRowProps> = ({
             <button
               onClick={() => setIsEditing(true)}
               data-cy={`recipe-item-${item.id}-edit`}
-              className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--es-tertiary)] opacity-0 transition-opacity hover:bg-[var(--es-field)] hover:text-[var(--es-ink)] group-hover:opacity-100"
+              className="flex h-11 w-11 items-center justify-center rounded-[8px] text-[var(--es-tertiary)] transition-colors hover:bg-[var(--es-field)] hover:text-[var(--es-ink)]"
             >
               <Pencil className="h-4 w-4" />
             </button>
             <button
               onClick={() => onDelete(item.id)}
               data-cy={`recipe-item-${item.id}-delete`}
-              className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--es-tertiary)] opacity-0 transition-opacity hover:bg-[rgba(179,38,30,0.08)] hover:text-[var(--es-danger)] group-hover:opacity-100"
+              className="flex h-11 w-11 items-center justify-center rounded-[8px] text-[var(--es-tertiary)] transition-colors hover:bg-[rgba(179,38,30,0.08)] hover:text-[var(--es-danger)]"
             >
               <Trash2 className="h-4 w-4" />
             </button>

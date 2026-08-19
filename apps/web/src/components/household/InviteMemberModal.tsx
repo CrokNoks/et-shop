@@ -190,7 +190,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                     {member.role !== "admin" && (
                       <button
                         onClick={() => handleRemove(member.user_id)}
-                        className="p-2 text-[var(--es-tertiary)] opacity-0 transition-all hover:text-[var(--es-danger)] group-hover:opacity-100"
+                        className="flex h-11 w-11 items-center justify-center text-[var(--es-tertiary)] transition-colors hover:text-[var(--es-danger)]"
                       >
                         <TrashIcon className="w-4 h-4" />
                       </button>

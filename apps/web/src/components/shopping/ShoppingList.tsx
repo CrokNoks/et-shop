@@ -60,18 +60,44 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
   refetch,
 }) => {
   const [isShoppingMode, setIsShoppingMode] = useState(false);
-  const [wakeLock, setWakeLock] = useState<{ release: () => void } | null>(
-    null,
-  );
+  // Ref plutôt que state : lue dans le cleanup de l'effet ci-dessous. Les
+  // deps de l'effet sont volontairement réduites à [isShoppingMode] (une
+  // seule demande de verrou par entrée en mode magasin) — un cleanup qui
+  // capturerait un state par closure resterait figé sur sa valeur initiale
+  // (null) et ne relâcherait jamais le verrou réellement acquis.
+  const wakeLockRef = React.useRef<{ release: () => void } | null>(null);
 
-  // Edit Item Sheet State — sheet minimaliste conservé tel quel ce cycle ;
-  // le passage à l'écran 4i complet (unité en texte libre + raccourcis) est
-  // prévu au cycle "Ajout / édition d'article".
+  // Sheet d'édition d'article (écran 4i) : prix, unité en texte libre +
+  // raccourcis, code-barres.
   const [editingItem, setEditingItem] = useState<ShoppingListItem | null>(null);
   const [editPrice, setEditPrice] = useState("");
   const [editUnit, setEditUnit] = useState("");
   const [editBarcode, setEditBarcode] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // Scan en mode magasin : coche directement l'article dont le code-barres
+  // correspond, où qu'il soit dans la liste (pas seulement le rayon actif).
+  const [isScanSheetOpen, setIsScanSheetOpen] = useState(false);
+  const [scanCode, setScanCode] = useState("");
+
+  const handleScanSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = scanCode.trim();
+    if (!code) return;
+    const match = storeGroups
+      .flatMap((g) => g.aisles.flatMap((a) => a.items))
+      .find((i) => getCatalogInfo(i).barcode === code);
+    if (!match) {
+      toast.error("Aucun article de cette liste ne porte ce code-barres.");
+      return;
+    }
+    if (!match.is_purchased) {
+      toggleCheck(match.id, match.is_purchased);
+    }
+    toast.success(`${getCatalogInfo(match).name} coché.`);
+    setScanCode("");
+    setIsScanSheetOpen(false);
+  };
 
   const { aisles, activeAisle, nextAisle, selectAisle } =
     useAisleMode(storeGroups);
@@ -87,7 +113,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               };
             }
           ).wakeLock.request("screen");
-          setWakeLock(lock);
+          wakeLockRef.current = lock;
         } catch (err: unknown) {
           const e = err as { name?: string; message?: string };
           console.error(`${e?.name}, ${e?.message}`);
@@ -95,14 +121,16 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
       }
     };
     if (isShoppingMode) requestWakeLock();
-    else if (wakeLock) {
-      wakeLock.release();
-      setWakeLock(null);
+    else if (wakeLockRef.current) {
+      wakeLockRef.current.release();
+      wakeLockRef.current = null;
     }
     return () => {
-      if (wakeLock) wakeLock.release();
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release();
+        wakeLockRef.current = null;
+      }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isShoppingMode]);
 
   const openEditSheet = (item: ShoppingListItem) => {
@@ -114,13 +142,12 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
   };
 
   // Unités déjà utilisées dans la liste courante, en raccourcis (écran 4i).
-  // Dérivé du client, pas d'endpoint dédié : aucune donnée inventée.
+  // Dérivé du client, pas d'endpoint dédié : uniquement les unités
+  // réellement présentes dans la liste, aucune valeur inventée.
   const existingUnits = Array.from(
     new Set(
-      ["kg", "pcs", "L"].concat(
-        storeGroups.flatMap((g) =>
-          g.aisles.flatMap((a) => a.items.map((i) => getCatalogInfo(i).unit)),
-        ),
+      storeGroups.flatMap((g) =>
+        g.aisles.flatMap((a) => a.items.map((i) => getCatalogInfo(i).unit)),
       ),
     ),
   ).slice(0, 6);
@@ -265,22 +292,13 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
             >
               Code-barres
             </Label>
-            <div className="flex gap-2">
-              <Input
-                id="item-barcode"
-                value={editBarcode}
-                onChange={(e) => setEditBarcode(e.target.value)}
-                placeholder="Scanner ou saisir..."
-                className="h-[50px] flex-1 rounded-[14px] font-mono focus-visible:ring-[#FF6B35]"
-              />
-              <button
-                type="button"
-                title="Scanner un code-barres"
-                className="flex h-10 w-10 items-center justify-center self-center rounded-[10px] bg-[var(--es-field)] text-[var(--es-secondary)]"
-              >
-                <QrCodeIcon className="h-5 w-5" />
-              </button>
-            </div>
+            <Input
+              id="item-barcode"
+              value={editBarcode}
+              onChange={(e) => setEditBarcode(e.target.value)}
+              placeholder="Saisir le code-barres..."
+              className="h-[50px] rounded-[14px] font-mono focus-visible:ring-[#FF6B35]"
+            />
           </div>
           <SheetFooter className="mt-2 flex-row gap-3 p-0 sm:justify-start">
             <button
@@ -468,6 +486,8 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
 
         <div className="fixed bottom-6 left-4 right-4 flex gap-3">
           <button
+            onClick={() => setIsScanSheetOpen(true)}
+            data-cy="shopping-scan"
             className="w-[52px] h-[52px] rounded-2xl border border-[var(--es-hairline)] bg-[var(--es-shopping-card)] flex items-center justify-center text-[var(--es-secondary)] shrink-0"
             title="Scanner un code-barres"
           >
@@ -481,6 +501,42 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
             Terminer les courses
           </button>
         </div>
+
+        <Sheet open={isScanSheetOpen} onOpenChange={setIsScanSheetOpen}>
+          <SheetContent
+            side="bottom"
+            className="mx-auto w-full max-w-lg rounded-t-[18px] p-6 pt-3 text-[var(--es-ink)] bg-[var(--es-surface)]"
+          >
+            <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-[var(--es-hairline)]" />
+            <SheetHeader className="mb-6 p-0 text-left">
+              <SheetTitle className="text-[20px] font-semibold">
+                Scanner un article
+              </SheetTitle>
+              <SheetDescription className="text-[13px] text-[var(--es-secondary)]">
+                Coche directement l&apos;article de la liste correspondant à ce
+                code-barres.
+              </SheetDescription>
+            </SheetHeader>
+            <form onSubmit={handleScanSubmit} className="flex flex-col gap-4">
+              <Input
+                id="scan-code"
+                data-cy="shopping-scan-input"
+                autoFocus
+                value={scanCode}
+                onChange={(e) => setScanCode(e.target.value)}
+                placeholder="Saisir le code-barres..."
+                className="h-[50px] rounded-[14px] font-mono focus-visible:ring-[#FF6B35]"
+              />
+              <Button
+                type="submit"
+                data-cy="shopping-scan-submit"
+                className="h-[50px] rounded-[14px] bg-[#1A365D] text-[15px] font-semibold hover:bg-[#152c4c]"
+              >
+                Cocher l&apos;article
+              </Button>
+            </form>
+          </SheetContent>
+        </Sheet>
         {editSheet}
       </div>
     );
@@ -588,7 +644,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                                       )
                                     }
                                     data-cy={`item-${item.id}-minus`}
-                                    className="p-1 rounded-md text-[var(--es-tertiary)]"
+                                    className="flex h-[26px] w-[26px] items-center justify-center rounded-md text-[var(--es-tertiary)]"
                                   >
                                     <MinusIcon className="w-3 h-3" />
                                   </button>
@@ -607,7 +663,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                                       )
                                     }
                                     data-cy={`item-${item.id}-plus`}
-                                    className="p-1 rounded-md text-[var(--es-tertiary)]"
+                                    className="flex h-[26px] w-[26px] items-center justify-center rounded-md text-[var(--es-tertiary)]"
                                   >
                                     <PlusIcon className="w-3 h-3" />
                                   </button>

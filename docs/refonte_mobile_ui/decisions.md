@@ -42,3 +42,15 @@ Deux détails du design (écrans 2a/2c) ne sont pas pleinement réalisables sans
 - **Recettes — couverts et coût estimé (écrans 2i/3f, 4g)** : `Recipe` n'a pas de champ "couverts"/servings, ni `RecipeItem`/`CatalogItem` de champ prix (seul `ShoppingListItem` en a un). Pas de pas-à-pas "Couverts" ni de "≈ coût estimé" affiché.
 - **Recettes — envoi partiel vers une liste (écran 2i/3f)** : `SendToListDto` envoie systématiquement tous les ingrédients de la recette, aucun paramètre pour n'en sélectionner qu'une partie. Pas de cases à cocher ni de libellé "Ajouter N articles · {coût}" recalculé — les afficher sans effet réel aurait été trompeur.
 - **Recettes — création de produit à la volée (écran 4g)** : créer un `CatalogItem` exige un `store_id` ; le pattern "Créer « x » dans mon catalogue" posé dans `HopInput` (Cycle C) n'a pas été répliqué dans `AddRecipeItemForm` pour cette raison.
+- **Recettes — puces d'ingrédients sur la liste (écran 4f)** : `GET /recipes` renvoie `recipe_items` en agrégat (`recipe_items(count)`), pas le détail des items — `RecipeCard.tsx` ne peut donc afficher qu'un compte d'ingrédients, pas leurs noms (qui n'existent que via `GET /recipes/:id`). Les puces de noms du design ne sont pas affichées sur cette liste ; les afficher aurait nécessité soit un fetch par recette (N+1), soit un changement d'endpoint, tous deux hors périmètre de cette refonte.
+
+## Cibles tactiles sous 44px assumées
+
+Le README du handoff dit en toutes lettres (section "Fidelity") que les cibles tactiles citées explicitement pour un écran sont **définitives**, à recréer au pixel — en tension avec la règle générale "Aucune cible tactile sous 44px" listée dans "Design Tokens > Hauteurs". Le spécifique l'emporte sur le général pour les éléments suivants, volontairement laissés sous 44px :
+
+- Anneau de coche 26px (écran 2a — "Anneau de coche 26px").
+- Raccourcis d'unité 28px (écran 4i — "(28px, radius 8px...)").
+- Pastilles du sélecteur de rayon 32px (écran 2c/3b — "Pastilles 32px").
+- Pastille "Fidélité" en mode magasin 34px (écran 2c/3b).
+
+Les cas où une taille codée divergeait de la valeur explicite du design (ex. pas-à-pas de quantité à ~20px au lieu des 26px prescrits, boutons micro/scan de `HopInput` à 38px au lieu de 40px) ont été corrigés pour correspondre au design, pas à la règle générale des 44px.

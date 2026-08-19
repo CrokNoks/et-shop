@@ -86,12 +86,18 @@ export default function StoreDetailPage() {
         <h1 className="truncate text-[22px] font-semibold">{store.name}</h1>
       </div>
 
-      <div className="flex gap-1 rounded-[10px] bg-[var(--es-field-alt)] p-1 mx-3.5 w-fit">
+      <div
+        role="tablist"
+        aria-label="Sections du magasin"
+        className="flex gap-1 rounded-[10px] bg-[var(--es-field-alt)] p-1 mx-3.5 w-fit"
+      >
         {TABS.map((tab) => (
           <button
             key={tab.key}
             role="tab"
+            id={`store-tab-${tab.key}-trigger`}
             aria-selected={activeTab === tab.key}
+            aria-controls={`store-tabpanel-${tab.key}`}
             onClick={() => setActiveTab(tab.key)}
             data-cy={
               tab.key === "produits"
@@ -110,10 +116,32 @@ export default function StoreDetailPage() {
       </div>
 
       <div className="px-3.5 pt-5">
-        {activeTab === "rayons" && <StoreCategories storeId={store.id} />}
-        {activeTab === "produits" && <StoreCatalog storeId={store.id} />}
+        {activeTab === "rayons" && (
+          <div
+            role="tabpanel"
+            id="store-tabpanel-rayons"
+            aria-labelledby="store-tab-rayons-trigger"
+          >
+            <StoreCategories storeId={store.id} />
+          </div>
+        )}
+        {activeTab === "produits" && (
+          <div
+            role="tabpanel"
+            id="store-tabpanel-produits"
+            aria-labelledby="store-tab-produits-trigger"
+          >
+            <StoreCatalog storeId={store.id} />
+          </div>
+        )}
         {activeTab === "cartes" && (
-          <StoreLoyaltyCards storeId={store.id} storeName={store.name} />
+          <div
+            role="tabpanel"
+            id="store-tabpanel-cartes"
+            aria-labelledby="store-tab-cartes-trigger"
+          >
+            <StoreLoyaltyCards storeId={store.id} storeName={store.name} />
+          </div>
         )}
       </div>
       <TabBar />

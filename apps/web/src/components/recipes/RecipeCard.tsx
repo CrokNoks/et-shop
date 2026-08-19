@@ -12,13 +12,16 @@ interface RecipeCardProps {
 }
 
 export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onDelete }) => {
-  const items = recipe.recipe_items ?? [];
-  const itemCount = items.length;
-  const visibleNames = items
-    .slice(0, 3)
-    .map((i) => i.items_catalog?.name)
-    .filter(Boolean) as string[];
-  const extraCount = itemCount - visibleNames.length;
+  // GET /recipes renvoie recipe_items en agrégat (`recipe_items(count)`),
+  // pas le détail des items : `recipe.recipe_items` vaut ici [{ count: N }],
+  // pas un vrai tableau d'ingrédients. Le détail (noms, items_catalog)
+  // n'existe que sur GET /recipes/:id (RecipeDetail). On ne peut donc
+  // afficher qu'un compte ici, pas de puces de noms sans un fetch par
+  // recette (N+1, écarté pour la même raison que les compteurs
+  // rayons/produits de /stores).
+  const rawItems = recipe.recipe_items ?? [];
+  const aggregateCount = (rawItems[0] as unknown as { count?: number })?.count;
+  const itemCount = aggregateCount ?? rawItems.length;
 
   return (
     <Link
@@ -36,23 +39,6 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onDelete }) => {
           <p className="text-[11.5px] text-[var(--es-tertiary)]">
             {itemCount} ingrédient{itemCount !== 1 ? "s" : ""}
           </p>
-          {visibleNames.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1 pt-0.5">
-              {visibleNames.map((name) => (
-                <span
-                  key={name}
-                  className="h-[26px] rounded-[6px] bg-[var(--es-field)] px-2 text-[11.5px] leading-[26px] text-[var(--es-secondary)]"
-                >
-                  {name}
-                </span>
-              ))}
-              {extraCount > 0 && (
-                <span className="h-[26px] rounded-[6px] bg-[var(--es-field)] px-2 text-[11.5px] leading-[26px] text-[var(--es-tertiary)]">
-                  +{extraCount}
-                </span>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
@@ -60,7 +46,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onDelete }) => {
         <button
           onClick={(e) => onDelete(e, recipe.id, recipe.name)}
           data-cy="recipe-delete"
-          className="flex h-9 w-9 items-center justify-center rounded-[10px] text-[var(--es-tertiary)] opacity-0 transition-opacity hover:bg-[rgba(179,38,30,0.08)] hover:text-[var(--es-danger)] group-hover:opacity-100"
+          className="flex h-11 w-11 items-center justify-center rounded-[10px] text-[var(--es-tertiary)] transition-colors hover:bg-[rgba(179,38,30,0.08)] hover:text-[var(--es-danger)]"
           title="Supprimer"
         >
           <Trash2 className="h-4 w-4" />

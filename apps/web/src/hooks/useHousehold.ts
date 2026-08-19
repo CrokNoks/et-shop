@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { fetchApi } from "@/lib/api";
+import { useLocalStorageValue } from "@/hooks/useLocalStorageValue";
 
 export interface Household {
   id: string;
@@ -17,9 +18,17 @@ export interface HouseholdMember {
   } | null;
 }
 
+const ACTIVE_HOUSEHOLD_KEY = "active_household_id";
+
+/** Lecture synchrone hors composant (event handlers, query functions). */
 function getActiveHouseholdId(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("active_household_id");
+  return localStorage.getItem(ACTIVE_HOUSEHOLD_KEY);
+}
+
+/** Lecture sûre pour l'hydratation, à utiliser dans le corps d'un composant. */
+export function useActiveHouseholdId(): string | null {
+  return useLocalStorageValue(ACTIVE_HOUSEHOLD_KEY);
 }
 
 /**
@@ -27,7 +36,8 @@ function getActiveHouseholdId(): string | null {
  * "household by id" côté API).
  */
 export function useActiveHousehold() {
-  const householdId = getActiveHouseholdId();
+  const householdId = useActiveHouseholdId();
+
   const { data: households = [] } = useQuery<Household[], Error>({
     queryKey: ["households", "me"],
     queryFn: () => fetchApi("/households/me"),

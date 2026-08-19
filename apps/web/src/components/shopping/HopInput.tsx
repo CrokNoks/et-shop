@@ -240,7 +240,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
             onClick={startVoiceDictation}
             data-cy="hop-voice"
             title="Dictée Vocale"
-            className={`flex h-[38px] w-[38px] items-center justify-center rounded-[10px] transition-colors ${isListening ? "bg-[#FF6B35] text-white" : "bg-[rgba(255,107,53,0.12)] text-[var(--es-accent-text)]"}`}
+            className={`flex h-10 w-10 items-center justify-center rounded-[10px] transition-colors ${isListening ? "bg-[#FF6B35] text-white" : "bg-[rgba(255,107,53,0.12)] text-[var(--es-accent-text)]"}`}
           >
             <MicrophoneIcon className="w-5 h-5" />
           </button>
@@ -248,7 +248,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
             onClick={() => setIsBarcodeSheetOpen(true)}
             data-cy="hop-barcode"
             title="Scanner un code-barres"
-            className="flex h-[38px] w-[38px] items-center justify-center rounded-[10px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
+            className="flex h-10 w-10 items-center justify-center rounded-[10px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
           >
             <QrCodeIcon className="w-5 h-5" />
           </button>

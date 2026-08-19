@@ -12,8 +12,8 @@ import { ShoppingList as ShoppingListType } from "@/types";
 import { useShoppingListItems } from "@/hooks/useShoppingListItems";
 import {
   useActiveHousehold,
+  useActiveHouseholdId,
   useHouseholdMembers,
-  getActiveHouseholdId,
 } from "@/hooks/useHousehold";
 
 export const dynamic = "force-dynamic";
@@ -96,7 +96,8 @@ export default function Home() {
   } = useShoppingListItems(activeListId, refreshTrigger);
 
   const household = useActiveHousehold();
-  const { data: members = [] } = useHouseholdMembers(getActiveHouseholdId());
+  const householdId = useActiveHouseholdId();
+  const { data: members = [] } = useHouseholdMembers(householdId);
 
   return (
     <div className="min-h-screen bg-[var(--es-bg)] flex flex-col font-sans">

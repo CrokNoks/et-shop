@@ -20,10 +20,11 @@ import { useSupabase } from "@/hooks/useSupabase";
 import { useShoppingLists } from "@/hooks/useShoppingLists";
 import {
   useActiveHousehold,
+  useActiveHouseholdId,
   useHouseholdMembers,
-  getActiveHouseholdId,
 } from "@/hooks/useHousehold";
 import { useShoppingListItems } from "@/hooks/useShoppingListItems";
+import { useLocalStorageValue } from "@/hooks/useLocalStorageValue";
 import { MemberAvatars } from "@/components/shopping/MemberAvatars";
 import { InviteMemberModal } from "@/components/household/InviteMemberModal";
 import { TabBar } from "@/components/layout/TabBar";
@@ -35,14 +36,16 @@ export default function ListsPage() {
   const router = useRouter();
   const supabase = useSupabase();
   const household = useActiveHousehold();
-  const householdId = getActiveHouseholdId();
+  const householdId = useActiveHouseholdId();
+  // Valeur persistée lue de façon sûre pour l'hydratation ; `selectedListId`
+  // prend le dessus dès qu'un choix est fait explicitement dans cette
+  // session (voir `selectList`), sans jamais faire de setState dans un
+  // effet juste pour initialiser depuis localStorage.
+  const persistedListId = useLocalStorageValue(ACTIVE_LIST_KEY);
+  const [selectedListId, setSelectedListId] = useState<string | null>(null);
+  const activeListId = selectedListId ?? persistedListId;
   const { data: members = [] } = useHouseholdMembers(householdId);
   const { lists, isLoading, createList } = useShoppingLists();
-  const [activeListId, setActiveListIdState] = useState<string | null>(() =>
-    typeof window !== "undefined"
-      ? localStorage.getItem(ACTIVE_LIST_KEY)
-      : null,
-  );
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newListName, setNewListName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -59,7 +62,7 @@ export default function ListsPage() {
   const otherLists = lists.filter((l) => l.id !== activeList?.id);
 
   const selectList = (id: string) => {
-    setActiveListIdState(id);
+    setSelectedListId(id);
     localStorage.setItem(ACTIVE_LIST_KEY, id);
     router.push("/");
   };

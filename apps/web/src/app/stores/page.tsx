@@ -362,10 +362,14 @@ export default function StoresPage() {
             className="mt-6 flex flex-col gap-4"
           >
             <div className="space-y-2">
-              <label className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]">
+              <label
+                htmlFor="store-name-input"
+                className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]"
+              >
                 Nom du magasin
               </label>
               <input
+                id="store-name-input"
                 type="text"
                 data-cy="store-name-input"
                 required

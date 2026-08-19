@@ -297,14 +297,14 @@ export const StoreCategories: React.FC<StoreCategoriesProps> = ({
                     <button
                       onClick={() => handleOpenEdit(category)}
                       data-cy="store-category-edit"
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
                     >
                       <PencilIcon className="h-[18px] w-[18px]" />
                     </button>
                     <button
                       onClick={() => handleDelete(category.id, category.name)}
                       data-cy="store-category-delete"
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
                     >
                       <TrashIcon className="h-[18px] w-[18px]" />
                     </button>
