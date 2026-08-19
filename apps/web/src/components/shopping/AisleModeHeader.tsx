@@ -28,7 +28,7 @@ export const AisleModeHeader: React.FC<AisleModeHeaderProps> = ({
     <div className="px-3.5 pt-3 pb-2 flex flex-col gap-2 text-[var(--es-ink)]">
       <div className="flex items-center justify-between gap-3">
         <div className="flex flex-col gap-1 min-w-0">
-          <span className="flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[#c8471c] dark:text-[#ffb694]">
+          <span className="flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-accent-text)]">
             En magasin · {storeName}
           </span>
           <h1 className="text-xl font-semibold truncate">Rayon {aisleName}</h1>
@@ -37,7 +37,7 @@ export const AisleModeHeader: React.FC<AisleModeHeaderProps> = ({
           <button
             onClick={onShowLoyaltyCard}
             title="Carte de fidélité"
-            className="shrink-0 w-[34px] h-[34px] rounded-2xl border border-[var(--es-hairline)] flex items-center justify-center text-[#c8471c] dark:text-[#ffb694]"
+            className="shrink-0 w-[34px] h-[34px] rounded-2xl border border-[var(--es-hairline)] flex items-center justify-center text-[var(--es-accent-text)]"
           >
             <CreditCardIcon className="w-4 h-4" />
           </button>

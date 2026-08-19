@@ -47,7 +47,7 @@ export const AisleSelector: React.FC<AisleSelectorProps> = ({
               onClick={() => onSelect(aisle.key)}
               className={`shrink-0 h-8 px-3 rounded-2xl border text-[13px] font-semibold whitespace-nowrap flex items-center gap-1.5 transition-colors ${
                 active
-                  ? "border-[#FF6B35] bg-[#FF6B35]/8 dark:bg-[#FF6B35]/16 text-[#c8471c] dark:text-[#ffb694]"
+                  ? "border-[#FF6B35] bg-[#FF6B35]/8 dark:bg-[#FF6B35]/16 text-[var(--es-accent-text)]"
                   : done
                     ? "border-[var(--es-hairline)] text-[var(--es-secondary)]"
                     : "border-[var(--es-hairline)] text-[var(--es-tertiary)]"

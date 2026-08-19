@@ -81,12 +81,12 @@ function BarcodeRenderer({
   }
 
   return (
-    <div className="text-center p-4">
-      <p className="text-red-500">
+    <div className="p-4 text-center">
+      <p className="text-[var(--es-danger)]">
         Format de code-barres non pris en charge pour l&apos;affichage :{" "}
         {format}
       </p>
-      <p className="font-mono text-lg mt-2">{data}</p>
+      <p className="mt-2 font-mono text-lg">{data}</p>
     </div>
   );
 }
@@ -96,12 +96,18 @@ export function LoyaltyCardDisplay({
   barcodeFormat,
 }: LoyaltyCardDisplayProps) {
   return (
-    <div className="flex flex-col items-center justify-center p-4">
-      <h3 className="text-xl font-semibold mb-4">Code-barres de la carte</h3>
-      <div className="bg-gray-100 p-4 rounded-lg shadow-inner">
+    <div className="flex flex-col items-center justify-center p-4 text-[var(--es-ink)]">
+      <h3 className="mb-4 text-[17px] font-semibold">
+        Code-barres de la carte
+      </h3>
+      {/* Fond forcé en blanc même en thème sombre : c'est un aperçu de code
+          scannable, pas un élément décoratif (cf. LoyaltyCardOverlay). */}
+      <div className="rounded-[14px] bg-[#f2f4f7] p-4 shadow-inner">
         <BarcodeRenderer data={cardData} format={barcodeFormat} />
       </div>
-      <p className="mt-4 text-gray-600">Présentez ce code à la caisse.</p>
+      <p className="mt-4 text-[13px] text-[var(--es-secondary)]">
+        Présentez ce code à la caisse.
+      </p>
     </div>
   );
 }

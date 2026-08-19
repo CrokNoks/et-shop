@@ -20,7 +20,7 @@ export default function LoyaltyCardsPage() {
         </div>
         <Link
           href="/loyalty-cards/add"
-          className="flex h-9 shrink-0 items-center gap-1.5 rounded-[10px] border border-[#FF6B35] px-3 text-[13px] font-semibold text-[#c8471c]"
+          className="flex h-9 shrink-0 items-center gap-1.5 rounded-[10px] border border-[#FF6B35] px-3 text-[13px] font-semibold text-[var(--es-accent-text)]"
         >
           + Ajouter
         </Link>

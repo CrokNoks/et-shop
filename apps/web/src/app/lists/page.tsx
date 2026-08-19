@@ -108,7 +108,7 @@ export default function ListsPage() {
         <button
           onClick={() => setIsCreateOpen(true)}
           data-cy="lists-new-list"
-          className="flex h-9 items-center gap-1 rounded-[10px] border border-[#FF6B35] px-3 text-[13px] font-semibold text-[#c8471c]"
+          className="flex h-9 items-center gap-1 rounded-[10px] border border-[#FF6B35] px-3 text-[13px] font-semibold text-[var(--es-accent-text)]"
         >
           <PlusIcon className="h-4 w-4" strokeWidth={2.5} />
           Nouvelle
@@ -119,7 +119,7 @@ export default function ListsPage() {
         {activeList && (
           <button
             onClick={() => selectList(activeList.id)}
-            className="rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-banner)] p-3.5 text-left text-white"
+            className="rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-banner)] p-3.5 text-left text-white dark:bg-[var(--es-surface-high)]"
           >
             <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[#FF6B35] dark:text-[#ffb694]">
               Liste active
@@ -169,7 +169,7 @@ export default function ListsPage() {
             <span className="text-[13px] font-semibold">
               {household?.name ?? "Foyer"}
             </span>
-            <MemberAvatars members={members} />
+            <MemberAvatars members={members} borderColor="var(--es-bg)" />
           </div>
           <button
             onClick={() => setIsInviteOpen(true)}

@@ -240,7 +240,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
             onClick={startVoiceDictation}
             data-cy="hop-voice"
             title="Dictée Vocale"
-            className={`flex h-[38px] w-[38px] items-center justify-center rounded-[10px] transition-colors ${isListening ? "bg-[#FF6B35] text-white" : "bg-[rgba(255,107,53,0.12)] text-[#c8471c]"}`}
+            className={`flex h-[38px] w-[38px] items-center justify-center rounded-[10px] transition-colors ${isListening ? "bg-[#FF6B35] text-white" : "bg-[rgba(255,107,53,0.12)] text-[var(--es-accent-text)]"}`}
           >
             <MicrophoneIcon className="w-5 h-5" />
           </button>
@@ -305,7 +305,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
                       .join(" · ") || "Sans magasin"}
                   </span>
                 </div>
-                <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-[rgba(255,107,53,0.12)] text-[#c8471c]">
+                <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-[rgba(255,107,53,0.12)] text-[var(--es-accent-text)]">
                   <PlusIcon className="h-4 w-4" strokeWidth={2.5} />
                 </span>
               </button>
@@ -313,7 +313,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
             <button
               onClick={openCreateSheet}
               data-cy="hop-create-product"
-              className="flex h-[52px] w-full items-center gap-2 bg-[rgba(255,107,53,0.06)] px-3.5 text-left text-[14px] font-semibold text-[#c8471c]"
+              className="flex h-[52px] w-full items-center gap-2 bg-[rgba(255,107,53,0.06)] px-3.5 text-left text-[14px] font-semibold text-[var(--es-accent-text)]"
             >
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[rgba(255,107,53,0.12)]">
                 <PlusIcon className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -328,14 +328,14 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent
           side="bottom"
-          className="mx-auto w-full max-w-lg rounded-t-[18px] p-6 pt-3 text-[#1A365D] bg-[var(--es-surface)]"
+          className="mx-auto w-full max-w-lg rounded-t-[18px] p-6 pt-3 text-[var(--es-ink)] bg-[var(--es-surface)]"
         >
           <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-[var(--es-hairline)]" />
           <SheetHeader className="mb-6 p-0 text-left">
             <SheetTitle className="text-[20px] font-semibold">
               Créer un produit
             </SheetTitle>
-            <SheetDescription className="text-[13px] text-gray-500">
+            <SheetDescription className="text-[13px] text-[var(--es-secondary)]">
               Ajoutez les détails du produit pour l&apos;enregistrer dans votre
               catalogue.
             </SheetDescription>
@@ -377,14 +377,14 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
       <Sheet open={isBarcodeSheetOpen} onOpenChange={setIsBarcodeSheetOpen}>
         <SheetContent
           side="bottom"
-          className="mx-auto w-full max-w-lg rounded-t-[18px] p-6 pt-3 text-[#1A365D] bg-[var(--es-surface)]"
+          className="mx-auto w-full max-w-lg rounded-t-[18px] p-6 pt-3 text-[var(--es-ink)] bg-[var(--es-surface)]"
         >
           <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-[var(--es-hairline)]" />
           <SheetHeader className="mb-6 p-0 text-left">
             <SheetTitle className="text-[20px] font-semibold">
               Scanner un produit
             </SheetTitle>
-            <SheetDescription className="text-[13px] text-gray-500">
+            <SheetDescription className="text-[13px] text-[var(--es-secondary)]">
               Saisissez le code-barres pour ajouter instantanément
               l&apos;article.
             </SheetDescription>

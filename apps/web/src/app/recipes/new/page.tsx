@@ -62,7 +62,7 @@ export default function NewRecipePage() {
             form="new-recipe-form"
             data-cy="recipe-submit"
             disabled={isSubmitting || !name.trim()}
-            className="text-[14px] font-semibold text-[#c8471c] disabled:opacity-40"
+            className="text-[14px] font-semibold text-[var(--es-accent-text)] disabled:opacity-40"
           >
             {isSubmitting ? "Création..." : "Enregistrer"}
           </button>

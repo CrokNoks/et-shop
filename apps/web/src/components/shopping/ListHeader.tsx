@@ -141,32 +141,32 @@ export const ListHeader: React.FC<ListHeaderProps> = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="w-48 p-2 rounded-2xl shadow-xl border-gray-100 text-[var(--es-ink)]"
+              className="w-48 rounded-2xl border-[var(--es-hairline)] bg-[var(--es-surface)] p-2 text-[var(--es-ink)] shadow-xl"
             >
               <DropdownMenuItem
                 onClick={handleOpenRename}
                 data-cy="list-edit"
-                className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-gray-50 focus:bg-gray-50 font-bold transition-colors"
+                className="flex cursor-pointer items-center gap-3 rounded-xl p-3 font-semibold transition-colors hover:bg-[var(--es-field)] focus:bg-[var(--es-field)]"
               >
-                <PencilIcon className="w-4 h-4 text-gray-400" />
+                <PencilIcon className="w-4 h-4 text-[var(--es-secondary)]" />
                 Modifier la liste
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-gray-50" />
+              <DropdownMenuSeparator className="bg-[var(--es-hairline)]" />
               <DropdownMenuItem
                 onClick={handleDelete}
                 data-cy="list-delete"
-                className="flex items-center gap-3 p-3 rounded-xl cursor-pointer text-red-500 hover:bg-red-50 focus:bg-red-50 font-bold transition-colors"
+                className="flex cursor-pointer items-center gap-3 rounded-xl p-3 font-semibold text-[var(--es-danger)] transition-colors hover:bg-[rgba(179,38,30,0.08)] focus:bg-[rgba(179,38,30,0.08)]"
               >
                 <TrashIcon className="w-4 h-4" />
                 Supprimer
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-gray-50" />
+              <DropdownMenuSeparator className="bg-[var(--es-hairline)]" />
               <DropdownMenuItem
                 onClick={handleLogout}
                 data-cy="logout-button"
-                className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-gray-50 focus:bg-gray-50 font-bold transition-colors"
+                className="flex cursor-pointer items-center gap-3 rounded-xl p-3 font-semibold transition-colors hover:bg-[var(--es-field)] focus:bg-[var(--es-field)]"
               >
-                <ArrowLeftOnRectangleIcon className="w-4 h-4 text-gray-400" />
+                <ArrowLeftOnRectangleIcon className="w-4 h-4 text-[var(--es-secondary)]" />
                 Se déconnecter
               </DropdownMenuItem>
             </DropdownMenuContent>

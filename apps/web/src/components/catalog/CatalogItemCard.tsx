@@ -45,7 +45,7 @@ export const CatalogItemCard: React.FC<CatalogItemCardProps> = ({
             />
           </div>
           <div className="flex flex-col gap-1 text-left">
-            <span className="w-fit rounded-[6px] bg-[rgba(255,107,53,0.1)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#c8471c]">
+            <span className="w-fit rounded-[6px] bg-[rgba(255,107,53,0.1)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--es-accent-text)]">
               {item.categories?.name || "Sans rayon"}
             </span>
             <h3 className="text-[15px] font-medium">{item.name}</h3>

@@ -37,7 +37,7 @@ export function LoyaltyCardList() {
         </p>
         <Link
           href="/loyalty-cards/add"
-          className="text-[14px] font-semibold text-[#c8471c]"
+          className="text-[14px] font-semibold text-[var(--es-accent-text)]"
         >
           Ajouter une nouvelle carte
         </Link>

@@ -116,7 +116,10 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
             Inviter un membre
           </SheetTitle>
           <SheetDescription className="text-[13px] text-[var(--es-secondary)]">
-            Foyer <span className="text-[#c8471c]">{householdName}</span>
+            Foyer{" "}
+            <span className="text-[var(--es-accent-text)]">
+              {householdName}
+            </span>
           </SheetDescription>
         </SheetHeader>
 

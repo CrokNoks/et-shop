@@ -56,7 +56,7 @@ export const SortableCategoryItem: React.FC<SortableCategoryItemProps> = ({
       </div>
 
       {isDragging && (
-        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#c8471c]">
+        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--es-accent-text)]">
           déplacé
         </span>
       )}

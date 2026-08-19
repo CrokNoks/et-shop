@@ -332,7 +332,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
           />
         ) : (
           <div className="p-6 text-center">
-            <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[#c8471c] dark:text-[#ffb694]">
+            <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-accent-text)]">
               En magasin
             </span>
             <p className="mt-2 text-[var(--es-secondary)]">
@@ -476,7 +476,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
           <button
             onClick={() => setIsShoppingMode(false)}
             data-cy="shopping-finish"
-            className="flex-1 h-[52px] rounded-2xl border border-[#FF6B35] bg-[#FF6B35]/16 dark:bg-[#FF6B35]/8 text-[#c8471c] dark:text-[#ffb694] font-semibold text-[15.5px]"
+            className="flex-1 h-[52px] rounded-2xl border border-[#FF6B35] bg-[#FF6B35]/16 dark:bg-[#FF6B35]/8 text-[var(--es-accent-text)] font-semibold text-[15.5px]"
           >
             Terminer les courses
           </button>
@@ -491,7 +491,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
       <button
         onClick={() => setIsShoppingMode(true)}
         data-cy="shopping-mode-toggle"
-        className="h-[46px] rounded-2xl border border-[#FF6B35] bg-[#FF6B35]/6 hover:bg-[#FF6B35]/14 active:bg-[#FF6B35]/22 text-[#c8471c] dark:text-[#ffb694] font-semibold text-sm transition-colors"
+        className="h-[46px] rounded-2xl border border-[#FF6B35] bg-[#FF6B35]/6 hover:bg-[#FF6B35]/14 active:bg-[#FF6B35]/22 text-[var(--es-accent-text)] font-semibold text-sm transition-colors"
       >
         Démarrer le mode magasin
       </button>
@@ -518,7 +518,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                   onClick={() =>
                     setActiveCard(loyaltyCardByStore[storeGroup.id])
                   }
-                  className="p-2 rounded-xl bg-[#FF6B35]/10 hover:bg-[#FF6B35]/20 text-[#c8471c] dark:text-[#ffb694] transition-colors"
+                  className="p-2 rounded-xl bg-[#FF6B35]/10 hover:bg-[#FF6B35]/20 text-[var(--es-accent-text)] transition-colors"
                   title="Afficher la carte de fidélité"
                 >
                   <ChevronRightIcon className="w-4 h-4" />
@@ -643,7 +643,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                               className={`text-sm font-semibold tabular-nums min-w-[52px] text-right ${
                                 item.is_purchased
                                   ? "text-[var(--es-secondary)]"
-                                  : "text-[#c8471c] dark:text-[#ffb694]"
+                                  : "text-[var(--es-accent-text)]"
                               }`}
                             >
                               {(

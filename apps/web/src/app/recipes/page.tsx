@@ -45,7 +45,7 @@ export default function RecipesPage() {
           <Link
             href="/recipes/new"
             data-cy="recipes-new"
-            className="flex h-9 items-center gap-1 rounded-[10px] border border-[#FF6B35] px-3 text-[13px] font-semibold text-[#c8471c]"
+            className="flex h-9 items-center gap-1 rounded-[10px] border border-[#FF6B35] px-3 text-[13px] font-semibold text-[var(--es-accent-text)]"
           >
             <PlusIcon className="h-4 w-4" strokeWidth={2.5} />
             Nouvelle

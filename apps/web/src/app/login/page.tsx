@@ -162,7 +162,7 @@ export default function LoginPage() {
           onClick={handleSignUp}
           data-cy="login-signup"
           disabled={loading}
-          className="h-[50px] w-full rounded-[14px] border border-[#FF6B35] text-[15px] font-semibold text-[#c8471c] transition-opacity disabled:opacity-50"
+          className="h-[50px] w-full rounded-[14px] border border-[#FF6B35] text-[15px] font-semibold text-[var(--es-accent-text)] transition-opacity disabled:opacity-50"
         >
           Créer un compte
         </button>

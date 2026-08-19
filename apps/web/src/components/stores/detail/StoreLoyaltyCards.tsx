@@ -105,7 +105,7 @@ export function StoreLoyaltyCards({
         <button
           onClick={() => setIsAddSheetOpen(true)}
           data-cy="loyalty-store-add"
-          className="flex h-9 items-center gap-1.5 rounded-[10px] border border-[#FF6B35] px-3 text-[13px] font-semibold text-[#c8471c]"
+          className="flex h-9 items-center gap-1.5 rounded-[10px] border border-[#FF6B35] px-3 text-[13px] font-semibold text-[var(--es-accent-text)]"
         >
           <PlusIcon className="h-4 w-4" strokeWidth={2.5} />
           Ajouter une carte
@@ -148,7 +148,7 @@ export function StoreLoyaltyCards({
                 </button>
                 <button
                   onClick={() => setActiveCard(card)}
-                  className="shrink-0 text-[13px] font-semibold text-[#c8471c]"
+                  className="shrink-0 text-[13px] font-semibold text-[var(--es-accent-text)]"
                 >
                   Voir
                 </button>
@@ -170,7 +170,7 @@ export function StoreLoyaltyCards({
         <Link
           href="/loyalty-cards"
           data-cy="loyalty-manage-all"
-          className="self-start text-[12.5px] font-semibold text-[var(--es-secondary)] hover:text-[#c8471c]"
+          className="self-start text-[12.5px] font-semibold text-[var(--es-secondary)] hover:text-[var(--es-accent-text)]"
         >
           Gérer toutes mes cartes de fidélité →
         </Link>

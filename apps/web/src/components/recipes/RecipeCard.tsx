@@ -26,7 +26,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onDelete }) => {
       className="group flex items-center justify-between gap-3 rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] p-3 text-left"
     >
       <div className="flex min-w-0 items-center gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-[rgba(255,107,53,0.1)] text-[#c8471c]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-[rgba(255,107,53,0.1)] text-[var(--es-accent-text)]">
           <ChefHat className="h-5 w-5" />
         </div>
         <div className="flex min-w-0 flex-col gap-1">

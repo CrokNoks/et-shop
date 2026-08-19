@@ -31,7 +31,9 @@ export default function LoyaltyCardDetailPage() {
   const storeMap = useStoreMap();
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(loyaltyCard?.name || "");
-  const [editedDescription, setEditedDescription] = useState(loyaltyCard?.description || "");
+  const [editedDescription, setEditedDescription] = useState(
+    loyaltyCard?.description || "",
+  );
   const [editedCardData, setEditedCardData] = useState(
     loyaltyCard?.cardData || "",
   );
@@ -87,13 +89,22 @@ export default function LoyaltyCardDetailPage() {
     }
   };
 
+  const labelClass =
+    "block text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]";
+  const fieldClass =
+    "mt-1.5 block w-full rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-3.5 py-2.5 text-[15px] font-medium text-[var(--es-ink)] focus:border-[#FF6B35] focus:outline-none";
+
   if (isLoading) {
-    return <div className="p-4 text-center">Chargement de la carte...</div>;
+    return (
+      <div className="p-4 text-center text-[var(--es-secondary)]">
+        Chargement de la carte...
+      </div>
+    );
   }
 
   if (isError || !loyaltyCard) {
     return (
-      <div className="p-4 text-red-500 text-center">
+      <div className="p-4 text-center text-[var(--es-danger)]">
         Erreur : {(error as Error)?.message || "Carte non trouvée."}
       </div>
     );
@@ -102,18 +113,18 @@ export default function LoyaltyCardDetailPage() {
   const storeName = storeMap[loyaltyCard.storeId] ?? loyaltyCard.storeId;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="flex flex-col gap-6 text-[var(--es-ink)]">
+      <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/loyalty-cards")}
             data-cy="loyalty-back"
-            className="text-gray-500 hover:text-gray-800 transition-colors"
+            className="text-[var(--es-secondary)] transition-colors hover:text-[var(--es-ink)]"
             aria-label="Retour à la liste"
           >
             ←
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-[22px] font-semibold">
             Détails de la Carte de Fidélité
           </h1>
         </div>
@@ -121,88 +132,82 @@ export default function LoyaltyCardDetailPage() {
           <button
             onClick={() => setIsEditing(true)}
             data-cy="loyalty-edit"
-            className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="rounded-[10px] bg-[var(--es-banner)] px-4 py-2 text-[13px] font-semibold text-white"
           >
             Modifier
           </button>
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-6 space-y-4">
+      <div className="space-y-4 rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] p-6">
         {isEditing ? (
           // Edit Form
           <>
             <div>
-              <label htmlFor="editedName" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="editedName" className={labelClass}>
                 Nom de la carte
               </label>
               <input
                 type="text"
                 id="editedName"
                 data-cy="loyalty-edit-name"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className={fieldClass}
                 value={editedName}
                 onChange={(e) => setEditedName(e.target.value)}
                 required
               />
             </div>
             <div>
-              <label htmlFor="editedDescription" className="block text-sm font-medium text-gray-700">
-                Description <span className="font-normal text-gray-400">(optionnel)</span>
+              <label htmlFor="editedDescription" className={labelClass}>
+                Description{" "}
+                <span className="font-normal normal-case text-[var(--es-tertiary)]">
+                  (optionnel)
+                </span>
               </label>
               <input
                 type="text"
                 id="editedDescription"
                 data-cy="loyalty-edit-description"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className={fieldClass}
                 value={editedDescription}
                 onChange={(e) => setEditedDescription(e.target.value)}
               />
             </div>
             <div>
-              <label
-                htmlFor="editedCardData"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="editedCardData" className={labelClass}>
                 Numéro de Carte
               </label>
               <input
                 type="text"
                 id="editedCardData"
                 data-cy="loyalty-edit-card-data"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className={`${fieldClass} font-mono`}
                 value={editedCardData}
                 onChange={(e) => setEditedCardData(e.target.value)}
               />
             </div>
             <div>
-              <label
-                htmlFor="editedCustomColor"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="editedCustomColor" className={labelClass}>
                 Couleur Personnalisée (Hex)
               </label>
               <input
                 type="text"
                 id="editedCustomColor"
                 data-cy="loyalty-edit-color"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className={`${fieldClass} font-mono`}
                 value={editedCustomColor}
                 onChange={(e) => setEditedCustomColor(e.target.value)}
                 placeholder="#RRGGBB"
               />
             </div>
             <div>
-              <label
-                htmlFor="editedBarcodeFormat"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="editedBarcodeFormat" className={labelClass}>
                 Format de Code-barres
               </label>
               <select
                 id="editedBarcodeFormat"
                 data-cy="loyalty-edit-barcode-format"
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                className={fieldClass}
                 value={editedBarcodeFormat}
                 onChange={(e) =>
                   setEditedBarcodeFormat(e.target.value as BarcodeFormat)
@@ -215,18 +220,18 @@ export default function LoyaltyCardDetailPage() {
                 ))}
               </select>
             </div>
-            <div className="flex justify-end space-x-2">
+            <div className="flex justify-end gap-2">
               <button
                 onClick={() => setIsEditing(false)}
                 data-cy="loyalty-cancel"
-                className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                className="rounded-[10px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-4 py-2 text-[13px] font-semibold text-[var(--es-ink)]"
               >
                 Annuler
               </button>
               <button
                 onClick={handleUpdate}
                 data-cy="loyalty-save"
-                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                className="rounded-[10px] bg-[var(--es-banner)] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
                 disabled={updateLoyaltyCard.isPending}
               >
                 {updateLoyaltyCard.isPending ? "Mise à jour..." : "Sauvegarder"}
@@ -241,7 +246,8 @@ export default function LoyaltyCardDetailPage() {
             </p>
             {loyaltyCard.description && (
               <p>
-                <span className="font-semibold">Description:</span> {loyaltyCard.description}
+                <span className="font-semibold">Description:</span>{" "}
+                {loyaltyCard.description}
               </p>
             )}
             <p>
@@ -269,11 +275,11 @@ export default function LoyaltyCardDetailPage() {
               />
             </div>
 
-            <div className="flex justify-end mt-4">
+            <div className="mt-4 flex justify-end">
               <button
                 onClick={handleDelete}
                 data-cy="loyalty-delete"
-                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                className="rounded-[10px] border border-[rgba(179,38,30,0.4)] px-4 py-2 text-[13px] font-semibold text-[var(--es-danger)] disabled:opacity-50"
                 disabled={deleteLoyaltyCard.isPending}
               >
                 {deleteLoyaltyCard.isPending

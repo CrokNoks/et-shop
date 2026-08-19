@@ -87,7 +87,7 @@ export const SendToListDialog: React.FC<SendToListDialogProps> = ({
                 }`}
               >
                 <ShoppingCartIcon
-                  className={`h-5 w-5 shrink-0 ${selectedListId === list.id ? "text-[#c8471c]" : "text-[var(--es-tertiary)]"}`}
+                  className={`h-5 w-5 shrink-0 ${selectedListId === list.id ? "text-[var(--es-accent-text)]" : "text-[var(--es-tertiary)]"}`}
                 />
                 <span className="text-[15px] font-medium">{list.name}</span>
               </button>

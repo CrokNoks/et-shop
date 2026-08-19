@@ -32,7 +32,7 @@ export function EmptyState() {
       <div className="flex flex-col gap-2">
         {WAYS.map(({ icon: Icon, title, help }) => (
           <div key={title} className="flex items-center gap-3">
-            <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px] bg-[rgba(255,107,53,0.1)] text-[#c8471c] dark:text-[#ffb694]">
+            <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px] bg-[rgba(255,107,53,0.1)] text-[var(--es-accent-text)]">
               <Icon className="h-[18px] w-[18px]" />
             </div>
             <div className="min-w-0">

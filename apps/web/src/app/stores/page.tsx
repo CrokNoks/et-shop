@@ -177,7 +177,7 @@ function SwipeableStoreRow({
           </span>
         </div>
         {hasLoyaltyCard && (
-          <span className="shrink-0 rounded-[6px] bg-[rgba(255,107,53,0.1)] px-1.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.05em] text-[#c8471c]">
+          <span className="shrink-0 rounded-[6px] bg-[rgba(255,107,53,0.1)] px-1.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.05em] text-[var(--es-accent-text)]">
             Fidélité
           </span>
         )}
@@ -298,7 +298,7 @@ export default function StoresPage() {
         <button
           onClick={handleOpenCreateStore}
           data-cy="stores-new"
-          className="flex h-9 items-center gap-1 rounded-[10px] border border-[#FF6B35] px-3 text-[13px] font-semibold text-[#c8471c]"
+          className="flex h-9 items-center gap-1 rounded-[10px] border border-[#FF6B35] px-3 text-[13px] font-semibold text-[var(--es-accent-text)]"
         >
           <PlusIcon className="h-4 w-4" strokeWidth={2.5} />
           Nouveau

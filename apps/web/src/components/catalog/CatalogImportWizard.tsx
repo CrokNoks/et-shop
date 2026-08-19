@@ -396,7 +396,7 @@ export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({
                           <TableCell className="text-[13px]">
                             {row.unit}
                           </TableCell>
-                          <TableCell className="text-[13px] font-semibold text-[#c8471c]">
+                          <TableCell className="text-[13px] font-semibold text-[var(--es-accent-text)]">
                             {row.category}
                           </TableCell>
                         </TableRow>

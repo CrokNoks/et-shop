@@ -66,7 +66,7 @@ export const RecipeDetail: React.FC<RecipeDetailProps> = ({
         onClick={() => setIsSendDialogOpen(true)}
         data-cy="recipe-send"
         disabled={items.length === 0}
-        className="flex h-[50px] items-center justify-center gap-2 rounded-[14px] border border-[#FF6B35] bg-[rgba(255,107,53,0.08)] text-[15px] font-semibold text-[#c8471c] disabled:opacity-40"
+        className="flex h-[50px] items-center justify-center gap-2 rounded-[14px] border border-[#FF6B35] bg-[rgba(255,107,53,0.08)] text-[15px] font-semibold text-[var(--es-accent-text)] disabled:opacity-40"
       >
         <Send className="h-4 w-4" />
         Envoyer vers une liste

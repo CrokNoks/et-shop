@@ -141,7 +141,9 @@ export default function HouseholdSetupPage() {
           <h1 className="text-[25px] font-semibold">Invitez votre foyer</h1>
           <p className="text-[13px] text-[var(--es-secondary)]">
             Partagez vos listes avec les membres de{" "}
-            <span className="text-[#c8471c]">{createdHousehold?.name}</span>{" "}
+            <span className="text-[var(--es-accent-text)]">
+              {createdHousehold?.name}
+            </span>{" "}
             pour une synchronisation en temps réel.
           </p>
           <Button

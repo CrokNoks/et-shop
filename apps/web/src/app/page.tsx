@@ -129,7 +129,7 @@ export default function Home() {
               <Link
                 href="/lists"
                 data-cy="empty-open-lists"
-                className="text-[14px] font-semibold text-[#c8471c]"
+                className="text-[14px] font-semibold text-[var(--es-accent-text)]"
               >
                 Voir mes listes →
               </Link>
