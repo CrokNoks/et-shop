@@ -17,6 +17,7 @@ Depuis la sidebar, l'utilisateur navigue entre ses listes. La dernière liste ac
 Un champ de saisie en haut de la liste permet d'ajouter un article en tapant son nom. L'autocomplétion propose les articles du catalogue du foyer correspondant à la saisie (recherche insensible à la casse, limit 5).
 
 **Comportement intelligent d'ajout** :
+
 - Si l'article existe déjà dans la liste : la quantité est incrémentée, `is_purchased` repasse à `false`
 - Si l'article n'existe pas dans le catalogue du magasin : il est **créé automatiquement** dans le catalogue
 - Si aucun magasin n'est lié à la liste : erreur explicite
@@ -28,6 +29,7 @@ L'utilisateur peut scanner un code-barres pour ajouter directement l'article cor
 ## Modifier un article de la liste
 
 Chaque article de la liste supporte les modifications suivantes :
+
 - **Quantité** — modifiable inline
 - **Prix unitaire** — saisi manuellement, utilisé pour les statistiques
 - **Unité** — (pcs, kg, L, etc.)
@@ -35,7 +37,7 @@ Chaque article de la liste supporte les modifications suivantes :
 
 ## Marquer acheté / Annuler
 
-Voir la documentation de la feature [historique_stats](../historique_stats/fonctionnalites.md) — le marquage "Acheté" est atomique et génère un enregistrement dans l'historique des achats.
+Le marquage "Acheté" est atomique et génère un enregistrement dans l'historique des achats (`purchase_records`, module backend `purchases`). Le front dédié à l'historique global et aux statistiques a été retiré par la feature `refonte_mobile_ui` (hors périmètre du nouveau design) ; seul l'historique par produit affiché dans l'édition du catalogue (`ProductPurchaseHistory`) subsiste côté UI.
 
 Un bouton `PATCH /shopping-lists/:listId/items/:itemId/purchase` et `/unpurchase` est disponible directement sur le controller shopping-lists (en plus du module `purchases`).
 
