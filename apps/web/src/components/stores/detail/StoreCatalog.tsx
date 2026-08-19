@@ -162,27 +162,24 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
   }, [items, searchQuery]);
 
   return (
-    <div className="flex flex-col gap-10">
-      <div className="flex flex-col md:flex-row justify-between items-start gap-6">
-        <div className="flex flex-col gap-2">
-          <h2 className="text-3xl font-black">Catalogue du magasin</h2>
-          <p className="text-gray-500">
-            Gérez vos articles habituels pour ce magasin.
-          </p>
-        </div>
-        <div className="flex gap-3">
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[12px] text-[var(--es-secondary)]">
+          Catalogue · {items.length} produit{items.length > 1 ? "s" : ""}
+        </p>
+        <div className="flex shrink-0 gap-2">
           <CatalogImportWizard onImported={fetchData} storeId={storeId} />
-          <Button
+          <button
             onClick={handleOpenCreate}
-            className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold rounded-2xl px-6 py-6 shadow-lg transition-all border-none"
+            className="flex h-9 items-center gap-1.5 rounded-[10px] border border-[#FF6B35] px-3 text-[13px] font-semibold text-[#c8471c]"
           >
-            <PlusIcon className="w-5 h-5 mr-2" strokeWidth={3} />
-            Nouveau Produit
-          </Button>
+            <PlusIcon className="h-4 w-4" strokeWidth={2.5} />
+            Nouveau
+          </button>
         </div>
       </div>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         <CatalogSearch value={searchQuery} onChange={setSearchQuery} />
 
         {selectedIds.length > 0 && (

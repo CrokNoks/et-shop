@@ -3,13 +3,13 @@
 import React, { useState, useRef } from "react";
 import Papa from "papaparse";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -171,42 +171,65 @@ export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({
         : "-",
   }));
 
+  const STEP_INDEX = { upload: 0, mapping: 1, preview: 2 } as const;
+
+  const selectFieldClass =
+    "font-mono text-[13px] border-[var(--es-hairline)] h-[42px] rounded-[10px]";
+
   return (
     <>
-      <Button
+      <button
         onClick={() => setIsOpen(true)}
-        variant="outline"
-        className="border-gray-200 text-gray-500 font-bold rounded-2xl px-6 py-6 shadow-sm hover:bg-gray-50 transition-all"
+        className="flex h-9 items-center gap-1.5 rounded-[10px] border border-[var(--es-hairline)] px-3 text-[13px] font-semibold text-[var(--es-secondary)]"
       >
-        <ArrowUpTrayIcon className="w-5 h-5 mr-2" strokeWidth={2} />
+        <ArrowUpTrayIcon className="h-4 w-4" />
         Importer CSV
-      </Button>
+      </button>
 
-      <Dialog
+      <Sheet
         open={isOpen}
         onOpenChange={(open) => {
           setIsOpen(open);
           if (!open) reset();
         }}
       >
-        <DialogContent className="sm:max-w-6xl max-h-[90vh] flex flex-col text-[#1A365D]">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-black">
+        <SheetContent
+          side="bottom"
+          className="mx-auto flex w-full max-w-lg flex-col rounded-t-[18px] bg-[var(--es-surface)] p-6 pt-3 text-[var(--es-ink)]"
+        >
+          <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-[var(--es-hairline)]" />
+
+          {/* Jauge 3 segments */}
+          <div className="mb-4 flex gap-1.5">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className={`h-[3px] flex-1 rounded-full ${
+                  i <= STEP_INDEX[step]
+                    ? "bg-[#FF6B35]"
+                    : "bg-[var(--es-hairline)]"
+                }`}
+              />
+            ))}
+          </div>
+
+          <SheetHeader className="p-0 text-left">
+            <SheetTitle className="text-[20px] font-semibold">
               Importation de produits
-            </DialogTitle>
-            <DialogDescription>
+            </SheetTitle>
+            <SheetDescription className="text-[13px] text-[var(--es-secondary)]">
               {step === "upload" &&
                 "Sélectionnez un fichier CSV pour commencer."}
               {step === "mapping" &&
                 "Faites correspondre les colonnes de votre fichier aux champs de l'application."}
               {step === "preview" &&
                 "Vérifiez les données avant l'importation finale."}
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
 
-          <div className="flex-1 overflow-y-auto pr-2 py-4">
+          <div className="flex-1 overflow-y-auto py-4">
             {step === "upload" && (
-              <div className="py-12 flex flex-col items-center justify-center border-2 border-dashed border-gray-100 rounded-3xl gap-4">
+              <div className="flex flex-col items-center justify-center gap-3 rounded-[14px] border-2 border-dashed border-[var(--es-hairline)] py-10">
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -214,139 +237,149 @@ export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({
                   accept=".csv"
                   className="hidden"
                 />
-                <div className="p-4 bg-gray-50 rounded-full">
-                  <ArrowUpTrayIcon className="w-12 h-12 text-gray-300" />
+                <div className="rounded-full bg-[var(--es-field)] p-3">
+                  <ArrowUpTrayIcon className="h-8 w-8 text-[var(--es-disabled)]" />
                 </div>
                 <Button
                   onClick={() => fileInputRef.current?.click()}
-                  className="bg-[#1A365D] hover:bg-[#2d3748]"
+                  className="h-[46px] rounded-[14px] bg-[#1A365D] hover:bg-[#1A365D]/90"
                 >
                   Choisir un fichier CSV
                 </Button>
-                <p className="text-xs text-gray-400">
+                <p className="text-[11.5px] text-[var(--es-tertiary)]">
                   Le fichier doit contenir au moins une colonne pour le nom.
                 </p>
               </div>
             )}
 
             {step === "mapping" && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-xs font-black uppercase text-gray-400 tracking-widest">
-                        Champ : Nom (Obligatoire)
-                      </label>
-                      <Select
-                        value={mapping.name}
-                        onValueChange={(v) =>
-                          setMapping({ ...mapping, name: v ?? "" })
-                        }
-                      >
-                        <SelectTrigger className="font-bold border-gray-200">
-                          <SelectValue placeholder="Choisir la colonne..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {headers.map((h) => (
-                            <SelectItem key={h} value={h}>
-                              {h}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-black uppercase text-gray-400 tracking-widest">
-                        Champ : Code-barres
-                      </label>
-                      <Select
-                        value={mapping.barcode}
-                        onValueChange={(v) =>
-                          setMapping({ ...mapping, barcode: v ?? "" })
-                        }
-                      >
-                        <SelectTrigger className="font-bold border-gray-200">
-                          <SelectValue placeholder="Aucun" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none_selection">Aucun</SelectItem>
-                          {headers.map((h) => (
-                            <SelectItem key={h} value={h}>
-                              {h}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-xs font-black uppercase text-gray-400 tracking-widest">
-                        Champ : Unité
-                      </label>
-                      <Select
-                        value={mapping.unit}
-                        onValueChange={(v) =>
-                          setMapping({ ...mapping, unit: v ?? "" })
-                        }
-                      >
-                        <SelectTrigger className="font-bold border-gray-200">
-                          <SelectValue placeholder="Aucun" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none_selection">Aucun</SelectItem>
-                          {headers.map((h) => (
-                            <SelectItem key={h} value={h}>
-                              {h}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-black uppercase text-gray-400 tracking-widest">
-                        Champ : Rayon (Nom)
-                      </label>
-                      <Select
-                        value={mapping.category_name}
-                        onValueChange={(v) =>
-                          setMapping({ ...mapping, category_name: v ?? "" })
-                        }
-                      >
-                        <SelectTrigger className="font-bold border-gray-200">
-                          <SelectValue placeholder="Aucun" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none_selection">Aucun</SelectItem>
-                          {headers.map((h) => (
-                            <SelectItem key={h} value={h}>
-                              {h}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
+              <div className="flex flex-col gap-3">
+                <div className="flex h-[50px] items-center justify-between gap-3">
+                  <label className="text-[13.5px] font-medium">
+                    Nom (obligatoire)
+                  </label>
+                  <Select
+                    value={mapping.name}
+                    onValueChange={(v) =>
+                      setMapping({ ...mapping, name: v ?? "" })
+                    }
+                  >
+                    <SelectTrigger
+                      className={`${selectFieldClass} ${!mapping.name ? "border-dashed" : ""}`}
+                    >
+                      <SelectValue placeholder="—" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {headers.map((h) => (
+                        <SelectItem key={h} value={h}>
+                          {h}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
+                <div className="flex h-[50px] items-center justify-between gap-3">
+                  <label className="text-[13.5px] font-medium">
+                    Code-barres
+                  </label>
+                  <Select
+                    value={mapping.barcode}
+                    onValueChange={(v) =>
+                      setMapping({ ...mapping, barcode: v ?? "" })
+                    }
+                  >
+                    <SelectTrigger
+                      className={`${selectFieldClass} ${!mapping.barcode ? "border-dashed" : ""}`}
+                    >
+                      <SelectValue placeholder="—" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none_selection">Aucun</SelectItem>
+                      {headers.map((h) => (
+                        <SelectItem key={h} value={h}>
+                          {h}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex h-[50px] items-center justify-between gap-3">
+                  <label className="text-[13.5px] font-medium">Unité</label>
+                  <Select
+                    value={mapping.unit}
+                    onValueChange={(v) =>
+                      setMapping({ ...mapping, unit: v ?? "" })
+                    }
+                  >
+                    <SelectTrigger
+                      className={`${selectFieldClass} ${!mapping.unit ? "border-dashed" : ""}`}
+                    >
+                      <SelectValue placeholder="—" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none_selection">Aucun</SelectItem>
+                      {headers.map((h) => (
+                        <SelectItem key={h} value={h}>
+                          {h}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex h-[50px] items-center justify-between gap-3">
+                  <label className="text-[13.5px] font-medium">
+                    Rayon (nom)
+                  </label>
+                  <Select
+                    value={mapping.category_name}
+                    onValueChange={(v) =>
+                      setMapping({ ...mapping, category_name: v ?? "" })
+                    }
+                  >
+                    <SelectTrigger
+                      className={`${selectFieldClass} ${!mapping.category_name ? "border-dashed" : ""}`}
+                    >
+                      <SelectValue placeholder="—" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none_selection">Aucun</SelectItem>
+                      {headers.map((h) => (
+                        <SelectItem key={h} value={h}>
+                          {h}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {!mapping.name && (
+                  <div className="flex items-start gap-2 rounded-[10px] border border-[rgba(255,107,53,0.35)] bg-[rgba(255,107,53,0.06)] p-3">
+                    <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0 text-[#8a4321]" />
+                    <p className="text-[12px] leading-relaxed text-[#8a4321]">
+                      La colonne « Nom » est obligatoire pour importer les
+                      produits.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
             {step === "preview" && (
-              <div className="space-y-6">
-                <div className="border border-gray-100 rounded-2xl overflow-hidden">
+              <div className="flex flex-col gap-4">
+                <div className="overflow-x-auto rounded-[14px] border border-[var(--es-hairline)]">
                   <Table>
-                    <TableHeader className="bg-gray-50">
+                    <TableHeader>
                       <TableRow>
-                        <TableHead className="font-black text-xs uppercase">
+                        <TableHead className="text-[10.5px] font-semibold uppercase tracking-wide text-[var(--es-secondary)]">
                           Nom
                         </TableHead>
-                        <TableHead className="font-black text-xs uppercase">
+                        <TableHead className="text-[10.5px] font-semibold uppercase tracking-wide text-[var(--es-secondary)]">
                           Code-barres
                         </TableHead>
-                        <TableHead className="font-black text-xs uppercase">
+                        <TableHead className="text-[10.5px] font-semibold uppercase tracking-wide text-[var(--es-secondary)]">
                           Unité
                         </TableHead>
-                        <TableHead className="font-black text-xs uppercase">
+                        <TableHead className="text-[10.5px] font-semibold uppercase tracking-wide text-[var(--es-secondary)]">
                           Rayon
                         </TableHead>
                       </TableRow>
@@ -354,14 +387,16 @@ export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({
                     <TableBody>
                       {previewData.map((row, i) => (
                         <TableRow key={i}>
-                          <TableCell className="font-bold">
+                          <TableCell className="text-[13px] font-medium">
                             {row.name}
                           </TableCell>
-                          <TableCell className="font-mono text-xs">
+                          <TableCell className="font-mono text-[12px] text-[var(--es-tertiary)]">
                             {row.barcode}
                           </TableCell>
-                          <TableCell>{row.unit}</TableCell>
-                          <TableCell className="text-[#FF6B35] font-bold">
+                          <TableCell className="text-[13px]">
+                            {row.unit}
+                          </TableCell>
+                          <TableCell className="text-[13px] font-semibold text-[#c8471c]">
                             {row.category}
                           </TableCell>
                         </TableRow>
@@ -369,9 +404,9 @@ export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({
                     </TableBody>
                   </Table>
                 </div>
-                <div className="p-4 bg-blue-50 rounded-2xl flex items-start gap-3">
-                  <ExclamationTriangleIcon className="w-5 h-5 text-blue-500 mt-0.5" />
-                  <p className="text-xs text-blue-700 leading-relaxed">
+                <div className="flex items-start gap-2 rounded-[10px] border border-[rgba(255,107,53,0.35)] bg-[rgba(255,107,53,0.06)] p-3">
+                  <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0 text-[#8a4321]" />
+                  <p className="text-[12px] leading-relaxed text-[#8a4321]">
                     L&apos;importation va ajouter{" "}
                     <strong>{csvData.length}</strong> produits au catalogue. Si
                     un rayon n&apos;est pas reconnu par son nom, le produit sera
@@ -382,40 +417,46 @@ export const CatalogImportWizard: React.FC<CatalogImportWizardProps> = ({
             )}
           </div>
 
-          <DialogFooter className="pt-4 border-t border-gray-50">
-            {step === "mapping" && (
-              <>
-                <Button variant="ghost" onClick={reset}>
-                  Annuler
-                </Button>
-                <Button
-                  disabled={!mapping.name}
-                  onClick={() => setStep("preview")}
-                  className="bg-[#FF6B35] hover:bg-[#e55a2b]"
-                >
-                  Suivant
-                </Button>
-              </>
-            )}
-            {step === "preview" && (
-              <>
-                <Button variant="ghost" onClick={() => setStep("mapping")}>
-                  Retour
-                </Button>
-                <Button
-                  disabled={isImporting}
-                  onClick={handleImport}
-                  className="bg-[#FF6B35] hover:bg-[#e55a2b]"
-                >
-                  {isImporting
-                    ? "Importation..."
-                    : `Confirmer l'import (${csvData.length})`}
-                </Button>
-              </>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          {step === "mapping" && (
+            <SheetFooter className="flex-row gap-3 p-0">
+              <Button
+                variant="outline"
+                onClick={reset}
+                className="h-[46px] flex-1 rounded-[14px]"
+              >
+                Retour
+              </Button>
+              <Button
+                disabled={!mapping.name}
+                onClick={() => setStep("preview")}
+                className="h-[46px] flex-[2] rounded-[14px] bg-[#FF6B35] hover:bg-[#e55a2b]"
+              >
+                Prévisualiser
+              </Button>
+            </SheetFooter>
+          )}
+          {step === "preview" && (
+            <SheetFooter className="flex-row gap-3 p-0">
+              <Button
+                variant="outline"
+                onClick={() => setStep("mapping")}
+                className="h-[46px] flex-1 rounded-[14px]"
+              >
+                Retour
+              </Button>
+              <Button
+                disabled={isImporting}
+                onClick={handleImport}
+                className="h-[46px] flex-[2] rounded-[14px] bg-[#FF6B35] hover:bg-[#e55a2b]"
+              >
+                {isImporting
+                  ? "Importation..."
+                  : `Confirmer l'import (${csvData.length})`}
+              </Button>
+            </SheetFooter>
+          )}
+        </SheetContent>
+      </Sheet>
     </>
   );
 };

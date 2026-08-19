@@ -9,9 +9,6 @@ import { StoreCatalog } from "@/components/stores/detail/StoreCatalog";
 import {
   BuildingStorefrontIcon,
   ChevronLeftIcon,
-  Squares2X2Icon,
-  BookOpenIcon,
-  CreditCardIcon,
 } from "@heroicons/react/24/outline";
 import { Store } from "@/types";
 import { StoreLoyaltyCards } from "@/components/stores/detail/StoreLoyaltyCards";
@@ -50,12 +47,10 @@ export default function StoreDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
-        <main className="flex-1 p-12 flex justify-center items-center">
-          <p className="text-gray-400 italic animate-pulse text-xl font-bold">
-            Chargement du magasin...
-          </p>
-        </main>
+      <div className="min-h-screen bg-[var(--es-bg)]">
+        <p className="py-20 text-center text-[13px] italic text-[var(--es-tertiary)]">
+          Chargement du magasin...
+        </p>
         <TabBar />
       </div>
     );
@@ -63,88 +58,64 @@ export default function StoreDetailPage() {
 
   if (!store) return null;
 
+  const TABS: { key: typeof activeTab; label: string }[] = [
+    { key: "rayons", label: "Rayons" },
+    { key: "produits", label: "Catalogue" },
+    { key: "cartes", label: "Fidélité" },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-sans text-[#1A365D]">
+    <div className="min-h-screen bg-[var(--es-bg)] pb-24 text-[var(--es-ink)]">
+      <div className="flex items-center gap-2 px-3.5 pt-6 pb-2">
+        <button
+          onClick={() => router.push("/stores")}
+          aria-label="Retour"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
+        >
+          <ChevronLeftIcon className="h-5 w-5" />
+        </button>
+        <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-tertiary)]">
+          Magasin
+        </span>
+      </div>
 
-      <main className="flex-1 p-6 pt-24 pb-24 sm:p-12 flex justify-center">
-        <div className="w-full max-w-5xl flex flex-col gap-10">
-          {/* Header */}
-          <header className="flex flex-col gap-6">
-            <button
-              onClick={() => router.push("/stores")}
-              className="flex items-center gap-2 text-gray-400 hover:text-[#1A365D] font-bold transition-colors w-fit"
-            >
-              <ChevronLeftIcon className="w-4 h-4" strokeWidth={3} />
-              Retour aux magasins
-            </button>
-
-            <div className="flex items-center gap-6">
-              <div className="w-16 h-16 rounded-3xl bg-white shadow-md flex items-center justify-center text-[#FF6B35]">
-                <BuildingStorefrontIcon className="w-10 h-10" />
-              </div>
-              <div className="flex flex-col">
-                <h1 className="text-4xl font-black">{store.name}</h1>
-                <p className="text-gray-500 font-medium">
-                  Configuration personnalisée du magasin
-                </p>
-              </div>
-            </div>
-          </header>
-
-          {/* Tabs Navigation */}
-          <div className="flex gap-2 p-1.5 bg-gray-100 rounded-2xl w-fit">
-            <button
-              onClick={() => setActiveTab("rayons")}
-              data-cy="store-tab-rayons"
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
-                activeTab === "rayons"
-                  ? "bg-white text-[#1A365D] shadow-sm"
-                  : "text-gray-500 hover:text-[#1A365D]"
-              }`}
-            >
-              <Squares2X2Icon className="w-5 h-5" />
-              Rayons
-            </button>
-            <button
-              onClick={() => setActiveTab("produits")}
-              data-cy="store-tab-catalogue"
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
-                activeTab === "produits"
-                  ? "bg-white text-[#1A365D] shadow-sm"
-                  : "text-gray-500 hover:text-[#1A365D]"
-              }`}
-            >
-              <BookOpenIcon className="w-5 h-5" />
-              Produits
-            </button>
-            <button
-              onClick={() => setActiveTab("cartes")}
-              data-cy="store-tab-cartes"
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
-                activeTab === "cartes"
-                  ? "bg-white text-[#1A365D] shadow-sm"
-                  : "text-gray-500 hover:text-[#1A365D]"
-              }`}
-            >
-              <CreditCardIcon className="w-5 h-5" />
-              Cartes
-            </button>
-          </div>
-
-          {/* Content */}
-          <div className="animate-in fade-in duration-500">
-            {activeTab === "rayons" && <StoreCategories storeId={store.id} />}
-            {activeTab === "produits" && <StoreCatalog storeId={store.id} />}
-            {activeTab === "cartes" && (
-              <StoreLoyaltyCards storeId={store.id} storeName={store.name} />
-            )}
-          </div>
-
-          <footer className="mt-auto py-12 flex gap-6 flex-wrap items-center justify-center text-[#1A365D] opacity-40 text-xs text-center">
-            <p>© 2026 Et SHop! - Votre compagnon de courses propulsionné 🚀</p>
-          </footer>
+      <div className="flex items-center gap-4 px-3.5 pb-4">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] bg-[var(--es-field)] text-[#FF6B35]">
+          <BuildingStorefrontIcon className="h-6 w-6" />
         </div>
-      </main>
+        <h1 className="truncate text-[22px] font-semibold">{store.name}</h1>
+      </div>
+
+      <div className="flex gap-1 rounded-[10px] bg-[var(--es-field-alt)] p-1 mx-3.5 w-fit">
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            role="tab"
+            aria-selected={activeTab === tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            data-cy={
+              tab.key === "produits"
+                ? "store-tab-catalogue"
+                : `store-tab-${tab.key}`
+            }
+            className={`rounded-[8px] px-4 py-2 text-[13px] font-semibold transition-colors ${
+              activeTab === tab.key
+                ? "bg-[var(--es-surface)] text-[var(--es-ink)] shadow-[0_1px_2px_rgba(18,36,63,0.08)]"
+                : "text-[var(--es-secondary)]"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="px-3.5 pt-5">
+        {activeTab === "rayons" && <StoreCategories storeId={store.id} />}
+        {activeTab === "produits" && <StoreCatalog storeId={store.id} />}
+        {activeTab === "cartes" && (
+          <StoreLoyaltyCards storeId={store.id} storeName={store.name} />
+        )}
+      </div>
       <TabBar />
     </div>
   );

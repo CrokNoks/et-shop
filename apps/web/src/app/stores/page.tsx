@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { TabBar } from "@/components/layout/TabBar";
 import { fetchApi } from "@/lib/api";
 import {
@@ -9,6 +9,7 @@ import {
   PlusIcon,
   ChevronRightIcon,
   CreditCardIcon,
+  BuildingStorefrontIcon,
 } from "@heroicons/react/24/outline";
 import {
   Sheet,
@@ -22,6 +23,7 @@ import { toast } from "sonner";
 import { Store } from "@/types";
 import Link from "next/link";
 import { AddLoyaltyCardSheet } from "@/components/loyalty/AddLoyaltyCardSheet";
+import { useLoyaltyCards } from "@/hooks/useLoyaltyCards";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +46,14 @@ export default function StoresPage() {
     e.stopPropagation();
     setSelectedStoreForCard(store);
   };
+
+  // Un seul appel groupé (pas un par magasin) pour savoir lesquels ont une
+  // carte de fidélité, pour l'étiquette de l'écran 4d.
+  const { data: allCards } = useLoyaltyCards(stores.map((s) => s.id));
+  const storesWithLoyalty = useMemo(
+    () => new Set((allCards ?? []).map((c) => c.storeId)),
+    [allCards],
+  );
 
   const fetchData = async () => {
     try {
@@ -119,144 +129,140 @@ export default function StoresPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-sans text-[#1A365D]">
+    <div className="min-h-screen bg-[var(--es-bg)] pb-24 text-[var(--es-ink)]">
+      <div className="flex items-center justify-between px-3.5 pt-6 pb-4">
+        <h1 className="text-[24px] font-semibold">Mes magasins</h1>
+        <button
+          onClick={handleOpenCreateStore}
+          data-cy="stores-new"
+          className="flex h-9 items-center gap-1 rounded-[10px] border border-[#FF6B35] px-3 text-[13px] font-semibold text-[#c8471c]"
+        >
+          <PlusIcon className="h-4 w-4" strokeWidth={2.5} />
+          Nouveau
+        </button>
+      </div>
 
-      <main className="flex-1 p-6 pt-24 pb-24 sm:p-12 flex justify-center">
-        <div className="w-full max-w-4xl flex flex-col gap-10">
-          <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div className="flex flex-col gap-2 text-left">
-              <h1 className="text-4xl font-black">Mes Magasins</h1>
-              <p className="text-gray-500">
-                Configurez vos lieux de courses habituels.
-              </p>
+      <div className="px-3.5">
+        {isLoading ? (
+          <p className="py-20 text-center text-[13px] italic text-[var(--es-tertiary)]">
+            Chargement des magasins...
+          </p>
+        ) : stores.length === 0 ? (
+          <p className="py-20 text-center text-[13px] italic text-[var(--es-tertiary)]">
+            Aucun magasin trouvé.
+          </p>
+        ) : (
+          <div className="flex flex-col overflow-hidden rounded-[14px] border border-[var(--es-hairline)]">
+            {stores.map((store) => (
+              <Link
+                key={store.id}
+                href={`/stores/${store.id}`}
+                data-cy={`store-${store.id}`}
+                className="flex h-[66px] items-center gap-3 border-b border-[var(--es-hairline)] px-3.5 last:border-b-0 hover:bg-[var(--es-field)]"
+              >
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[var(--es-field)] text-[#FF6B35]">
+                  <BuildingStorefrontIcon className="h-5 w-5" />
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <span className="truncate text-[15.5px] font-medium">
+                    {store.name}
+                  </span>
+                  <span className="truncate text-[11.5px] text-[var(--es-tertiary)]">
+                    Gérer les rayons et produits
+                  </span>
+                </div>
+                {storesWithLoyalty.has(store.id) && (
+                  <span className="shrink-0 rounded-[6px] bg-[rgba(255,107,53,0.1)] px-1.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.05em] text-[#c8471c]">
+                    Fidélité
+                  </span>
+                )}
+                <div className="flex shrink-0 items-center gap-0.5">
+                  <button
+                    onClick={(e) => handleOpenLoyaltyCard(e, store)}
+                    data-cy={`store-${store.id}-loyalty`}
+                    className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
+                    title="Carte de fidélité"
+                  >
+                    <CreditCardIcon className="h-[18px] w-[18px]" />
+                  </button>
+                  <button
+                    onClick={(e) => handleOpenEditStore(e, store)}
+                    data-cy={`store-${store.id}-edit`}
+                    className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
+                    title="Modifier le nom"
+                  >
+                    <PencilIcon className="h-[18px] w-[18px]" />
+                  </button>
+                  <button
+                    onClick={(e) => handleStoreDelete(e, store.id, store.name)}
+                    data-cy={`store-${store.id}-delete`}
+                    className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
+                    title="Supprimer"
+                  >
+                    <TrashIcon className="h-[18px] w-[18px]" />
+                  </button>
+                </div>
+                <ChevronRightIcon className="h-[18px] w-[18px] shrink-0 text-[var(--es-disabled)]" />
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Loyalty Card Sheet */}
+      {selectedStoreForCard && (
+        <AddLoyaltyCardSheet
+          storeId={selectedStoreForCard.id}
+          storeName={selectedStoreForCard.name}
+          open={!!selectedStoreForCard}
+          onClose={() => setSelectedStoreForCard(null)}
+        />
+      )}
+
+      {/* Store Form Sheet */}
+      <Sheet open={isStoreSheetOpen} onOpenChange={setIsStoreSheetOpen}>
+        <SheetContent
+          side="bottom"
+          className="mx-auto w-full max-w-lg rounded-t-[18px] p-6 pt-3 text-[var(--es-ink)] bg-[var(--es-surface)]"
+        >
+          <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-[var(--es-hairline)]" />
+          <SheetHeader className="p-0 text-left">
+            <SheetTitle className="text-[20px] font-semibold">
+              {editingStore ? "Modifier le magasin" : "Nouveau magasin"}
+            </SheetTitle>
+            <SheetDescription className="text-[13px] text-[var(--es-secondary)]">
+              Entrez le nom de votre magasin habituel.
+            </SheetDescription>
+          </SheetHeader>
+          <form
+            onSubmit={handleStoreSubmit}
+            className="mt-6 flex flex-col gap-4"
+          >
+            <div className="space-y-2">
+              <label className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]">
+                Nom du magasin
+              </label>
+              <input
+                type="text"
+                data-cy="store-name-input"
+                required
+                value={storeName}
+                onChange={(e) => setStoreName(e.target.value)}
+                placeholder="Ex: Carrefour Market, Bio c' Bon..."
+                className="h-[50px] w-full rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-3.5 text-[15px] font-medium outline-none focus:border-[#FF6B35]"
+              />
             </div>
             <Button
-              onClick={handleOpenCreateStore}
-              data-cy="stores-new"
-              className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold rounded-2xl px-6 py-6 shadow-lg transition-all border-none"
+              type="submit"
+              data-cy="store-submit"
+              disabled={isSubmitting}
+              className="h-[50px] rounded-[14px] bg-[#1A365D] text-[15px] font-semibold hover:bg-[#1A365D]/90"
             >
-              <PlusIcon className="w-5 h-5 mr-2" strokeWidth={3} />
-              Nouveau Magasin
+              {isSubmitting ? "Enregistrement..." : "Enregistrer"}
             </Button>
-          </header>
-
-          <div className="grid grid-cols-1 gap-4">
-            {isLoading ? (
-              <p className="text-center py-20 text-gray-400 italic animate-pulse">
-                Chargement des magasins...
-              </p>
-            ) : stores.length === 0 ? (
-              <p className="text-center py-20 text-gray-400 italic">
-                Aucun magasin trouvé.
-              </p>
-            ) : (
-              stores.map((store) => (
-                <Link
-                  key={store.id}
-                  href={`/stores/${store.id}`}
-                  data-cy={`store-${store.id}`}
-                  className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex items-center justify-between group"
-                >
-                  <div className="flex items-center gap-6">
-                    <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-[#FF6B35]">
-                      <PlusIcon className="w-6 h-6 rotate-45" />
-                    </div>
-                    <div className="flex flex-col text-left">
-                      <h3 className="text-xl font-bold">{store.name}</h3>
-                      <p className="text-sm text-gray-400">
-                        Gérer les rayons et produits
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={(e) => handleOpenLoyaltyCard(e, store)}
-                      data-cy={`store-${store.id}-loyalty`}
-                      className="p-3 text-gray-300 hover:text-[#FF6B35] hover:bg-orange-50 rounded-2xl transition-all"
-                      title="Carte de fidélité"
-                    >
-                      <CreditCardIcon className="w-6 h-6" />
-                    </button>
-                    <button
-                      onClick={(e) => handleOpenEditStore(e, store)}
-                      data-cy={`store-${store.id}-edit`}
-                      className="p-3 text-gray-300 hover:text-[#1A365D] hover:bg-gray-50 rounded-2xl transition-all"
-                      title="Modifier le nom"
-                    >
-                      <PencilIcon className="w-6 h-6" />
-                    </button>
-                    <button
-                      onClick={(e) =>
-                        handleStoreDelete(e, store.id, store.name)
-                      }
-                      data-cy={`store-${store.id}-delete`}
-                      className="p-3 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all opacity-0 group-hover:opacity-100"
-                      title="Supprimer"
-                    >
-                      <TrashIcon className="w-6 h-6" />
-                    </button>
-                    <div className="p-3 text-gray-300 group-hover:text-[#FF6B35] transition-all">
-                      <ChevronRightIcon className="w-6 h-6" strokeWidth={3} />
-                    </div>
-                  </div>
-                </Link>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Loyalty Card Sheet */}
-        {selectedStoreForCard && (
-          <AddLoyaltyCardSheet
-            storeId={selectedStoreForCard.id}
-            storeName={selectedStoreForCard.name}
-            open={!!selectedStoreForCard}
-            onClose={() => setSelectedStoreForCard(null)}
-          />
-        )}
-
-        {/* Store Form Sheet */}
-        <Sheet open={isStoreSheetOpen} onOpenChange={setIsStoreSheetOpen}>
-          <SheetContent
-            side="right"
-            className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]"
-          >
-            <SheetHeader className="mb-10 text-left">
-              <SheetTitle className="text-3xl font-black">
-                {editingStore ? "Modifier le magasin" : "Nouveau magasin"}
-              </SheetTitle>
-              <SheetDescription className="text-base text-gray-500 mt-2">
-                Entrez le nom de votre magasin habituel.
-              </SheetDescription>
-            </SheetHeader>
-            <form onSubmit={handleStoreSubmit} className="space-y-8">
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  Nom du magasin
-                </label>
-                <input
-                  type="text"
-                  data-cy="store-name-input"
-                  required
-                  value={storeName}
-                  onChange={(e) => setStoreName(e.target.value)}
-                  placeholder="Ex: Carrefour Market, Bio c' Bon..."
-                  className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all"
-                />
-              </div>
-              <Button
-                type="submit"
-                data-cy="store-submit"
-                disabled={isSubmitting}
-                className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl shadow-lg"
-              >
-                {isSubmitting ? "Enregistrement..." : "Enregistrer"}
-              </Button>
-            </form>
-          </SheetContent>
-        </Sheet>
-      </main>
+          </form>
+        </SheetContent>
+      </Sheet>
       <TabBar />
     </div>
   );

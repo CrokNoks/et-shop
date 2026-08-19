@@ -15,7 +15,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
 import { ProductForm } from "@/components/shopping/ProductForm";
 import Papa from "papaparse";
 import { toast } from "sonner";
@@ -195,7 +194,8 @@ export const StoreCategories: React.FC<StoreCategoriesProps> = ({
             const row = rawRow as Record<string, string>;
             return {
               name: row.nom || row.name || row.Nom,
-              sort_order: parseInt(row.ordre || row.sort_order || row.Ordre) || 0,
+              sort_order:
+                parseInt(row.ordre || row.sort_order || row.Ordre) || 0,
               icon: row.icone || row.icon || row.Icone || "📦",
             };
           })
@@ -228,48 +228,44 @@ export const StoreCategories: React.FC<StoreCategoriesProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-10">
-      <div className="flex flex-col md:flex-row justify-between items-start gap-6">
-        <div className="flex flex-col gap-2">
-          <h2 className="text-3xl font-black">Rayons du magasin</h2>
-          <p className="text-gray-500">
-            Définissez l&apos;ordre de passage dans ce magasin.
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept=".csv"
-            className="hidden"
-          />
-          <Button
-            onClick={() => fileInputRef.current?.click()}
-            variant="outline"
-            className="border-gray-200 text-gray-500 font-bold rounded-2xl px-6 py-6 shadow-sm hover:bg-gray-50 transition-all"
-          >
-            <ArrowUpTrayIcon className="w-5 h-5 mr-2" strokeWidth={2} />
-            Importer CSV
-          </Button>
-          <Button
-            onClick={handleOpenCreate}
-            data-cy="store-category-new"
-            className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold rounded-2xl px-6 py-6 shadow-lg transition-all border-none"
-          >
-            <PlusIcon className="w-5 h-5 mr-2" strokeWidth={3} />
-            Nouveau Rayon
-          </Button>
-        </div>
+    <div className="flex flex-col gap-4">
+      <p className="text-[12px] text-[var(--es-secondary)]">
+        L&apos;ordre est celui du parcours en magasin et trie automatiquement la
+        liste en mode magasin.
+      </p>
+
+      <div className="flex gap-2">
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          accept=".csv"
+          className="hidden"
+        />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="flex h-9 items-center gap-1.5 rounded-[10px] border border-[var(--es-hairline)] px-3 text-[13px] font-semibold text-[var(--es-secondary)]"
+        >
+          <ArrowUpTrayIcon className="h-4 w-4" />
+          Importer CSV
+        </button>
+        <button
+          onClick={handleOpenCreate}
+          data-cy="store-category-new"
+          className="flex h-9 items-center gap-1.5 rounded-[10px] border border-[#FF6B35] px-3 text-[13px] font-semibold text-[#c8471c]"
+        >
+          <PlusIcon className="h-4 w-4" strokeWidth={2.5} />
+          Nouveau rayon
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="flex flex-col gap-2">
         {isLoading ? (
-          <p className="text-center py-20 text-gray-400 italic animate-pulse">
+          <p className="py-16 text-center text-[13px] italic text-[var(--es-tertiary)]">
             Chargement...
           </p>
         ) : categories.length === 0 ? (
-          <p className="text-center py-20 text-gray-400 italic">
+          <p className="py-16 text-center text-[13px] italic text-[var(--es-tertiary)]">
             Aucun rayon configuré.
           </p>
         ) : (
@@ -282,52 +278,62 @@ export const StoreCategories: React.FC<StoreCategoriesProps> = ({
               items={categories.map((c) => c.id)}
               strategy={verticalListSortingStrategy}
             >
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2">
                 {categories.map((category) => (
-                  <div key={category.id} className="relative group">
-                    <SortableCategoryItem
-                      order={{
-                        category_id: category.id,
-                        store_id: storeId,
-                        sort_order: category.sort_order,
-                        category: category,
-                      }}
-                    />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => handleOpenEdit(category)}
-                        data-cy="store-category-edit"
-                        className="p-2 text-gray-400 hover:text-[#1A365D] transition-colors"
-                      >
-                        <PencilIcon className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(category.id, category.name)}
-                        data-cy="store-category-delete"
-                        className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                      >
-                        <TrashIcon className="w-5 h-5" />
-                      </button>
+                  <div
+                    key={category.id}
+                    className="group flex items-center gap-1"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <SortableCategoryItem
+                        order={{
+                          category_id: category.id,
+                          store_id: storeId,
+                          sort_order: category.sort_order,
+                          category: category,
+                        }}
+                      />
                     </div>
+                    <button
+                      onClick={() => handleOpenEdit(category)}
+                      data-cy="store-category-edit"
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
+                    >
+                      <PencilIcon className="h-[18px] w-[18px]" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(category.id, category.name)}
+                      data-cy="store-category-delete"
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
+                    >
+                      <TrashIcon className="h-[18px] w-[18px]" />
+                    </button>
                   </div>
                 ))}
               </div>
             </SortableContext>
           </DndContext>
         )}
+        <button
+          onClick={handleOpenCreate}
+          className="mt-1 flex h-11 items-center justify-center rounded-[10px] border border-dashed border-[var(--es-hairline)] text-[13px] font-medium text-[var(--es-secondary)]"
+        >
+          + Ajouter un rayon
+        </button>
       </div>
 
       {/* Create/Edit Sheet */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent
-          side="right"
-          className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]"
+          side="bottom"
+          className="mx-auto w-full max-w-lg rounded-t-[18px] p-6 pt-3 text-[var(--es-ink)] bg-[var(--es-surface)]"
         >
-          <SheetHeader className="mb-10 text-left">
-            <SheetTitle className="text-3xl font-black">
+          <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-[var(--es-hairline)]" />
+          <SheetHeader className="p-0 text-left">
+            <SheetTitle className="text-[20px] font-semibold">
               {editingCategory ? "Modifier le rayon" : "Nouveau rayon"}
             </SheetTitle>
-            <SheetDescription className="text-base text-gray-500 mt-2">
+            <SheetDescription className="text-[13px] text-[var(--es-secondary)]">
               Configurez le nom et l&apos;ordre d&apos;affichage de ce rayon.
             </SheetDescription>
           </SheetHeader>
