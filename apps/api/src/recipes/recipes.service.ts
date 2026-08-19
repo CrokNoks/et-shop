@@ -92,7 +92,13 @@ export class RecipesService {
     let total = 0;
     for (const item of items) {
       const price = item.items_catalog?.reference_price;
-      if (price === null || price === undefined) return undefined;
+      // 0 est la valeur par défaut d'un article sans prix saisi, pas un vrai
+      // prix connu — traité comme "inconnu" au même titre que null/undefined
+      // (ceinture-bretelles avec RecordPurchaseUseCase, qui ne devrait déjà
+      // plus écrire 0 en reference_price, au cas où une autre voie le ferait).
+      if (price === null || price === undefined || Number(price) === 0) {
+        return undefined;
+      }
       total += Number(price) * Number(item.quantity ?? 1);
     }
     return total;
@@ -289,8 +295,12 @@ export class RecipesService {
     );
 
     // 4. Apply merge rules
-    const updates: { id: string; quantity: number; is_purchased: boolean }[] =
-      [];
+    const updates: {
+      id: string;
+      quantity: number;
+      is_purchased: boolean;
+      purchased_by: null;
+    }[] = [];
     const inserts: {
       list_id: string;
       catalog_item_id: string;
@@ -306,18 +316,23 @@ export class RecipesService {
 
       if (existing) {
         if (existing.is_purchased) {
-          // Rule 1: checked → uncheck and replace quantity
+          // Rule 1: checked → uncheck and replace quantity. purchased_by
+          // doit repasser à null avec is_purchased, sinon la ligne reste
+          // incohérente (non achetée mais attribuée à un acheteur).
           updates.push({
             id: existing.id,
             quantity: ri.quantity,
             is_purchased: false,
+            purchased_by: null,
           });
         } else {
-          // Rule 2: not checked → add quantities
+          // Rule 2: not checked → add quantities (déjà non acheté, purchased_by
+          // déjà null — reposé explicitement par cohérence avec la ligne au-dessus).
           updates.push({
             id: existing.id,
             quantity: Number(existing.quantity) + Number(ri.quantity),
             is_purchased: false,
+            purchased_by: null,
           });
         }
       } else {
@@ -348,7 +363,11 @@ export class RecipesService {
         updates.map((upd) =>
           client
             .from('shopping_list_items')
-            .update({ quantity: upd.quantity, is_purchased: upd.is_purchased })
+            .update({
+              quantity: upd.quantity,
+              is_purchased: upd.is_purchased,
+              purchased_by: upd.purchased_by,
+            })
             .eq('id', upd.id),
         ),
       );

@@ -174,5 +174,19 @@ describe('RecordPurchaseUseCase', () => {
 
       expect(result).toBe(mockRecord);
     });
+
+    it('ne met pas à jour reference_price quand le prix payé est 0 (pas un vrai prix connu)', async () => {
+      mockSupabaseService.getHouseholdId.mockReturnValue('household-001');
+      mockPurchaseRecordRepository.recordPurchaseAtomic.mockResolvedValue(
+        mockRecord,
+      );
+      const client = makeTwoStepClient({ error: null });
+      mockSupabaseService.getClient.mockReturnValue(client);
+
+      // priceOverride = 0 force pricePerUnit à 0 sur le PurchaseRecord construit.
+      await useCase.execute('list-001', 'item-001', 0);
+
+      expect(client.catalogQb.update).not.toHaveBeenCalled();
+    });
   });
 });

@@ -81,7 +81,10 @@ export class RecordPurchaseUseCase {
     // Point 4 (backend_mobile_ui) : garde le dernier prix connu du produit
     // pour estimer le coût des recettes. Donnée dérivée secondaire — un échec
     // ici ne doit jamais faire échouer l'achat, déjà enregistré à ce stade.
-    if (record.catalogItemId) {
+    // Un prix à 0 est la valeur par défaut d'un article sans prix saisi, pas
+    // un vrai prix connu : l'écrire écraserait un prix légitime déjà en base
+    // et ferait passer estimated_cost pour complet alors qu'il ne l'est pas.
+    if (record.catalogItemId && record.pricePerUnit > 0) {
       try {
         const { error: priceError } = await this.supabaseService
           .getClient()

@@ -100,6 +100,26 @@ describe('RecipesService', () => {
       expect(result.estimated_cost).toBeUndefined();
     });
 
+    it('laisse estimated_cost absent si un ingrédient a un reference_price à 0 (défaut, pas un vrai prix connu)', async () => {
+      const client = makeSequencedClient(
+        makeQb({
+          data: {
+            id: 'recipe-1',
+            recipe_items: [
+              { quantity: 2, items_catalog: { reference_price: 1.5 } },
+              { quantity: 1, items_catalog: { reference_price: 0 } },
+            ],
+          },
+          error: null,
+        }),
+      );
+      mockSupabaseService.getClient.mockReturnValue(client);
+
+      const result = await service.findOne('recipe-1');
+
+      expect(result.estimated_cost).toBeUndefined();
+    });
+
     it("laisse estimated_cost absent si la recette n'a aucun ingrédient", async () => {
       const client = makeSequencedClient(
         makeQb({
