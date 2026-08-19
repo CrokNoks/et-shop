@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Sidebar } from "@/components/layout/Sidebar";
+import Link from "next/link";
 import { TabBar } from "@/components/layout/TabBar";
 import { HopInput } from "@/components/shopping/HopInput";
 import { ShoppingList } from "@/components/shopping/ShoppingList";
@@ -18,10 +18,11 @@ import {
 
 export const dynamic = "force-dynamic";
 
+const ACTIVE_LIST_KEY = "active_list_id";
+
 export default function Home() {
   const [activeListId, setActiveListId] = useState<string | null>(null);
   const [activeListName, setActiveListName] = useState("Chargement...");
-  const [activeStoreId, setActiveStoreId] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const router = useRouter();
 
@@ -42,16 +43,21 @@ export default function Home() {
     try {
       const lists = await fetchApi("/shopping-lists");
       if (lists && lists.length > 0) {
+        const persistedId =
+          typeof window !== "undefined"
+            ? localStorage.getItem(ACTIVE_LIST_KEY)
+            : null;
         const currentActive =
-          lists.find((l: ShoppingListType) => l.id === activeListId) ||
-          lists[0];
+          lists.find(
+            (l: ShoppingListType) =>
+              l.id === activeListId || l.id === persistedId,
+          ) || lists[0];
         setActiveListId(currentActive.id);
         setActiveListName(currentActive.name);
-        setActiveStoreId(currentActive.store_id || null);
+        localStorage.setItem(ACTIVE_LIST_KEY, currentActive.id);
       } else {
         setActiveListId(null);
         setActiveListName("Aucune liste trouvée");
-        setActiveStoreId(null);
       }
     } catch (error: unknown) {
       console.error("Failed to load lists:", error);
@@ -75,10 +81,6 @@ export default function Home() {
     run();
   }, [loadInitialList]);
 
-  const handleListSelect = (id: string) => {
-    setActiveListId(id);
-  };
-
   const {
     isLoading: itemsLoading,
     storeGroups,
@@ -95,35 +97,34 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[var(--es-bg)] flex flex-col sm:flex-row font-sans">
-      <Sidebar
-        activeListId={activeListId || ""}
-        onListSelect={handleListSelect}
-      />
-
       <main className="flex-1 flex flex-col pb-24 sm:p-12 sm:items-center">
         <div className="w-full sm:max-w-2xl flex flex-col">
           {activeListId ? (
             <ListHeader
               id={activeListId}
               name={activeListName}
-              storeId={activeStoreId}
               isSynced={true}
               householdName={household?.name || "Foyer"}
               members={members}
               totalBudget={totalBudget}
               checkedTotal={checkedTotal}
-              onUpdate={(newName, newStoreId) => {
-                setActiveListName(newName);
-                setActiveStoreId(newStoreId || null);
-              }}
+              onUpdate={(newName) => setActiveListName(newName)}
               onDelete={() => {
                 setActiveListId(null);
+                localStorage.removeItem(ACTIVE_LIST_KEY);
                 loadInitialList();
               }}
             />
           ) : (
-            <div className="flex flex-col gap-1 text-[var(--es-ink)] px-3.5 pt-6">
-              <h1 className="text-3xl font-black">{activeListName}</h1>
+            <div className="flex flex-col gap-3 text-[var(--es-ink)] px-3.5 pt-6">
+              <h1 className="text-[23px] font-semibold">{activeListName}</h1>
+              <Link
+                href="/lists"
+                data-cy="empty-open-lists"
+                className="text-[14px] font-semibold text-[#c8471c]"
+              >
+                Voir mes listes →
+              </Link>
             </div>
           )}
 

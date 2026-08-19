@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Sidebar } from "@/components/layout/Sidebar";
 import { TabBar } from "@/components/layout/TabBar";
 import { fetchApi } from "@/lib/api";
 import { StoreCategories } from "@/components/stores/detail/StoreCategories";
@@ -52,7 +51,6 @@ export default function StoreDetailPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen bg-gray-50">
-        <Sidebar activeListId="" onListSelect={() => {}} />
         <main className="flex-1 p-12 flex justify-center items-center">
           <p className="text-gray-400 italic animate-pulse text-xl font-bold">
             Chargement du magasin...
@@ -67,7 +65,6 @@ export default function StoreDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-sans text-[#1A365D]">
-      <Sidebar activeListId="" onListSelect={() => {}} />
 
       <main className="flex-1 p-6 pt-24 pb-24 sm:p-12 flex justify-center">
         <div className="w-full max-w-5xl flex flex-col gap-10">

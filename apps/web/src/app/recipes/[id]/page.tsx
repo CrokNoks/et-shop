@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { use } from "react";
-import { Sidebar } from "@/components/layout/Sidebar";
 import { TabBar } from "@/components/layout/TabBar";
 import { useRecipeDetail } from "@/hooks/useRecipeDetail";
 import { RecipeDetail } from "@/components/recipes/RecipeDetail";
@@ -136,7 +135,6 @@ export default function RecipePage({ params }: RecipePageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-sans text-[#1A365D]">
-      <Sidebar activeListId="" onListSelect={() => {}} />
 
       <main className="flex-1 p-6 pt-24 pb-24 sm:p-12 flex justify-center">
         <div className="w-full max-w-4xl flex flex-col gap-10">

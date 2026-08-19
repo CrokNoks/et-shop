@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Sidebar } from "@/components/layout/Sidebar";
 import { TabBar } from "@/components/layout/TabBar";
 import { fetchApi } from "@/lib/api";
 import {
@@ -121,7 +120,6 @@ export default function StoresPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-sans text-[#1A365D]">
-      <Sidebar activeListId="" onListSelect={() => {}} />
 
       <main className="flex-1 p-6 pt-24 pb-24 sm:p-12 flex justify-center">
         <div className="w-full max-w-4xl flex flex-col gap-10">
