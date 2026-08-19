@@ -296,6 +296,10 @@ export class ShoppingListsService {
             .update({
               quantity: Number(existingListItem.quantity) + Number(quantity),
               is_purchased: false,
+              // Ré-ajouter un article déjà coché le décoche : purchased_by
+              // doit repasser à null avec is_purchased, sinon la ligne reste
+              // incohérente (non achetée mais attribuée à un acheteur).
+              purchased_by: null,
               unit: finalUnit,
             })
             .eq('id', existingListItem.id)
@@ -403,6 +407,7 @@ export class ShoppingListsService {
         .update({
           quantity: Number(existingListItem.quantity) + Number(quantity),
           is_purchased: false,
+          purchased_by: null,
           unit: finalUnit,
         })
         .eq('id', existingListItem.id)
@@ -480,6 +485,7 @@ export class ShoppingListsService {
         .update({
           quantity: Number(existingListItem.quantity) + 1,
           is_purchased: false,
+          purchased_by: null,
         })
         .eq('id', existingListItem.id)
         .select()
