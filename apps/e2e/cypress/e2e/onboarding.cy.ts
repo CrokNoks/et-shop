@@ -15,11 +15,16 @@ describe("Onboarding — Création du foyer", () => {
     cy.get("[data-cy=household-name]").should("be.visible");
   });
 
-  it("crée un foyer et redirige vers /", () => {
+  it("crée un foyer, propose d'inviter (étape 2/2), puis redirige vers /", () => {
     const householdName = "Foyer de test " + Date.now();
     cy.get("[data-cy=household-name]").type(householdName);
     cy.get("[data-cy=household-submit]").click();
+
+    // Étape 2/2 : proposition d'inviter un membre avant d'entrer dans l'app.
+    cy.get("[data-cy=household-invite-later]").should("be.visible").click();
     cy.url().should("eq", Cypress.config("baseUrl") + "/");
+
+    cy.visit("/lists");
     cy.contains(householdName).should("exist");
   });
 });
