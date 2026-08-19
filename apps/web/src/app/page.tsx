@@ -22,7 +22,8 @@ const ACTIVE_LIST_KEY = "active_list_id";
 
 export default function Home() {
   const [activeListId, setActiveListId] = useState<string | null>(null);
-  const [activeListName, setActiveListName] = useState("Chargement...");
+  const [activeListName, setActiveListName] = useState("");
+  const [isLoadingLists, setIsLoadingLists] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const router = useRouter();
 
@@ -71,6 +72,8 @@ export default function Home() {
       } else {
         setActiveListName("Erreur de connexion");
       }
+    } finally {
+      setIsLoadingLists(false);
     }
   }, [activeListId, router]);
 
@@ -115,6 +118,11 @@ export default function Home() {
                 loadInitialList();
               }}
             />
+          ) : isLoadingLists ? (
+            <div className="flex flex-col gap-2 px-3.5 pt-6 animate-pulse">
+              <div className="h-6 w-2/3 rounded bg-[var(--es-skeleton)]" />
+              <div className="h-4 w-1/3 rounded bg-[var(--es-skeleton)]" />
+            </div>
           ) : (
             <div className="flex flex-col gap-3 text-[var(--es-ink)] px-3.5 pt-6">
               <h1 className="text-[23px] font-semibold">{activeListName}</h1>

@@ -33,6 +33,8 @@ import { getCatalogInfo, StoreGroup } from "@/hooks/useShoppingListItems";
 import { useAisleMode } from "@/hooks/useAisleMode";
 import { AisleModeHeader } from "./AisleModeHeader";
 import { AisleSelector } from "./AisleSelector";
+import { ListSkeleton } from "./ListSkeleton";
+import { EmptyState } from "./EmptyState";
 
 interface ShoppingListProps {
   isLoading: boolean;
@@ -252,8 +254,8 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               ))}
             </div>
             <p className="text-[11.5px] text-[var(--es-tertiary)]">
-              Texte libre : écrivez le conditionnement tel que vous le lisez
-              en rayon.
+              Texte libre : écrivez le conditionnement tel que vous le lisez en
+              rayon.
             </p>
           </div>
           <div className="space-y-2">
@@ -305,23 +307,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
   );
 
   if (isLoading && totalItems === 0) {
-    return (
-      <div className="space-y-2">
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className="h-[58px] rounded-2xl bg-[var(--es-surface)] border border-[var(--es-hairline)] flex items-center gap-3 px-3.5 animate-pulse"
-          >
-            <div className="w-[26px] h-[26px] rounded-full bg-[var(--es-skeleton)]" />
-            <div className="flex-1 flex flex-col gap-1.5">
-              <div className="h-[11px] w-2/3 rounded bg-[var(--es-skeleton)]" />
-              <div className="h-[9px] w-1/3 rounded bg-[var(--es-skeleton)]" />
-            </div>
-            <div className="w-11 h-3 rounded bg-[var(--es-skeleton)]" />
-          </div>
-        ))}
-      </div>
-    );
+    return <ListSkeleton />;
   }
 
   if (isShoppingMode) {
@@ -366,7 +352,9 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
         <div className="flex-1 overflow-y-auto px-3.5 pt-3 pb-32 space-y-2">
           {(() => {
             if (!activeAisle) return null;
-            const unpurchased = activeAisle.items.filter((i) => !i.is_purchased);
+            const unpurchased = activeAisle.items.filter(
+              (i) => !i.is_purchased,
+            );
             return unpurchased.map((item) => {
               const { name } = getCatalogInfo(item);
               const isLastOfAisle = unpurchased.length === 1;
@@ -509,9 +497,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
       </button>
 
       {totalItems === 0 ? (
-        <div className="text-center py-12 opacity-50 italic text-[var(--es-secondary)]">
-          Votre liste est vide. Ajoutez un article !
-        </div>
+        <EmptyState />
       ) : (
         storeGroups.map((storeGroup) => (
           <div key={storeGroup.id} className="flex flex-col gap-3">
