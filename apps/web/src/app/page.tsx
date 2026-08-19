@@ -15,10 +15,9 @@ import {
   useActiveHouseholdId,
   useHouseholdMembers,
 } from "@/hooks/useHousehold";
+import { ACTIVE_LIST_KEY } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
-
-const ACTIVE_LIST_KEY = "active_list_id";
 
 export default function Home() {
   const [activeListId, setActiveListId] = useState<string | null>(null);

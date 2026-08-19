@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { useSupabase } from "@/hooks/useSupabase";
 import { useShoppingLists } from "@/hooks/useShoppingLists";
 import {
   useActiveHousehold,
@@ -28,13 +27,12 @@ import { useLocalStorageValue } from "@/hooks/useLocalStorageValue";
 import { MemberAvatars } from "@/components/shopping/MemberAvatars";
 import { InviteMemberModal } from "@/components/household/InviteMemberModal";
 import { TabBar } from "@/components/layout/TabBar";
-
-const ACTIVE_LIST_KEY = "active_list_id";
+import { ACTIVE_LIST_KEY } from "@/lib/constants";
+import { useLogout } from "@/hooks/useLogout";
 
 /** Écran 2g/3d — Mes listes & foyer. */
 export default function ListsPage() {
   const router = useRouter();
-  const supabase = useSupabase();
   const household = useActiveHousehold();
   const householdId = useActiveHouseholdId();
   // Valeur persistée lue de façon sûre pour l'hydratation ; `selectedListId`
@@ -83,13 +81,7 @@ export default function ListsPage() {
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem("active_household_id");
-    localStorage.removeItem(ACTIVE_LIST_KEY);
-    router.push("/login");
-    router.refresh();
-  };
+  const handleLogout = useLogout();
 
   return (
     <div className="min-h-screen bg-[var(--es-bg)] pb-24 text-[var(--es-ink)]">

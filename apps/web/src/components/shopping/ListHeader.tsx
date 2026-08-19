@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   EllipsisHorizontalIcon,
   PencilIcon,
@@ -30,7 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { fetchApi } from "@/lib/api";
 import { toast } from "sonner";
-import { useSupabase } from "@/hooks/useSupabase";
+import { useLogout } from "@/hooks/useLogout";
 import { MemberAvatars } from "./MemberAvatars";
 import { HouseholdMember } from "@/hooks/useHousehold";
 
@@ -57,23 +56,14 @@ export const ListHeader: React.FC<ListHeaderProps> = ({
   onUpdate,
   onDelete,
 }) => {
-  const supabase = useSupabase();
-  const router = useRouter();
   const [isRenameSheetOpen, setIsRenameSheetOpen] = useState(false);
   const [newName, setNewName] = useState(name);
   const [isRenaming, setIsRenaming] = useState(false);
+  const handleLogout = useLogout();
 
   const handleOpenRename = () => {
     setNewName(name);
     setIsRenameSheetOpen(true);
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem("active_household_id");
-    localStorage.removeItem("active_list_id");
-    router.push("/login");
-    router.refresh();
   };
 
   // Écran 4j : une liste n'a qu'un nom — ses sections magasin/rayon se

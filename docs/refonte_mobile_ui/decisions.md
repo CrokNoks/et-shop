@@ -63,6 +63,9 @@ La spec initiale prévoyait un nouveau composant `LoyaltyCardFullscreen.tsx`. En
 
 `app/manifest.ts` n'a pas d'icône avec `purpose: "monochrome"`. Cette variante est une spécificité de l'adaptive icon Android natif (packagé), pas du manifest PWA web standard — non implémentable simplement dans ce framework, documenté plutôt que simulé (cf. section Assets du Cycle I).
 
-## Petites duplications acceptées
+## Duplications factorisées
 
-`ACTIVE_LIST_KEY` (constante de clé localStorage) est redéfinie dans `app/page.tsx` et `app/lists/page.tsx` plutôt que centralisée ; `handleLogout` existe en 3 exemplaires quasi identiques (`ListHeader.tsx`, `app/lists/page.tsx`) ; le SVG de l'icône d'app est dupliqué entre `icon.tsx`, `apple-icon.tsx`, `pwa-icon-192/route.tsx` et `pwa-icon-512/route.tsx`. Signalé en revue, laissé tel quel : la duplication est petite (quelques lignes), stable, et une factorisation prématurée (hook/constante partagée, composant SVG commun) n'apporterait pas de valeur proportionnée au risque d'introduire une dépendance croisée entre des pages qui n'ont pas de raison structurelle d'évoluer ensemble.
+Trois petites duplications signalées en revue ont été factorisées (Fix Cycle K5) :
+- `ACTIVE_LIST_KEY` centralisée dans `lib/constants.ts`, importée par `app/page.tsx` et `app/lists/page.tsx`.
+- `handleLogout` (signOut Supabase + nettoyage localStorage + redirection `/login`) extrait en hook partagé `hooks/useLogout.ts`, utilisé par `ListHeader.tsx` et `app/lists/page.tsx`.
+- Le SVG de l'icône d'app (variante 6b) factorisé dans `lib/app-icon.tsx` (composant `AppIconMark`), importé par `icon.tsx`, `apple-icon.tsx`, `pwa-icon-192/route.tsx` et `pwa-icon-512/route.tsx` — rendu inchangé, seuls la taille et le radius du carré varient par appel.
