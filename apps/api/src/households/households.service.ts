@@ -220,16 +220,11 @@ export class HouseholdsService {
       );
     }
 
-    // Un seul code actif à la fois : on retire les codes non utilisés existants
-    // (expirés ou non) avant d'en créer un nouveau, plutôt que de les cumuler.
-    const { error: dError } = await client
-      .from('household_invites')
-      .delete()
-      .eq('household_id', householdId)
-      .is('used_at', null);
-
-    if (dError) throw dError;
-
+    // Un seul code actif à la fois, mais on insère le nouveau AVANT de retirer
+    // les anciens (pas l'inverse) : si l'insertion échoue, le foyer garde son
+    // code actif existant plutôt que de se retrouver sans aucun code utilisable.
+    // Un très bref instant avec deux codes actifs n'est qu'une simplification
+    // UX, pas un invariant de sécurité — l'absence de code actif, si.
     const code = generateInviteCode();
     const expiresAt = new Date(Date.now() + INVITE_CODE_TTL_MS).toISOString();
 
@@ -241,12 +236,27 @@ export class HouseholdsService {
         created_by: currentUser.id,
         expires_at: expiresAt,
       })
-      .select('code, expires_at')
+      .select('id, code, expires_at')
       .single();
 
     if (iError) throw iError;
 
-    return invite as HouseholdInvite;
+    const { error: dError } = await client
+      .from('household_invites')
+      .delete()
+      .eq('household_id', householdId)
+      .is('used_at', null)
+      .neq('id', (invite as { id: string }).id);
+
+    if (dError) {
+      // Le nouveau code est déjà créé et valide à ce stade : ne pas faire
+      // échouer la génération pour un nettoyage secondaire qui a raté (au
+      // pire un ancien code non révoqué traîne encore, sans jamais laisser
+      // le foyer sans code actif).
+      console.error('Failed to clean up previous invite codes', dError);
+    }
+
+    return { code: invite.code, expires_at: invite.expires_at };
   }
 
   /**

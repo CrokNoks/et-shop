@@ -29,6 +29,7 @@ const makeQb = (
     delete: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
     is: jest.fn().mockReturnThis(),
+    neq: jest.fn().mockReturnThis(),
     single: jest.fn().mockResolvedValue(singleResult),
     // Rendre le builder thenable pour les queries sans .single()
     then: promise.then.bind(promise),
@@ -143,16 +144,20 @@ describe('HouseholdsService', () => {
       expect(client.from).toHaveBeenCalledTimes(1);
     });
 
-    it('devrait invalider les anciens codes non utilisés avant de générer un nouveau code', async () => {
-      const deleteQb = makeQb(undefined, { error: null });
+    it('devrait insérer le nouveau code AVANT de retirer les anciens (jamais sans code actif)', async () => {
       const insertQb = makeQb({
-        data: { code: 'IGNORED1', expires_at: '2026-04-03T00:00:00.000Z' },
+        data: {
+          id: 'invite-new-001',
+          code: 'IGNORED1',
+          expires_at: '2026-04-03T00:00:00.000Z',
+        },
         error: null,
       });
+      const deleteQb = makeQb(undefined, { error: null });
       const client = makeSequencedClient(
         makeQb({ data: { role: 'admin' }, error: null }), // currentUser = admin
-        deleteQb, // delete des anciens codes actifs
         insertQb, // insertion du nouveau code
+        deleteQb, // suppression des anciens codes actifs (hors le nouveau)
       );
       mockSupabaseService.getClient.mockReturnValue(client);
 
@@ -161,6 +166,7 @@ describe('HouseholdsService', () => {
       expect(deleteQb.delete).toHaveBeenCalled();
       expect(deleteQb.eq).toHaveBeenCalledWith('household_id', HOUSEHOLD_ID);
       expect(deleteQb.is).toHaveBeenCalledWith('used_at', null);
+      expect(deleteQb.neq).toHaveBeenCalledWith('id', 'invite-new-001');
       expect(result).toEqual({
         code: 'IGNORED1',
         expires_at: '2026-04-03T00:00:00.000Z',
@@ -170,6 +176,31 @@ describe('HouseholdsService', () => {
       // caractères ambigus (pas de 0/O/1/I) et la longueur de 8 caractères.
       const insertedCode = insertQb.insert.mock.calls[0][0].code;
       expect(insertedCode).toMatch(/^[A-HJ-NP-Z2-9]{8}$/);
+    });
+
+    it('devrait quand même renvoyer le nouveau code si le nettoyage des anciens codes échoue', async () => {
+      const insertQb = makeQb({
+        data: {
+          id: 'invite-new-002',
+          code: 'IGNORED2',
+          expires_at: '2026-04-03T00:00:00.000Z',
+        },
+        error: null,
+      });
+      const deleteQb = makeQb(undefined, { error: { message: 'boom' } });
+      const client = makeSequencedClient(
+        makeQb({ data: { role: 'admin' }, error: null }),
+        insertQb,
+        deleteQb,
+      );
+      mockSupabaseService.getClient.mockReturnValue(client);
+
+      const result = await service.createInviteCode(HOUSEHOLD_ID);
+
+      expect(result).toEqual({
+        code: 'IGNORED2',
+        expires_at: '2026-04-03T00:00:00.000Z',
+      });
     });
   });
 
