@@ -184,7 +184,7 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
 
         {selectedIds.length > 0 && (
           <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-[rgba(255,107,53,0.35)] bg-[rgba(255,107,53,0.06)] p-4 animate-in fade-in slide-in-from-top-4 md:flex-row">
-            <p className="font-semibold text-[#8a4321]">
+            <p className="font-semibold text-[var(--es-accent-text)]">
               {selectedIds.length} article(s) sélectionné(s)
             </p>
             <div className="flex w-full items-center gap-3 md:w-auto">

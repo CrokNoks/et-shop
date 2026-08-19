@@ -103,29 +103,35 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
     useAisleMode(storeGroups);
 
   useEffect(() => {
+    if (!isShoppingMode) return;
+    // `cancelled` couvre la course entre l'acquisition async du verrou et un
+    // démontage/sortie du mode magasin survenant avant sa résolution : sans
+    // ça, un verrou obtenu après coup ne serait jamais relâché (le cleanup
+    // s'exécute déjà avant que la promesse ne résolve).
+    let cancelled = false;
     const requestWakeLock = async () => {
-      if ("wakeLock" in navigator && isShoppingMode) {
-        try {
-          const lock = await (
-            navigator as Navigator & {
-              wakeLock: {
-                request: (type: string) => Promise<{ release: () => void }>;
-              };
-            }
-          ).wakeLock.request("screen");
-          wakeLockRef.current = lock;
-        } catch (err: unknown) {
-          const e = err as { name?: string; message?: string };
-          console.error(`${e?.name}, ${e?.message}`);
+      if (!("wakeLock" in navigator)) return;
+      try {
+        const lock = await (
+          navigator as Navigator & {
+            wakeLock: {
+              request: (type: string) => Promise<{ release: () => void }>;
+            };
+          }
+        ).wakeLock.request("screen");
+        if (cancelled) {
+          lock.release();
+          return;
         }
+        wakeLockRef.current = lock;
+      } catch (err: unknown) {
+        const e = err as { name?: string; message?: string };
+        console.error(`${e?.name}, ${e?.message}`);
       }
     };
-    if (isShoppingMode) requestWakeLock();
-    else if (wakeLockRef.current) {
-      wakeLockRef.current.release();
-      wakeLockRef.current = null;
-    }
+    requestWakeLock();
     return () => {
+      cancelled = true;
       if (wakeLockRef.current) {
         wakeLockRef.current.release();
         wakeLockRef.current = null;

@@ -97,7 +97,12 @@ export default function StoreDetailPage() {
             role="tab"
             id={`store-tab-${tab.key}-trigger`}
             aria-selected={activeTab === tab.key}
-            aria-controls={`store-tabpanel-${tab.key}`}
+            // Les panneaux inactifs ne sont pas montés (chaque section
+            // fait son propre fetch de données) : aria-controls ne doit
+            // pointer que vers un id réellement présent dans le DOM.
+            aria-controls={
+              activeTab === tab.key ? `store-tabpanel-${tab.key}` : undefined
+            }
             onClick={() => setActiveTab(tab.key)}
             data-cy={
               tab.key === "produits"

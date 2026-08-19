@@ -56,6 +56,7 @@ export const RecipeItemRow: React.FC<RecipeItemRowProps> = ({
                 step="0.01"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
+                aria-label="Quantité"
                 className="h-7 w-16 rounded-[8px] border border-[#FF6B35] px-1.5 text-[13px] tabular-nums outline-none"
               />
               <input
@@ -63,6 +64,7 @@ export const RecipeItemRow: React.FC<RecipeItemRowProps> = ({
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
                 placeholder="unité"
+                aria-label="Unité"
                 className="h-7 w-16 rounded-[8px] border border-[var(--es-hairline)] px-1.5 text-[13px] uppercase outline-none"
               />
             </div>
@@ -83,6 +85,8 @@ export const RecipeItemRow: React.FC<RecipeItemRowProps> = ({
             <button
               onClick={handleSave}
               data-cy={`recipe-item-${item.id}-save`}
+              aria-label="Enregistrer"
+              title="Enregistrer"
               className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#2e7d32] hover:bg-[rgba(46,125,50,0.08)]"
             >
               <Check className="h-4 w-4" />
@@ -90,6 +94,8 @@ export const RecipeItemRow: React.FC<RecipeItemRowProps> = ({
             <button
               onClick={handleCancel}
               data-cy={`recipe-item-${item.id}-cancel`}
+              aria-label="Annuler"
+              title="Annuler"
               className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--es-tertiary)] hover:bg-[var(--es-field)]"
             >
               <X className="h-4 w-4" />
@@ -100,6 +106,8 @@ export const RecipeItemRow: React.FC<RecipeItemRowProps> = ({
             <button
               onClick={() => setIsEditing(true)}
               data-cy={`recipe-item-${item.id}-edit`}
+              aria-label="Modifier"
+              title="Modifier"
               className="flex h-11 w-11 items-center justify-center rounded-[8px] text-[var(--es-tertiary)] transition-colors hover:bg-[var(--es-field)] hover:text-[var(--es-ink)]"
             >
               <Pencil className="h-4 w-4" />
@@ -107,6 +115,8 @@ export const RecipeItemRow: React.FC<RecipeItemRowProps> = ({
             <button
               onClick={() => onDelete(item.id)}
               data-cy={`recipe-item-${item.id}-delete`}
+              aria-label="Supprimer"
+              title="Supprimer"
               className="flex h-11 w-11 items-center justify-center rounded-[8px] text-[var(--es-tertiary)] transition-colors hover:bg-[rgba(179,38,30,0.08)] hover:text-[var(--es-danger)]"
             >
               <Trash2 className="h-4 w-4" />

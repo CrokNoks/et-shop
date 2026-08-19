@@ -45,7 +45,7 @@ function BarcodeRenderer({
           <div className="w-1/12 bg-black h-full"></div>
           <div className="w-1/12 bg-white h-full"></div>
         </div>
-        <p className="mt-2 text-sm font-mono">{data}</p>
+        <p className="mt-2 text-sm font-mono text-black">{data}</p>
       </div>
     );
   }
@@ -60,7 +60,9 @@ function BarcodeRenderer({
             </React.Fragment>
           ))}
         </div>
-        <p className="mt-2 text-sm font-mono tracking-widest">{data}</p>
+        <p className="mt-2 text-sm font-mono tracking-widest text-black">
+          {data}
+        </p>
       </div>
     );
   }
@@ -75,7 +77,7 @@ function BarcodeRenderer({
             <div key={i} className={isWhite ? "bg-white" : "bg-black"}></div>
           ))}
         </div>
-        <p className="mt-2 text-sm font-mono">{data}</p>
+        <p className="mt-2 text-sm font-mono text-black">{data}</p>
       </div>
     );
   }

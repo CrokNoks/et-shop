@@ -158,7 +158,7 @@ export default function Home() {
           </div>
 
           {activeListId && (
-            <div className="sticky bottom-16 sm:bottom-0 px-3.5 py-2 bg-[var(--es-bg)]">
+            <div className="sticky bottom-16 px-3.5 py-2 bg-[var(--es-bg)]">
               <HopInput listId={activeListId} onItemAdded={handleItemAdded} />
             </div>
           )}
