@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { TabBar } from "@/components/layout/TabBar";
 import { fetchApi } from "@/lib/api";
 import {
   PencilIcon,
@@ -119,10 +120,10 @@ export default function StoresPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-[family-name:var(--font-geist-sans)] text-[#1A365D]">
+    <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-sans text-[#1A365D]">
       <Sidebar activeListId="" onListSelect={() => {}} />
 
-      <main className="flex-1 p-6 pt-24 sm:p-12 flex justify-center">
+      <main className="flex-1 p-6 pt-24 pb-24 sm:p-12 flex justify-center">
         <div className="w-full max-w-4xl flex flex-col gap-10">
           <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div className="flex flex-col gap-2 text-left">
@@ -258,6 +259,7 @@ export default function StoresPage() {
           </SheetContent>
         </Sheet>
       </main>
+      <TabBar />
     </div>
   );
 }

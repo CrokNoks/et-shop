@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { TabBar } from "@/components/layout/TabBar";
 import { createRecipe } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -23,7 +24,10 @@ export default function NewRecipePage() {
     if (!name.trim()) return;
     setIsSubmitting(true);
     try {
-      const recipe = await createRecipe({ name, description: description || undefined });
+      const recipe = await createRecipe({
+        name,
+        description: description || undefined,
+      });
       await queryClient.invalidateQueries({ queryKey: ["recipes"] });
       toast.success("Recette créée !");
       router.push(`/recipes/${recipe.id}`);
@@ -34,10 +38,10 @@ export default function NewRecipePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-[family-name:var(--font-geist-sans)] text-[#1A365D]">
+    <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-sans text-[#1A365D]">
       <Sidebar activeListId="" onListSelect={() => {}} />
 
-      <main className="flex-1 p-6 pt-24 sm:p-12 flex justify-center">
+      <main className="flex-1 p-6 pt-24 pb-24 sm:p-12 flex justify-center">
         <div className="w-full max-w-2xl flex flex-col gap-10">
           <header className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center text-[#FF6B35]">
@@ -102,6 +106,7 @@ export default function NewRecipePage() {
           </form>
         </div>
       </main>
+      <TabBar />
     </div>
   );
 }

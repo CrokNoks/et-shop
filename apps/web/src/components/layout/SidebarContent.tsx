@@ -1,17 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  PlusIcon,
-  UsersIcon,
-  BuildingStorefrontIcon,
-  ClockIcon,
-  ChartBarIcon,
-} from "@heroicons/react/24/outline";
-import { ChefHat } from "lucide-react";
+import { PlusIcon, UsersIcon } from "@heroicons/react/24/outline";
 import { fetchApi } from "@/lib/api";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
 import { UserBadge } from "./UserBadge";
 import { useSupabase } from "@/hooks/useSupabase";
@@ -29,7 +21,6 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({
   onListSelect,
   onClose,
 }) => {
-  const pathname = usePathname();
   const supabase = useSupabase();
   const [lists, setLists] = useState<ShoppingList[]>([]);
   const [householdName, setHouseholdName] = useState<string | null>(null);
@@ -133,86 +124,8 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({
       <Logo width={200} height={60} />
 
       <div className="w-full flex flex-col gap-6 text-[var(--color-brand)]">
-        {/* Magasins Link - Hidden on mobile */}
-        <div className="px-2 hidden sm:flex flex-col gap-2">
-          <Link
-            href="/stores"
-            onClick={() => onClose?.()}
-            className={`flex items-center gap-3 p-3 rounded-xl transition-all group ${
-              pathname === "/stores"
-                ? "bg-white shadow-md border-l-4 border-[var(--color-accent)]"
-                : "hover:bg-gray-50 border-l-4 border-transparent text-gray-500"
-            }`}
-          >
-            <BuildingStorefrontIcon
-              className={`w-5 h-5 ${pathname === "/stores" ? "text-[var(--color-accent)]" : "text-gray-400"}`}
-              strokeWidth={2}
-            />
-            <span
-              className={`font-bold ${pathname === "/stores" ? "text-[var(--color-brand)]" : ""}`}
-            >
-              Mes Magasins
-            </span>
-          </Link>
-          <Link
-            href="/recipes"
-            onClick={() => onClose?.()}
-            className={`flex items-center gap-3 p-3 rounded-xl transition-all group ${
-              pathname.startsWith("/recipes")
-                ? "bg-white shadow-md border-l-4 border-[var(--color-accent)]"
-                : "hover:bg-gray-50 border-l-4 border-transparent text-gray-500"
-            }`}
-          >
-            <ChefHat
-              className={`w-5 h-5 ${pathname.startsWith("/recipes") ? "text-[var(--color-accent)]" : "text-gray-400"}`}
-              strokeWidth={2}
-            />
-            <span
-              className={`font-bold ${pathname.startsWith("/recipes") ? "text-[var(--color-brand)]" : ""}`}
-            >
-              Recettes
-            </span>
-          </Link>
-          <Link
-            href="/historique"
-            onClick={() => onClose?.()}
-            className={`flex items-center gap-3 p-3 rounded-xl transition-all group ${
-              pathname.startsWith("/historique")
-                ? "bg-white shadow-md border-l-4 border-[var(--color-accent)]"
-                : "hover:bg-gray-50 border-l-4 border-transparent text-gray-500"
-            }`}
-          >
-            <ClockIcon
-              className={`w-5 h-5 ${pathname.startsWith("/historique") ? "text-[var(--color-accent)]" : "text-gray-400"}`}
-              strokeWidth={2}
-            />
-            <span
-              className={`font-bold ${pathname.startsWith("/historique") ? "text-[var(--color-brand)]" : ""}`}
-            >
-              Historique
-            </span>
-          </Link>
-          <Link
-            href="/statistiques"
-            onClick={() => onClose?.()}
-            className={`flex items-center gap-3 p-3 rounded-xl transition-all group ${
-              pathname.startsWith("/statistiques")
-                ? "bg-white shadow-md border-l-4 border-[var(--color-accent)]"
-                : "hover:bg-gray-50 border-l-4 border-transparent text-gray-500"
-            }`}
-          >
-            <ChartBarIcon
-              className={`w-5 h-5 ${pathname.startsWith("/statistiques") ? "text-[var(--color-accent)]" : "text-gray-400"}`}
-              strokeWidth={2}
-            />
-            <span
-              className={`font-bold ${pathname.startsWith("/statistiques") ? "text-[var(--color-brand)]" : ""}`}
-            >
-              Statistiques
-            </span>
-          </Link>
-        </div>
-
+        {/* Magasins et Recettes sont désormais accessibles via la TabBar mobile.
+            Historique et Statistiques ont été retirés (hors périmètre de la refonte). */}
         <div className="flex items-center justify-between px-2">
           <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">
             Mes Listes
@@ -268,7 +181,9 @@ export const SidebarContent: React.FC<SidebarContentProps> = ({
                 <div className="flex items-center gap-3 min-w-0">
                   <div
                     className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: list.color || "var(--color-brand)" }}
+                    style={{
+                      backgroundColor: list.color || "var(--color-brand)",
+                    }}
                   />
                   <span
                     className={`font-bold truncate ${activeListId === list.id ? "text-[var(--color-brand)]" : ""}`}

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { TabBar } from "@/components/layout/TabBar";
 import { HopInput } from "@/components/shopping/HopInput";
 import { ShoppingList } from "@/components/shopping/ShoppingList";
 import { ListHeader } from "@/components/shopping/ListHeader";
@@ -73,13 +74,13 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-[family-name:var(--font-geist-sans)]">
+    <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-sans">
       <Sidebar
         activeListId={activeListId || ""}
         onListSelect={handleListSelect}
       />
 
-      <main className="flex-1 p-6 pt-24 sm:p-12 flex justify-center">
+      <main className="flex-1 p-6 pt-24 pb-24 sm:p-12 flex justify-center">
         <div className="w-full max-w-2xl flex flex-col gap-10">
           {activeListId ? (
             <ListHeader
@@ -126,6 +127,7 @@ export default function Home() {
           </footer>
         </div>
       </main>
+      <TabBar />
     </div>
   );
 }

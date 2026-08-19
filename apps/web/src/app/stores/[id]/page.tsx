@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { TabBar } from "@/components/layout/TabBar";
 import { fetchApi } from "@/lib/api";
 import { StoreCategories } from "@/components/stores/detail/StoreCategories";
 import { StoreCatalog } from "@/components/stores/detail/StoreCatalog";
@@ -22,7 +23,9 @@ export default function StoreDetailPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
   const [store, setStore] = useState<Store | null>(null);
-  const [activeTab, setActiveTab] = useState<"rayons" | "produits" | "cartes">("rayons");
+  const [activeTab, setActiveTab] = useState<"rayons" | "produits" | "cartes">(
+    "rayons",
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -55,6 +58,7 @@ export default function StoreDetailPage() {
             Chargement du magasin...
           </p>
         </main>
+        <TabBar />
       </div>
     );
   }
@@ -62,10 +66,10 @@ export default function StoreDetailPage() {
   if (!store) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-[family-name:var(--font-geist-sans)] text-[#1A365D]">
+    <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-sans text-[#1A365D]">
       <Sidebar activeListId="" onListSelect={() => {}} />
 
-      <main className="flex-1 p-6 pt-24 sm:p-12 flex justify-center">
+      <main className="flex-1 p-6 pt-24 pb-24 sm:p-12 flex justify-center">
         <div className="w-full max-w-5xl flex flex-col gap-10">
           {/* Header */}
           <header className="flex flex-col gap-6">
@@ -144,6 +148,7 @@ export default function StoreDetailPage() {
           </footer>
         </div>
       </main>
+      <TabBar />
     </div>
   );
 }

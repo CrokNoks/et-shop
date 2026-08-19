@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { use } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { TabBar } from "@/components/layout/TabBar";
 import { useRecipeDetail } from "@/hooks/useRecipeDetail";
 import { RecipeDetail } from "@/components/recipes/RecipeDetail";
 import {
@@ -58,7 +59,10 @@ export default function RecipePage({ params }: RecipePageProps) {
     } catch (error: unknown) {
       console.error("Failed to add recipe item:", error);
       // Debug pour Cypress
-      if (typeof window !== "undefined" && (window as unknown as Record<string, unknown>)["Cypress"]) {
+      if (
+        typeof window !== "undefined" &&
+        (window as unknown as Record<string, unknown>)["Cypress"]
+      ) {
         window.alert("RECIPE_ITEM_ERROR: " + JSON.stringify(error));
       }
       toast.error("Erreur lors de l'ajout du produit.");
@@ -94,7 +98,9 @@ export default function RecipePage({ params }: RecipePageProps) {
     setIsSending(true);
     try {
       const result = await sendRecipeToList(id, shoppingListId);
-      toast.success(`Recette envoyée ! ${result.applied} produit(s) ajouté(s).`);
+      toast.success(
+        `Recette envoyée ! ${result.applied} produit(s) ajouté(s).`,
+      );
     } catch {
       toast.error("Erreur lors de l'envoi vers la liste.");
     } finally {
@@ -113,7 +119,10 @@ export default function RecipePage({ params }: RecipePageProps) {
     e.preventDefault();
     setIsEditSubmitting(true);
     try {
-      await updateRecipe(id, { name: editName, description: editDescription || undefined });
+      await updateRecipe(id, {
+        name: editName,
+        description: editDescription || undefined,
+      });
       await queryClient.invalidateQueries({ queryKey: ["recipes"] });
       await invalidate();
       toast.success("Recette mise à jour !");
@@ -126,10 +135,10 @@ export default function RecipePage({ params }: RecipePageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-[family-name:var(--font-geist-sans)] text-[#1A365D]">
+    <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-sans text-[#1A365D]">
       <Sidebar activeListId="" onListSelect={() => {}} />
 
-      <main className="flex-1 p-6 pt-24 sm:p-12 flex justify-center">
+      <main className="flex-1 p-6 pt-24 pb-24 sm:p-12 flex justify-center">
         <div className="w-full max-w-4xl flex flex-col gap-10">
           {isLoading ? (
             <p className="text-center py-20 text-gray-400 italic animate-pulse">
@@ -163,6 +172,7 @@ export default function RecipePage({ params }: RecipePageProps) {
           )}
         </div>
       </main>
+      <TabBar />
 
       {/* Edit recipe sheet */}
       <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
