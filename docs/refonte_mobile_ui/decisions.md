@@ -54,3 +54,15 @@ Le README du handoff dit en toutes lettres (section "Fidelity") que les cibles t
 - Pastille "Fidélité" en mode magasin 34px (écran 2c/3b).
 
 Les cas où une taille codée divergeait de la valeur explicite du design (ex. pas-à-pas de quantité à ~20px au lieu des 26px prescrits, boutons micro/scan de `HopInput` à 38px au lieu de 40px) ont été corrigés pour correspondre au design, pas à la règle générale des 44px.
+
+## Écran 4h : `LoyaltyCardFullscreen` non créé
+
+La spec initiale prévoyait un nouveau composant `LoyaltyCardFullscreen.tsx`. En creusant au Cycle G, `LoyaltyCardOverlay.tsx` (déjà existant, monté depuis `ShoppingList.tsx` et `StoreLoyaltyCards.tsx`) faisait déjà tout ce que demande l'écran 4h : plein écran, wake lock, `screen.orientation.lock("landscape")`, repli CSS pivoté à 90° si l'API échoue, code-barres, "Présentez ce code à la caisse". Il a été restylé sur les tokens `--es-*` plutôt que dupliqué dans un nouveau composant — choix délibéré pour éviter deux implémentations divergentes du même écran.
+
+## Icône Android 13+ monochrome (écran 7c)
+
+`app/manifest.ts` n'a pas d'icône avec `purpose: "monochrome"`. Cette variante est une spécificité de l'adaptive icon Android natif (packagé), pas du manifest PWA web standard — non implémentable simplement dans ce framework, documenté plutôt que simulé (cf. section Assets du Cycle I).
+
+## Petites duplications acceptées
+
+`ACTIVE_LIST_KEY` (constante de clé localStorage) est redéfinie dans `app/page.tsx` et `app/lists/page.tsx` plutôt que centralisée ; `handleLogout` existe en 3 exemplaires quasi identiques (`ListHeader.tsx`, `app/lists/page.tsx`) ; le SVG de l'icône d'app est dupliqué entre `icon.tsx`, `apple-icon.tsx`, `pwa-icon-192/route.tsx` et `pwa-icon-512/route.tsx`. Signalé en revue, laissé tel quel : la duplication est petite (quelques lignes), stable, et une factorisation prématurée (hook/constante partagée, composant SVG commun) n'apporterait pas de valeur proportionnée au risque d'introduire une dépendance croisée entre des pages qui n'ont pas de raison structurelle d'évoluer ensemble.
