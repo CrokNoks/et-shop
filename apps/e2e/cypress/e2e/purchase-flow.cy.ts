@@ -85,7 +85,9 @@ describe("Flux d'achat depuis une liste de courses", () => {
   });
 
   it("marquer un article Acheté change l'état visuel (checkout visuel)", () => {
-    cy.intercept("PATCH", /\/items\/[^/]+\/(purchase|unpurchase)/).as("toggleItem");
+    cy.intercept("PATCH", /\/items\/[^/]+\/(purchase|unpurchase)/).as(
+      "toggleItem",
+    );
 
     cy.visit("/");
 
@@ -110,7 +112,9 @@ describe("Flux d'achat depuis une liste de courses", () => {
   });
 
   it("annuler un achat remet l'article à l'état initial", () => {
-    cy.intercept("PATCH", /\/items\/[^/]+\/(purchase|unpurchase)/).as("toggleItem");
+    cy.intercept("PATCH", /\/items\/[^/]+\/(purchase|unpurchase)/).as(
+      "toggleItem",
+    );
 
     cy.visit("/");
     cy.get("[data-cy=shopping-mode-toggle]").click();
@@ -148,7 +152,9 @@ describe("Flux d'achat depuis une liste de courses", () => {
   });
 
   it("marquer plusieurs articles reflète chaque action individuellement", () => {
-    cy.intercept("PATCH", /\/items\/[^/]+\/(purchase|unpurchase)/).as("toggleItem");
+    cy.intercept("PATCH", /\/items\/[^/]+\/(purchase|unpurchase)/).as(
+      "toggleItem",
+    );
 
     cy.visit("/");
     cy.get("[data-cy=shopping-mode-toggle]").click();
@@ -194,7 +200,9 @@ describe("Flux d'achat depuis une liste de courses", () => {
   });
 
   it("terminer les achats enregistre les achats et revient au mode classique", () => {
-    cy.intercept("PATCH", /\/items\/[^/]+\/(purchase|unpurchase)/).as("toggleItem");
+    cy.intercept("PATCH", /\/items\/[^/]+\/(purchase|unpurchase)/).as(
+      "toggleItem",
+    );
 
     cy.visit("/");
     cy.get("[data-cy=shopping-mode-toggle]").click();
@@ -206,7 +214,7 @@ describe("Flux d'achat depuis une liste de courses", () => {
     // Terminer les achats
     cy.get("[data-cy=shopping-finish]").click();
 
-    // On doit revenir au mode classique (le bouton Mode Shopping réapparaît)
-    cy.contains("Mode Shopping").should("be.visible");
+    // On doit revenir au mode classique (le bouton de démarrage réapparaît)
+    cy.contains("Démarrer le mode magasin").should("be.visible");
   });
 });

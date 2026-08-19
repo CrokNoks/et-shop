@@ -2,10 +2,10 @@ describe("Liste de courses", () => {
   beforeEach(() => {
     cy.loginWithFixture();
     cy.cleanupTestData();
-    
+
     // Créer un magasin par défaut car l'API refuse d'ajouter des items sans magasin dans le foyer
     cy.createStoreViaApi("Magasin Test Global");
-    
+
     cy.wait(1000);
   });
 
@@ -15,7 +15,9 @@ describe("Liste de courses", () => {
     cy.get("[data-cy=sidebar-new-list]").click();
     cy.get("[data-cy=sidebar-list-input]").type(`${listName}{enter}`);
 
-    cy.contains(listName, { timeout: 10000 }).scrollIntoView().should("be.visible");
+    cy.contains(listName, { timeout: 10000 })
+      .scrollIntoView()
+      .should("be.visible");
   });
 
   it("ajoute un article via HopInput", () => {
@@ -26,7 +28,7 @@ describe("Liste de courses", () => {
     cy.get("[data-cy=sidebar-list-input]").type(`${listName}{enter}`);
     cy.get("[data-cy=sidebar-list-input]").should("not.exist");
     cy.get("h1").should("contain", listName);
-    
+
     cy.wait(1000);
 
     cy.get("[data-cy=hop-input]").should("be.visible");
@@ -42,14 +44,18 @@ describe("Liste de courses", () => {
       }
     });
 
-    cy.wait("@addItem", { timeout: 15000 }).its("response.statusCode").should("be.oneOf", [200, 201]);
+    cy.wait("@addItem", { timeout: 15000 })
+      .its("response.statusCode")
+      .should("be.oneOf", [200, 201]);
 
     cy.contains("Bananes", { timeout: 10000 }).should("be.visible");
   });
 
   it("coche un article", () => {
     cy.intercept("POST", "**/shopping-lists/*/items").as("addItem");
-    cy.intercept("PATCH", /\/items\/[^/]+\/(purchase|unpurchase)/).as("toggleItem");
+    cy.intercept("PATCH", /\/items\/[^/]+\/(purchase|unpurchase)/).as(
+      "toggleItem",
+    );
 
     cy.get("[data-cy=sidebar-new-list]").click();
     const listName = `Liste check ${Date.now()}`;
@@ -65,8 +71,10 @@ describe("Liste de courses", () => {
 
     cy.contains("Pommes", { timeout: 10000 }).should("be.visible");
     cy.get("[data-cy^=item-]").first().click();
-    
-    cy.wait("@toggleItem", { timeout: 15000 }).its("response.statusCode").should("eq", 200);
+
+    cy.wait("@toggleItem", { timeout: 15000 })
+      .its("response.statusCode")
+      .should("eq", 200);
     cy.get("[class*=line-through]").should("exist");
   });
 
@@ -88,8 +96,10 @@ describe("Liste de courses", () => {
 
     cy.contains("Lait", { timeout: 10000 }).should("be.visible");
     cy.get("[data-cy$=-plus]").first().click();
-    
-    cy.wait("@updateQty", { timeout: 15000 }).its("response.statusCode").should("eq", 200);
+
+    cy.wait("@updateQty", { timeout: 15000 })
+      .its("response.statusCode")
+      .should("eq", 200);
     cy.get("[data-cy$=-qty]").first().should("contain", "2");
   });
 
@@ -111,8 +121,10 @@ describe("Liste de courses", () => {
 
     cy.contains("Yaourt", { timeout: 10000 }).should("be.visible");
     cy.get("[data-cy$=-delete]").first().click();
-    
-    cy.wait("@deleteItem", { timeout: 15000 }).its("response.statusCode").should("be.oneOf", [200, 204]);
+
+    cy.wait("@deleteItem", { timeout: 15000 })
+      .its("response.statusCode")
+      .should("be.oneOf", [200, 204]);
     cy.contains("Yaourt").should("not.exist");
   });
 
@@ -130,12 +142,12 @@ describe("Liste de courses", () => {
 
     cy.get("[data-cy=list-options]").click();
     cy.get("[data-cy=list-delete]").click();
-    
+
     cy.wait("@deleteList", { timeout: 15000 });
-    
+
     // On recharge pour forcer le refresh si Realtime est capricieux
     cy.reload();
-    
+
     cy.get("h1", { timeout: 10000 }).should("not.contain", listName);
     cy.get("aside", { timeout: 10000 }).should("not.contain", listName);
   });
@@ -152,7 +164,9 @@ describe("Liste de courses", () => {
     cy.get("[data-cy=list-edit]").click();
 
     const newName = `Liste renommée ${Date.now()}`;
-    cy.get("[data-cy=list-name-input]").clear().type(newName + "{enter}");
+    cy.get("[data-cy=list-name-input]")
+      .clear()
+      .type(newName + "{enter}");
 
     cy.get("h1").should("contain", newName);
   });
@@ -169,6 +183,6 @@ describe("Liste de courses", () => {
     cy.contains("En magasin").should("be.visible");
 
     cy.get("[data-cy=shopping-finish]").click();
-    cy.contains("Mode Shopping").should("be.visible");
+    cy.contains("Démarrer le mode magasin").should("be.visible");
   });
 });
