@@ -99,8 +99,8 @@ export default function Home() {
   const { data: members = [] } = useHouseholdMembers(getActiveHouseholdId());
 
   return (
-    <div className="min-h-screen bg-[var(--es-bg)] flex flex-col sm:flex-row font-sans">
-      <main className="flex-1 flex flex-col pb-24 sm:p-12 sm:items-center">
+    <div className="min-h-screen bg-[var(--es-bg)] flex flex-col font-sans">
+      <main className="flex-1 flex flex-col pb-24 sm:pt-12 sm:px-12 sm:items-center">
         <div className="w-full sm:max-w-2xl flex flex-col">
           {activeListId ? (
             <ListHeader

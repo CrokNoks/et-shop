@@ -153,9 +153,6 @@ export default function ListsPage() {
                 <span className="flex-1 truncate text-[15px] font-medium">
                   {list.name}
                 </span>
-                <span className="text-[12.5px] text-[var(--es-tertiary)] tabular-nums">
-                  {list.itemCount ?? 0} articles
-                </span>
               </button>
             ))}
           </div>

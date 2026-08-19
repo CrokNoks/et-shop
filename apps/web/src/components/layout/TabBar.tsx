@@ -42,7 +42,7 @@ export const TabBar: React.FC = () => {
 
   return (
     <nav
-      className="sm:hidden fixed bottom-0 left-0 right-0 z-50 h-16 bg-white dark:bg-[#16223a] border-t border-[rgba(18,36,63,0.1)] dark:border-[rgba(255,255,255,0.09)] flex items-stretch justify-around"
+      className="fixed bottom-0 left-0 right-0 z-50 h-16 bg-white dark:bg-[#16223a] border-t border-[rgba(18,36,63,0.1)] dark:border-[rgba(255,255,255,0.09)] flex items-stretch justify-around sm:justify-center sm:gap-6"
       aria-label="Navigation principale"
     >
       {TABS.map(({ href, label, icon: Icon, isActive }) => {
@@ -51,7 +51,7 @@ export const TabBar: React.FC = () => {
           <Link
             key={href}
             href={href}
-            className="relative flex-1 flex flex-col items-center justify-center gap-1 outline-none focus-visible:outline-2 focus-visible:outline-[#FF6B35] focus-visible:outline-offset-[-2px]"
+            className="relative flex-1 sm:flex-none sm:w-32 flex flex-col items-center justify-center gap-1 outline-none focus-visible:outline-2 focus-visible:outline-[#FF6B35] focus-visible:outline-offset-[-2px]"
           >
             {active && (
               <span className="absolute top-0 h-0.5 w-4 rounded-full bg-[#FF6B35]" />

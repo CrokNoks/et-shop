@@ -9,11 +9,18 @@ describe("Liste de courses", () => {
     cy.wait(1000);
   });
 
-  it("crée une nouvelle liste via la sidebar", () => {
+  function createListViaListsScreen(listName: string) {
+    cy.visit("/lists");
+    cy.get("[data-cy=lists-new-list]").click();
+    cy.get("[data-cy=lists-list-input]").type(listName);
+    cy.get("[data-cy=lists-create-submit]").click();
+    cy.url({ timeout: 10000 }).should("eq", `${Cypress.config("baseUrl")}/`);
+  }
+
+  it("crée une nouvelle liste via l'écran Mes listes", () => {
     const listName = `Test List ${Date.now()}`;
 
-    cy.get("[data-cy=sidebar-new-list]").click();
-    cy.get("[data-cy=sidebar-list-input]").type(`${listName}{enter}`);
+    createListViaListsScreen(listName);
 
     cy.contains(listName, { timeout: 10000 })
       .scrollIntoView()
@@ -23,10 +30,8 @@ describe("Liste de courses", () => {
   it("ajoute un article via HopInput", () => {
     cy.intercept("POST", "**/shopping-lists/*/items").as("addItem");
 
-    cy.get("[data-cy=sidebar-new-list]").click();
     const listName = `Liste ajout ${Date.now()}`;
-    cy.get("[data-cy=sidebar-list-input]").type(`${listName}{enter}`);
-    cy.get("[data-cy=sidebar-list-input]").should("not.exist");
+    createListViaListsScreen(listName);
     cy.get("h1").should("contain", listName);
 
     cy.wait(1000);
@@ -57,10 +62,8 @@ describe("Liste de courses", () => {
       "toggleItem",
     );
 
-    cy.get("[data-cy=sidebar-new-list]").click();
     const listName = `Liste check ${Date.now()}`;
-    cy.get("[data-cy=sidebar-list-input]").type(`${listName}{enter}`);
-    cy.get("[data-cy=sidebar-list-input]").should("not.exist");
+    createListViaListsScreen(listName);
     cy.get("h1").should("contain", listName);
     cy.wait(1000);
 
@@ -82,10 +85,8 @@ describe("Liste de courses", () => {
     cy.intercept("POST", "**/shopping-lists/*/items").as("addItem");
     cy.intercept("PATCH", "**/items/*/quantity").as("updateQty");
 
-    cy.get("[data-cy=sidebar-new-list]").click();
     const listName = `Liste qty ${Date.now()}`;
-    cy.get("[data-cy=sidebar-list-input]").type(`${listName}{enter}`);
-    cy.get("[data-cy=sidebar-list-input]").should("not.exist");
+    createListViaListsScreen(listName);
     cy.get("h1").should("contain", listName);
     cy.wait(1000);
 
@@ -107,10 +108,8 @@ describe("Liste de courses", () => {
     cy.intercept("POST", "**/shopping-lists/*/items").as("addItem");
     cy.intercept("DELETE", "**/items/*").as("deleteItem");
 
-    cy.get("[data-cy=sidebar-new-list]").click();
     const listName = `Liste delete ${Date.now()}`;
-    cy.get("[data-cy=sidebar-list-input]").type(`${listName}{enter}`);
-    cy.get("[data-cy=sidebar-list-input]").should("not.exist");
+    createListViaListsScreen(listName);
     cy.get("h1").should("contain", listName);
     cy.wait(1000);
 
@@ -131,10 +130,8 @@ describe("Liste de courses", () => {
   it("supprime une liste", () => {
     cy.intercept("DELETE", "**/shopping-lists/*").as("deleteList");
 
-    cy.get("[data-cy=sidebar-new-list]").click();
     const listName = `Liste à supprimer ${Date.now()}`;
-    cy.get("[data-cy=sidebar-list-input]").type(`${listName}{enter}`);
-    cy.get("[data-cy=sidebar-list-input]").should("not.exist");
+    createListViaListsScreen(listName);
     cy.get("h1").should("contain", listName);
     cy.wait(1000);
 
@@ -149,14 +146,16 @@ describe("Liste de courses", () => {
     cy.reload();
 
     cy.get("h1", { timeout: 10000 }).should("not.contain", listName);
-    cy.get("aside", { timeout: 10000 }).should("not.contain", listName);
+
+    // Plus d'<aside> depuis le retrait du Sidebar (Cycle D) : la liste des
+    // listes vit maintenant sur /lists.
+    cy.visit("/lists");
+    cy.contains(listName).should("not.exist");
   });
 
   it("renomme une liste", () => {
-    cy.get("[data-cy=sidebar-new-list]").click();
     const listName = `Liste rename ${Date.now()}`;
-    cy.get("[data-cy=sidebar-list-input]").type(`${listName}{enter}`);
-    cy.get("[data-cy=sidebar-list-input]").should("not.exist");
+    createListViaListsScreen(listName);
     cy.get("h1").should("contain", listName);
     cy.wait(1000);
 
@@ -172,10 +171,8 @@ describe("Liste de courses", () => {
   });
 
   it("bascule en mode shopping et termine", () => {
-    cy.get("[data-cy=sidebar-new-list]").click();
     const listName = `Liste shopping ${Date.now()}`;
-    cy.get("[data-cy=sidebar-list-input]").type(`${listName}{enter}`);
-    cy.get("[data-cy=sidebar-list-input]").should("not.exist");
+    createListViaListsScreen(listName);
     cy.get("h1").should("contain", listName);
     cy.wait(1000);
 

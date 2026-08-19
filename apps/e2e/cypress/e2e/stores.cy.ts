@@ -5,7 +5,7 @@ describe("Magasins", () => {
   });
 
   it("affiche la page des magasins", () => {
-    cy.contains("Mes Magasins").should("be.visible");
+    cy.contains("Mes magasins").should("be.visible");
     cy.get("[data-cy=stores-new]").should("be.visible");
   });
 
