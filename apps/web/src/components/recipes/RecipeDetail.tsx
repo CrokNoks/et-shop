@@ -19,7 +19,7 @@ interface RecipeDetailProps {
     quantity: number;
     unit?: string;
   }) => void;
-  onSendToList: (shoppingListId: string) => void;
+  onSendToList: (shoppingListId: string, itemIds?: string[]) => void;
   isAddingItem?: boolean;
   isSending?: boolean;
 }
@@ -42,8 +42,26 @@ export const RecipeDetail: React.FC<RecipeDetailProps> = ({
     (item): item is RecipeItem => !("count" in item),
   );
 
+  // Tout est sélectionné par défaut (cohérent avec "pas d'item_ids = tout"
+  // côté backend). On ne suit que les décochés plutôt que les cochés : un
+  // ingrédient ajouté après coup reste sélectionné sans effet supplémentaire.
+  const [deselectedIds, setDeselectedIds] = useState<Set<string>>(new Set());
+  const toggleSelected = (itemId: string) => {
+    setDeselectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(itemId)) next.delete(itemId);
+      else next.add(itemId);
+      return next;
+    });
+  };
+  const selectedCount = items.length - deselectedIds.size;
+
   const handleSend = (shoppingListId: string) => {
-    onSendToList(shoppingListId);
+    const itemIds =
+      deselectedIds.size === 0
+        ? undefined
+        : items.filter((i) => !deselectedIds.has(i.id)).map((i) => i.id);
+    onSendToList(shoppingListId, itemIds);
     setIsSendDialogOpen(false);
   };
 
@@ -66,16 +84,21 @@ export const RecipeDetail: React.FC<RecipeDetailProps> = ({
         {recipe.description && (
           <p className="text-[13px] text-white/70">{recipe.description}</p>
         )}
+        {recipe.estimated_cost !== undefined && (
+          <p className="text-[13px] text-white/70">
+            ≈ {recipe.estimated_cost.toFixed(2)} €
+          </p>
+        )}
       </div>
 
       <button
         onClick={() => setIsSendDialogOpen(true)}
         data-cy="recipe-send"
-        disabled={items.length === 0}
+        disabled={selectedCount === 0}
         className="flex h-[50px] items-center justify-center gap-2 rounded-[14px] border border-[#FF6B35] bg-[rgba(255,107,53,0.08)] text-[15px] font-semibold text-[var(--es-accent-text)] disabled:opacity-40"
       >
         <Send className="h-4 w-4" />
-        Envoyer vers une liste
+        Ajouter {selectedCount} article{selectedCount !== 1 ? "s" : ""}
       </button>
 
       <section className="flex flex-col gap-2">
@@ -95,6 +118,8 @@ export const RecipeDetail: React.FC<RecipeDetailProps> = ({
                 item={item}
                 onUpdate={onUpdateItem}
                 onDelete={onDeleteItem}
+                isSelected={!deselectedIds.has(item.id)}
+                onToggleSelected={toggleSelected}
               />
             ))}
           </div>

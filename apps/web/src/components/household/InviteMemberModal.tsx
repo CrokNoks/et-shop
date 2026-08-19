@@ -17,6 +17,8 @@ import {
   UserIcon,
   TrashIcon,
   ShieldCheckIcon,
+  ClipboardDocumentIcon,
+  ShareIcon,
 } from "@heroicons/react/24/outline";
 
 interface InviteMemberModalProps {
@@ -24,6 +26,11 @@ interface InviteMemberModalProps {
   onClose: () => void;
   householdId: string;
   householdName: string;
+}
+
+interface InviteCode {
+  code: string;
+  expires_at: string;
 }
 
 interface MemberWithProfile {
@@ -48,6 +55,34 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
   const [members, setMembers] = useState<MemberWithProfile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [invite, setInvite] = useState<InviteCode | null>(null);
+  const [isLoadingInvite, setIsLoadingInvite] = useState(false);
+
+  const fetchInviteCode = useCallback(async () => {
+    setIsLoadingInvite(true);
+    try {
+      const data = await fetchApi(`/households/${householdId}/invite-code`, {
+        method: "POST",
+      });
+      setInvite(data);
+    } catch (error: unknown) {
+      // Ce bloc se charge automatiquement à l'ouverture, pas sur une action
+      // explicite de l'utilisateur : un membre non-admin (401/403, attendu —
+      // la feuille est ouverte à tous les membres) ne doit pas se prendre un
+      // toast d'erreur juste pour avoir regardé l'écran. L'email reste
+      // possible pour lui ; seule une vraie panne (réseau, 500) le signale.
+      const status = (error as { status?: number })?.status;
+      if (status !== 401 && status !== 403) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Impossible de générer un code d'invitation.";
+        toast.error(message);
+      }
+    } finally {
+      setIsLoadingInvite(false);
+    }
+  }, [householdId]);
 
   const fetchMembers = useCallback(async () => {
     setIsLoading(true);
@@ -64,8 +99,33 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       fetchMembers();
+      fetchInviteCode();
+    } else {
+      setInvite(null);
     }
-  }, [isOpen, fetchMembers]);
+  }, [isOpen, fetchMembers, fetchInviteCode]);
+
+  const handleCopyCode = () => {
+    if (!invite) return;
+    navigator.clipboard.writeText(invite.code);
+    toast.success("Code copié.");
+  };
+
+  const handleShareCode = async () => {
+    if (!invite) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Rejoindre le foyer ${householdName}`,
+          text: `Rejoins notre foyer sur Et SHop! avec le code ${invite.code}`,
+        });
+      } catch {
+        // Partage annulé par l'utilisateur, rien à faire.
+      }
+    } else {
+      handleCopyCode();
+    }
+  };
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,6 +184,49 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
         </SheetHeader>
 
         <div className="mt-6 flex flex-col gap-6">
+          {isLoadingInvite ? (
+            <div className="h-[92px] animate-pulse rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-field)]" />
+          ) : (
+            invite && (
+              <div className="flex flex-col gap-3 rounded-[14px] border border-[var(--es-hairline)] p-3.5">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]">
+                    Code d&apos;invitation
+                  </span>
+                  <span
+                    data-cy="invite-code-value"
+                    className="font-mono text-[29px] font-semibold tracking-[0.22em] text-[var(--es-ink)]"
+                  >
+                    {invite.code}
+                  </span>
+                  <span className="text-[11.5px] text-[var(--es-tertiary)]">
+                    Valable 48 h · usage unique
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCopyCode}
+                    data-cy="invite-code-copy"
+                    className="flex h-[46px] flex-1 items-center justify-center gap-2 rounded-[10px] border border-[var(--es-hairline)] text-[13px] font-semibold text-[var(--es-ink)]"
+                  >
+                    <ClipboardDocumentIcon className="h-4 w-4" />
+                    Copier
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleShareCode}
+                    data-cy="invite-code-share"
+                    className="flex h-[46px] flex-1 items-center justify-center gap-2 rounded-[10px] border border-[#FF6B35] text-[13px] font-semibold text-[var(--es-accent-text)]"
+                  >
+                    <ShareIcon className="h-4 w-4" />
+                    Partager
+                  </button>
+                </div>
+              </div>
+            )
+          )}
+
           <form onSubmit={handleInvite} className="flex flex-col gap-2">
             <Label className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]">
               Inviter par email

@@ -35,6 +35,7 @@ import { AisleModeHeader } from "./AisleModeHeader";
 import { AisleSelector } from "./AisleSelector";
 import { ListSkeleton } from "./ListSkeleton";
 import { EmptyState } from "./EmptyState";
+import { HouseholdMember } from "@/hooks/useHousehold";
 
 interface ShoppingListProps {
   isLoading: boolean;
@@ -48,6 +49,22 @@ interface ShoppingListProps {
   ) => void;
   handleDeleteItem: (id: string) => void;
   refetch: () => void;
+  members?: HouseholdMember[];
+}
+
+/**
+ * Nom de la personne ayant coché l'article, résolu depuis la liste des
+ * membres du foyer déjà chargée par la page (pas de nouvel appel réseau).
+ * `undefined` si l'auteur n'est pas connu (article pas encore coché,
+ * `purchased_by` absent) ou pas résolvable dans la liste de membres.
+ */
+function purchasedByName(
+  item: ShoppingListItem,
+  members: HouseholdMember[],
+): string | undefined {
+  if (!item.purchased_by) return undefined;
+  const member = members.find((m) => m.user_id === item.purchased_by);
+  return member?.profile?.full_name || member?.profile?.email || undefined;
 }
 
 export const ShoppingList: React.FC<ShoppingListProps> = ({
@@ -58,6 +75,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
   handleQuantityUpdate,
   handleDeleteItem,
   refetch,
+  members = [],
 }) => {
   const [isShoppingMode, setIsShoppingMode] = useState(false);
   // Ref plutôt que state : lue dans le cleanup de l'effet ci-dessous. Les
@@ -633,7 +651,9 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                             </p>
                             {item.is_purchased ? (
                               <p className="text-[11.5px] text-[var(--es-tertiary)]">
-                                Coché · {formatRelativeTime(item.updated_at)}
+                                {purchasedByName(item, members)
+                                  ? `Coché par ${purchasedByName(item, members)} · ${formatRelativeTime(item.updated_at)}`
+                                  : `Coché · ${formatRelativeTime(item.updated_at)}`}
                               </p>
                             ) : (
                               <div

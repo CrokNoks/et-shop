@@ -146,6 +146,7 @@ export default function Home() {
                 handleQuantityUpdate={handleQuantityUpdate}
                 handleDeleteItem={handleDeleteItem}
                 refetch={fetchItems}
+                members={members}
               />
             ) : (
               <div className="py-20 text-center text-[var(--es-ink)]">

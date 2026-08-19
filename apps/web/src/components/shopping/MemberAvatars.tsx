@@ -26,10 +26,10 @@ function initialsFor(member: HouseholdMember): string {
 }
 
 /**
- * Avatars ronds initiales (pas de photo — contrainte du design). Le nom des
- * autres membres du foyer dépend de la politique RLS sur `profiles`, qui
- * n'autorise aujourd'hui que la lecture de son propre profil : tant qu'elle
- * n'est pas élargie côté backend, les coéquipiers s'affichent avec un "?".
+ * Avatars ronds initiales (pas de photo — contrainte du design). Le "?" de
+ * repli ne s'affiche plus que si le profil d'un membre est réellement
+ * incomplet (pas de nom ni d'email) — la policy RLS sur `profiles` autorise
+ * désormais la lecture des profils des autres membres du même foyer.
  */
 export const MemberAvatars: React.FC<MemberAvatarsProps> = ({
   members,

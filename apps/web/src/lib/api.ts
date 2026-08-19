@@ -57,7 +57,11 @@ export function getRecipes() {
   return fetchApi("/recipes");
 }
 
-export function createRecipe(data: { name: string; description?: string }) {
+export function createRecipe(data: {
+  name: string;
+  description?: string;
+  servings?: number;
+}) {
   return fetchApi("/recipes", {
     method: "POST",
     body: JSON.stringify(data),
@@ -107,9 +111,16 @@ export function deleteRecipeItem(recipeId: string, itemId: string) {
   return fetchApi(`/recipes/${recipeId}/items/${itemId}`, { method: "DELETE" });
 }
 
-export function sendRecipeToList(recipeId: string, shoppingListId: string) {
+export function sendRecipeToList(
+  recipeId: string,
+  shoppingListId: string,
+  itemIds?: string[],
+) {
   return fetchApi(`/recipes/${recipeId}/send`, {
     method: "POST",
-    body: JSON.stringify({ shopping_list_id: shoppingListId }),
+    body: JSON.stringify({
+      shopping_list_id: shoppingListId,
+      item_ids: itemIds,
+    }),
   });
 }

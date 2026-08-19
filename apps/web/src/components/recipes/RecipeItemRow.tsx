@@ -11,12 +11,16 @@ interface RecipeItemRowProps {
     data: { quantity?: number; unit?: string },
   ) => void;
   onDelete: (itemId: string) => void;
+  isSelected?: boolean;
+  onToggleSelected?: (itemId: string) => void;
 }
 
 export const RecipeItemRow: React.FC<RecipeItemRowProps> = ({
   item,
   onUpdate,
   onDelete,
+  isSelected = true,
+  onToggleSelected,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [quantity, setQuantity] = useState(item.quantity.toString());
@@ -44,6 +48,22 @@ export const RecipeItemRow: React.FC<RecipeItemRowProps> = ({
   return (
     <div className="group flex h-14 items-center justify-between gap-3 border-b border-[var(--es-hairline)] px-1 last:border-b-0">
       <div className="flex min-w-0 items-center gap-3">
+        {onToggleSelected && (
+          <button
+            type="button"
+            onClick={() => onToggleSelected(item.id)}
+            aria-label={isSelected ? "Désélectionner" : "Sélectionner"}
+            className="shrink-0"
+          >
+            {isSelected ? (
+              <div className="h-[22px] w-[22px] rounded-[6px] bg-[#FF6B35] flex items-center justify-center">
+                <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
+              </div>
+            ) : (
+              <div className="h-[22px] w-[22px] rounded-[6px] border-2 border-[var(--es-ring)]" />
+            )}
+          </button>
+        )}
         <div className="flex min-w-0 flex-col">
           <span className="truncate text-[15px] font-medium text-[var(--es-ink)]">
             {itemName}

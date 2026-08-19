@@ -15,6 +15,7 @@ export default function NewRecipePage() {
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [servings, setServings] = useState(4);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,6 +26,7 @@ export default function NewRecipePage() {
       const recipe = await createRecipe({
         name,
         description: description || undefined,
+        servings,
       });
       await queryClient.invalidateQueries({ queryKey: ["recipes"] });
       toast.success("Recette créée !");
@@ -100,6 +102,33 @@ export default function NewRecipePage() {
               rows={3}
               className="rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] p-3.5 text-[15px] font-medium outline-none focus:border-[#FF6B35] focus:bg-[rgba(255,107,53,0.04)] resize-none"
             />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]">
+              Couverts
+            </label>
+            <div className="flex items-center gap-3 rounded-[14px] border border-[var(--es-hairline)] px-3.5 py-2 w-fit">
+              <button
+                type="button"
+                onClick={() => setServings((s) => Math.max(1, s - 1))}
+                aria-label="Réduire le nombre de couverts"
+                className="flex h-9 w-9 items-center justify-center rounded-[8px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
+              >
+                −
+              </button>
+              <span className="w-6 text-center text-[15px] font-semibold tabular-nums">
+                {servings}
+              </span>
+              <button
+                type="button"
+                onClick={() => setServings((s) => s + 1)}
+                aria-label="Augmenter le nombre de couverts"
+                className="flex h-9 w-9 items-center justify-center rounded-[8px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
+              >
+                +
+              </button>
+            </div>
           </div>
         </form>
       </main>

@@ -92,10 +92,13 @@ export default function RecipePage({ params }: RecipePageProps) {
     }
   };
 
-  const handleSendToList = async (shoppingListId: string) => {
+  const handleSendToList = async (
+    shoppingListId: string,
+    itemIds?: string[],
+  ) => {
     setIsSending(true);
     try {
-      const result = await sendRecipeToList(id, shoppingListId);
+      const result = await sendRecipeToList(id, shoppingListId, itemIds);
       toast.success(
         `Recette envoyée ! ${result.applied} produit(s) ajouté(s).`,
       );

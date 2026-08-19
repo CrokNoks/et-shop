@@ -61,6 +61,9 @@ export interface Recipe {
    * formes on manipule.
    */
   recipe_items?: RecipeItem[] | RecipeItemsCountAggregate[];
+  servings?: number;
+  /** Absent (pas 0) dès qu'un ingrédient n'a pas de prix de référence connu. */
+  estimated_cost?: number;
 }
 
 export interface RecipeItem {
@@ -82,6 +85,7 @@ export interface ShoppingListItem {
   barcode?: string;
   name?: string;
   updated_at?: string;
+  purchased_by?: string | null;
   items_catalog:
     | {
         name?: string;
