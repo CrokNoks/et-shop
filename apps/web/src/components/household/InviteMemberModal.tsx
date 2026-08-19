@@ -2,15 +2,15 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { fetchApi } from "@/lib/api";
 import { toast } from "sonner";
 import {
@@ -105,75 +105,79 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md text-[#1A365D]">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-black flex items-center gap-2">
-            Gestion du foyer
-          </DialogTitle>
-          <DialogDescription className="font-medium text-gray-500">
-            Membres de <span className="text-[#FF6B35]">{householdName}</span>
-          </DialogDescription>
-        </DialogHeader>
+    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent
+        side="bottom"
+        className="mx-auto w-full max-w-lg rounded-t-[18px] p-6 pt-3 text-[var(--es-ink)] bg-[var(--es-surface)]"
+      >
+        <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-[var(--es-hairline)]" />
+        <SheetHeader className="p-0 text-left">
+          <SheetTitle className="text-[20px] font-semibold">
+            Inviter un membre
+          </SheetTitle>
+          <SheetDescription className="text-[13px] text-[var(--es-secondary)]">
+            Foyer <span className="text-[#c8471c]">{householdName}</span>
+          </SheetDescription>
+        </SheetHeader>
 
-        <div className="flex flex-col gap-6 py-4">
+        <div className="mt-6 flex flex-col gap-6">
           <form onSubmit={handleInvite} className="flex flex-col gap-2">
-            <label className="text-xs font-black uppercase text-gray-400 tracking-widest px-1">
+            <Label className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]">
               Inviter par email
-            </label>
+            </Label>
             <div className="flex gap-2">
               <Input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="votre@ami.com"
-                className="flex-1 font-bold border-gray-200"
+                className="h-[48px] flex-1 rounded-[14px] text-[14.5px] font-medium focus-visible:ring-[#FF6B35]"
                 required
               />
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-[#FF6B35] hover:bg-[#e55a2b]"
+                className="h-[48px] rounded-[14px] bg-[#FF6B35] px-5 hover:bg-[#e55a2b]"
               >
                 Ajouter
               </Button>
             </div>
-            <p className="text-[10px] text-gray-400 font-medium">
+            <p className="text-[11.5px] text-[var(--es-tertiary)]">
               L&apos;utilisateur doit déjà avoir un compte Et SHop!.
             </p>
           </form>
 
           <div className="flex flex-col gap-3">
-            <label className="text-xs font-black uppercase text-gray-400 tracking-widest px-1">
+            <Label className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]">
               Membres actuels
-            </label>
-            <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+            </Label>
+            <div className="flex max-h-48 flex-col gap-2 overflow-y-auto pr-1">
               {isLoading ? (
-                <p className="text-center py-4 text-sm text-gray-400 animate-pulse italic">
+                <p className="py-4 text-center text-[13px] italic text-[var(--es-tertiary)]">
                   Chargement des membres...
                 </p>
               ) : members.length === 0 ? (
-                <p className="text-center py-4 text-sm text-gray-400 italic">
+                <p className="py-4 text-center text-[13px] italic text-[var(--es-tertiary)]">
                   Aucun membre.
                 </p>
               ) : (
                 members.map((member) => (
                   <div
                     key={member.user_id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-xl group transition-all"
+                    className="group flex items-center justify-between rounded-[12px] bg-[var(--es-field)] p-3"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-white border border-gray-100 rounded-full flex items-center justify-center text-[#1A365D]">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--es-hairline)] bg-[var(--es-surface)] text-[var(--es-ink)]">
                         <UserIcon className="w-5 h-5" />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-black flex items-center gap-1.5">
+                        <span className="flex items-center gap-1.5 text-[14px] font-medium">
                           {member.profile?.full_name || member.profile?.email}
                           {member.role === "admin" && (
                             <ShieldCheckIcon className="w-4 h-4 text-[#FF6B35]" />
                           )}
                         </span>
-                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
+                        <span className="text-[11px] font-semibold uppercase tracking-tight text-[var(--es-tertiary)]">
                           {member.role === "admin"
                             ? "Administrateur"
                             : "Membre"}
@@ -183,7 +187,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                     {member.role !== "admin" && (
                       <button
                         onClick={() => handleRemove(member.user_id)}
-                        className="p-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                        className="p-2 text-[var(--es-tertiary)] opacity-0 transition-all hover:text-[var(--es-danger)] group-hover:opacity-100"
                       >
                         <TrashIcon className="w-4 h-4" />
                       </button>
@@ -194,17 +198,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
             </div>
           </div>
         </div>
-
-        <DialogFooter className="pt-4 border-t border-gray-50">
-          <Button
-            onClick={onClose}
-            variant="ghost"
-            className="w-full font-bold"
-          >
-            Fermer
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 };
