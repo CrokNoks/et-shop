@@ -27,6 +27,166 @@ import { useLoyaltyCards } from "@/hooks/useLoyaltyCards";
 
 export const dynamic = "force-dynamic";
 
+// Largeur de la couche d'actions révélée par le balayage (3 boutons de 44px).
+const SWIPE_ACTIONS_WIDTH = 132;
+const SWIPE_DRAG_THRESHOLD = 8;
+
+interface SwipeableStoreRowProps {
+  store: Store;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  hasLoyaltyCard: boolean;
+  onOpenLoyaltyCard: (e: React.MouseEvent) => void;
+  onOpenEdit: (e: React.MouseEvent) => void;
+  onDelete: (e: React.MouseEvent) => void;
+}
+
+/**
+ * Écran 4d : renommer/supprimer par balayage vers la gauche plutôt que des
+ * icônes toujours visibles. Les boutons d'action restent montés en
+ * permanence (couche absolue derrière la ligne) — seule la couche de
+ * contenu au premier plan coulisse via transform. Ça garde
+ * `[data-cy*=-edit]`/`[data-cy*=-delete]` toujours présents dans le DOM,
+ * cliquables en `{force:true}` par les tests e2e, qu'ils soient visuellement
+ * révélés ou non.
+ */
+function SwipeableStoreRow({
+  store,
+  isOpen,
+  onOpenChange,
+  hasLoyaltyCard,
+  onOpenLoyaltyCard,
+  onOpenEdit,
+  onDelete,
+}: SwipeableStoreRowProps) {
+  const [dragOffset, setDragOffset] = useState<number | null>(null);
+  const dragState = React.useRef<{
+    startX: number;
+    baseOffset: number;
+    dragged: boolean;
+  } | null>(null);
+
+  const restingOffset = isOpen ? -SWIPE_ACTIONS_WIDTH : 0;
+  const offset = dragOffset ?? restingOffset;
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    dragState.current = {
+      startX: e.clientX,
+      baseOffset: restingOffset,
+      dragged: false,
+    };
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    const drag = dragState.current;
+    if (!drag) return;
+    const delta = e.clientX - drag.startX;
+    if (!drag.dragged && Math.abs(delta) > SWIPE_DRAG_THRESHOLD) {
+      drag.dragged = true;
+    }
+    if (!drag.dragged) return;
+    const next = Math.min(
+      0,
+      Math.max(-SWIPE_ACTIONS_WIDTH, drag.baseOffset + delta),
+    );
+    setDragOffset(next);
+  };
+
+  const endDrag = () => {
+    const drag = dragState.current;
+    if (drag?.dragged && dragOffset !== null) {
+      onOpenChange(dragOffset <= -SWIPE_ACTIONS_WIDTH / 2);
+    }
+    setDragOffset(null);
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    const wasDragged = dragState.current?.dragged ?? false;
+    dragState.current = null;
+    if (wasDragged) {
+      // Un glissé vient de se terminer : jamais une navigation.
+      e.preventDefault();
+      return;
+    }
+    if (isOpen) {
+      // Tap sur une ligne déjà ouverte : referme au lieu de naviguer.
+      e.preventDefault();
+      onOpenChange(false);
+    }
+  };
+
+  return (
+    <Link
+      href={`/stores/${store.id}`}
+      data-cy={`store-${store.id}`}
+      className="relative block h-[66px] overflow-hidden border-b border-[var(--es-hairline)] last:border-b-0"
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+      onClick={handleClick}
+    >
+      <div
+        className="absolute inset-y-0 right-0 flex items-stretch"
+        style={{ width: SWIPE_ACTIONS_WIDTH }}
+      >
+        <button
+          onClick={onOpenLoyaltyCard}
+          data-cy={`store-${store.id}-loyalty`}
+          className="flex w-11 items-center justify-center bg-[var(--es-field)] text-[var(--es-secondary)]"
+          title="Carte de fidélité"
+        >
+          <CreditCardIcon className="h-[18px] w-[18px]" />
+        </button>
+        <button
+          onClick={onOpenEdit}
+          data-cy={`store-${store.id}-edit`}
+          className="flex w-11 items-center justify-center bg-[var(--es-field)] text-[var(--es-secondary)]"
+          title="Modifier le nom"
+        >
+          <PencilIcon className="h-[18px] w-[18px]" />
+        </button>
+        <button
+          onClick={onDelete}
+          data-cy={`store-${store.id}-delete`}
+          className="flex w-11 items-center justify-center bg-[rgba(179,38,30,0.1)] text-[var(--es-danger)]"
+          title="Supprimer"
+        >
+          <TrashIcon className="h-[18px] w-[18px]" />
+        </button>
+      </div>
+
+      <div
+        className="relative flex h-full items-center gap-3 bg-[var(--es-surface)] px-3.5 hover:bg-[var(--es-field)]"
+        style={{
+          transform: `translateX(${offset}px)`,
+          transition: dragOffset === null ? "transform 200ms ease-out" : "none",
+          touchAction: "pan-y",
+        }}
+      >
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[var(--es-field)] text-[#FF6B35]">
+          <BuildingStorefrontIcon className="h-5 w-5" />
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate text-[15.5px] font-medium">
+            {store.name}
+          </span>
+          <span className="truncate text-[11.5px] text-[var(--es-tertiary)]">
+            Gérer les rayons et produits
+          </span>
+        </div>
+        {hasLoyaltyCard && (
+          <span className="shrink-0 rounded-[6px] bg-[rgba(255,107,53,0.1)] px-1.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.05em] text-[#c8471c]">
+            Fidélité
+          </span>
+        )}
+        <ChevronRightIcon className="h-[18px] w-[18px] shrink-0 text-[var(--es-disabled)]" />
+      </div>
+    </Link>
+  );
+}
+
 export default function StoresPage() {
   const [stores, setStores] = useState<Store[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,6 +200,9 @@ export default function StoresPage() {
   // Loyalty card state
   const [selectedStoreForCard, setSelectedStoreForCard] =
     useState<Store | null>(null);
+
+  // Un seul swipe ouvert à la fois (écran 4d).
+  const [openStoreId, setOpenStoreId] = useState<string | null>(null);
 
   const handleOpenLoyaltyCard = (e: React.MouseEvent, store: Store) => {
     e.preventDefault();
@@ -154,56 +317,16 @@ export default function StoresPage() {
         ) : (
           <div className="flex flex-col overflow-hidden rounded-[14px] border border-[var(--es-hairline)]">
             {stores.map((store) => (
-              <Link
+              <SwipeableStoreRow
                 key={store.id}
-                href={`/stores/${store.id}`}
-                data-cy={`store-${store.id}`}
-                className="flex h-[66px] items-center gap-3 border-b border-[var(--es-hairline)] px-3.5 last:border-b-0 hover:bg-[var(--es-field)]"
-              >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[var(--es-field)] text-[#FF6B35]">
-                  <BuildingStorefrontIcon className="h-5 w-5" />
-                </div>
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate text-[15.5px] font-medium">
-                    {store.name}
-                  </span>
-                  <span className="truncate text-[11.5px] text-[var(--es-tertiary)]">
-                    Gérer les rayons et produits
-                  </span>
-                </div>
-                {storesWithLoyalty.has(store.id) && (
-                  <span className="shrink-0 rounded-[6px] bg-[rgba(255,107,53,0.1)] px-1.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.05em] text-[#c8471c]">
-                    Fidélité
-                  </span>
-                )}
-                <div className="flex shrink-0 items-center gap-0.5">
-                  <button
-                    onClick={(e) => handleOpenLoyaltyCard(e, store)}
-                    data-cy={`store-${store.id}-loyalty`}
-                    className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
-                    title="Carte de fidélité"
-                  >
-                    <CreditCardIcon className="h-[18px] w-[18px]" />
-                  </button>
-                  <button
-                    onClick={(e) => handleOpenEditStore(e, store)}
-                    data-cy={`store-${store.id}-edit`}
-                    className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
-                    title="Modifier le nom"
-                  >
-                    <PencilIcon className="h-[18px] w-[18px]" />
-                  </button>
-                  <button
-                    onClick={(e) => handleStoreDelete(e, store.id, store.name)}
-                    data-cy={`store-${store.id}-delete`}
-                    className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
-                    title="Supprimer"
-                  >
-                    <TrashIcon className="h-[18px] w-[18px]" />
-                  </button>
-                </div>
-                <ChevronRightIcon className="h-[18px] w-[18px] shrink-0 text-[var(--es-disabled)]" />
-              </Link>
+                store={store}
+                isOpen={openStoreId === store.id}
+                onOpenChange={(open) => setOpenStoreId(open ? store.id : null)}
+                hasLoyaltyCard={storesWithLoyalty.has(store.id)}
+                onOpenLoyaltyCard={(e) => handleOpenLoyaltyCard(e, store)}
+                onOpenEdit={(e) => handleOpenEditStore(e, store)}
+                onDelete={(e) => handleStoreDelete(e, store.id, store.name)}
+              />
             ))}
           </div>
         )}
