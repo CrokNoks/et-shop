@@ -111,6 +111,24 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
     setEditBarcode(barcode || "");
   };
 
+  // Unités déjà utilisées dans la liste courante, en raccourcis (écran 4i).
+  // Dérivé du client, pas d'endpoint dédié : aucune donnée inventée.
+  const existingUnits = Array.from(
+    new Set(
+      ["kg", "pcs", "L"].concat(
+        storeGroups.flatMap((g) =>
+          g.aisles.flatMap((a) => a.items.map((i) => getCatalogInfo(i).unit)),
+        ),
+      ),
+    ),
+  ).slice(0, 6);
+
+  const handleDeleteEditingItem = () => {
+    if (!editingItem) return;
+    handleDeleteItem(editingItem.id);
+    setEditingItem(null);
+  };
+
   const handleUpdateItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem || isUpdating) return;
@@ -166,23 +184,30 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
       onOpenChange={(open) => !open && setEditingItem(null)}
     >
       <SheetContent
-        side="right"
-        className="w-screen sm:max-w-[450px] p-10 text-[var(--es-ink)]"
+        side="bottom"
+        className="mx-auto w-full max-w-lg rounded-t-[18px] p-6 pt-3 text-[var(--es-ink)] bg-[var(--es-surface)]"
       >
-        <SheetHeader className="mb-10 text-left">
-          <SheetTitle className="text-3xl font-black">
+        <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-[var(--es-hairline)]" />
+        <SheetHeader className="mb-6 p-0 text-left">
+          <SheetTitle className="text-[20px] font-semibold">
             Modifier l&apos;article
           </SheetTitle>
-          <SheetDescription className="text-base text-gray-500 mt-2">
-            {editingItem && getCatalogInfo(editingItem).name}
+          <SheetDescription className="text-[13px] text-[var(--es-secondary)]">
+            {editingItem &&
+              [
+                getCatalogInfo(editingItem).category?.name,
+                getCatalogInfo(editingItem).store?.name,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleUpdateItem} className="space-y-8">
+        <form onSubmit={handleUpdateItem} className="space-y-6">
           <div className="space-y-2">
             <Label
               htmlFor="item-price"
-              className="text-xs font-black text-gray-400 uppercase tracking-widest"
+              className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]"
             >
               Prix unitaire (€)
             </Label>
@@ -193,14 +218,14 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               step="0.01"
               value={editPrice}
               onChange={(e) => setEditPrice(e.target.value)}
-              className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
+              className="h-[50px] rounded-[14px] border-[#FF6B35] text-[17px] font-semibold tabular-nums focus-visible:ring-[#FF6B35]"
               required
             />
           </div>
           <div className="space-y-2">
             <Label
               htmlFor="item-unit"
-              className="text-xs font-black text-gray-400 uppercase tracking-widest"
+              className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]"
             >
               Unité
             </Label>
@@ -209,31 +234,67 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               data-cy="edit-unit"
               value={editUnit}
               onChange={(e) => setEditUnit(e.target.value)}
-              className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35]"
+              placeholder="Ex: pack de 6 bouteilles de 1,5 L"
+              className="h-[50px] rounded-[14px] text-[15px] font-medium focus-visible:ring-[#FF6B35]"
               required
             />
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {existingUnits.map((u) => (
+                <button
+                  key={u}
+                  type="button"
+                  data-cy={`edit-unit-shortcut-${u}`}
+                  onClick={() => setEditUnit(u)}
+                  className="h-7 rounded-[8px] border border-[var(--es-hairline)] px-2 text-[11.5px] text-[var(--es-secondary)] hover:border-[#FF6B35]"
+                >
+                  {u}
+                </button>
+              ))}
+            </div>
+            <p className="text-[11.5px] text-[var(--es-tertiary)]">
+              Texte libre : écrivez le conditionnement tel que vous le lisez
+              en rayon.
+            </p>
           </div>
           <div className="space-y-2">
             <Label
               htmlFor="item-barcode"
-              className="text-xs font-black text-gray-400 uppercase tracking-widest"
+              className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]"
             >
               Code-barres
             </Label>
-            <Input
-              id="item-barcode"
-              value={editBarcode}
-              onChange={(e) => setEditBarcode(e.target.value)}
-              placeholder="Scanner ou saisir..."
-              className="text-lg font-bold border-gray-200 focus-visible:ring-[#FF6B35] font-mono"
-            />
+            <div className="flex gap-2">
+              <Input
+                id="item-barcode"
+                value={editBarcode}
+                onChange={(e) => setEditBarcode(e.target.value)}
+                placeholder="Scanner ou saisir..."
+                className="h-[50px] flex-1 rounded-[14px] font-mono focus-visible:ring-[#FF6B35]"
+              />
+              <button
+                type="button"
+                title="Scanner un code-barres"
+                className="flex h-10 w-10 items-center justify-center self-center rounded-[10px] bg-[var(--es-field)] text-[var(--es-secondary)]"
+              >
+                <QrCodeIcon className="h-5 w-5" />
+              </button>
+            </div>
           </div>
-          <SheetFooter className="mt-8 pt-4 sm:justify-start">
+          <SheetFooter className="mt-2 flex-row gap-3 p-0 sm:justify-start">
+            <button
+              type="button"
+              onClick={handleDeleteEditingItem}
+              data-cy="edit-delete"
+              title="Supprimer l'article"
+              className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-[14px] border border-[rgba(179,38,30,0.4)] text-[var(--es-danger)]"
+            >
+              <TrashIcon className="h-5 w-5" />
+            </button>
             <Button
               type="submit"
               data-cy="edit-submit"
               disabled={isUpdating}
-              className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl"
+              className="h-[52px] flex-1 rounded-[14px] bg-[#1A365D] text-[15.5px] font-semibold text-white hover:bg-[#152c4c]"
             >
               {isUpdating ? "Mise à jour..." : "Enregistrer"}
             </Button>
