@@ -15,27 +15,29 @@ export function LoyaltyCardList() {
 
   if (isLoading) {
     return (
-      <div className="p-4 text-center">
+      <p className="py-16 text-center text-[13px] italic text-[var(--es-tertiary)]">
         Chargement des cartes de fidélité...
-      </div>
+      </p>
     );
   }
 
   if (isError) {
     return (
-      <div className="p-4 text-red-500 text-center">
+      <p className="py-16 text-center text-[13px] text-[var(--es-danger)]">
         Erreur : {error?.message}
-      </div>
+      </p>
     );
   }
 
   if (!loyaltyCards || loyaltyCards.length === 0) {
     return (
-      <div className="p-4 text-center">
-        <p>Aucune carte de fidélité enregistrée pour le moment.</p>
+      <div className="flex flex-col items-center gap-2 py-16 text-center">
+        <p className="text-[13px] italic text-[var(--es-tertiary)]">
+          Aucune carte de fidélité enregistrée pour le moment.
+        </p>
         <Link
           href="/loyalty-cards/add"
-          className="text-blue-600 hover:underline"
+          className="text-[14px] font-semibold text-[#c8471c]"
         >
           Ajouter une nouvelle carte
         </Link>
@@ -44,7 +46,7 @@ export function LoyaltyCardList() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col overflow-hidden rounded-[14px] border border-[var(--es-hairline)]">
       {loyaltyCards.map((card: LoyaltyCardFrontend) => (
         <LoyaltyCardItem key={card.id} card={card} storeName={storeMap[card.storeId]} />
       ))}
