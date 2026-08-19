@@ -5,7 +5,26 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
+import { randomInt } from 'crypto';
 import { SupabaseService } from '../supabase/supabase.service';
+
+// Alphabet sans caractères ambigus (pas de 0/O, 1/I) pour un code lisible à l'oral.
+const INVITE_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const INVITE_CODE_LENGTH = 8;
+const INVITE_CODE_TTL_MS = 48 * 60 * 60 * 1000;
+
+function generateInviteCode(): string {
+  let code = '';
+  for (let i = 0; i < INVITE_CODE_LENGTH; i++) {
+    code += INVITE_CODE_ALPHABET[randomInt(INVITE_CODE_ALPHABET.length)];
+  }
+  return code;
+}
+
+export interface HouseholdInvite {
+  code: string;
+  expires_at: string;
+}
 
 export interface HouseholdMember {
   household_id: string;
@@ -177,5 +196,92 @@ export class HouseholdsService {
     if (dError) throw dError;
 
     return { success: true };
+  }
+
+  /**
+   * Génère un code d'invitation valable 48h, usage unique. Aligné sur `addMember`
+   * (réservé aux admins) plutôt qu'ouvert à tout membre, pour garder un seul
+   * modèle de permission cohérent entre "inviter par email" et "inviter par code".
+   */
+  async createInviteCode(householdId: string): Promise<HouseholdInvite> {
+    const client = this.supabaseService.getClient();
+    const currentUser = this.supabaseService.getUser();
+
+    const { data: member, error: mError } = await client
+      .from('household_members')
+      .select('role')
+      .eq('household_id', householdId)
+      .eq('user_id', currentUser.id)
+      .single();
+
+    if (mError || (member as HouseholdMember)?.role !== 'admin') {
+      throw new UnauthorizedException(
+        "Vous devez être administrateur pour générer un code d'invitation",
+      );
+    }
+
+    // Un seul code actif à la fois : on retire les codes non utilisés existants
+    // (expirés ou non) avant d'en créer un nouveau, plutôt que de les cumuler.
+    const { error: dError } = await client
+      .from('household_invites')
+      .delete()
+      .eq('household_id', householdId)
+      .is('used_at', null);
+
+    if (dError) throw dError;
+
+    const code = generateInviteCode();
+    const expiresAt = new Date(Date.now() + INVITE_CODE_TTL_MS).toISOString();
+
+    const { data: invite, error: iError } = await client
+      .from('household_invites')
+      .insert({
+        household_id: householdId,
+        code,
+        created_by: currentUser.id,
+        expires_at: expiresAt,
+      })
+      .select('code, expires_at')
+      .single();
+
+    if (iError) throw iError;
+
+    return invite as HouseholdInvite;
+  }
+
+  /**
+   * Rejoint un foyer via un code d'invitation. Délègue entièrement à la fonction
+   * SQL `join_household_by_code` (SECURITY DEFINER) : l'appelant n'est par
+   * définition pas encore membre du foyer ciblé, donc RLS ne lui donnerait de
+   * toute façon aucun accès direct à `household_invites`/`household_members` —
+   * la validité du code, vérifiée côté SQL, est elle-même l'autorisation.
+   * `auth.uid()` est résolu côté fonction à partir du JWT, pas passé en paramètre.
+   */
+  async joinHousehold(
+    code: string,
+  ): Promise<{ success: boolean; household_id: string }> {
+    const client = this.supabaseService.getClient();
+
+    const { data, error } = await client.rpc('join_household_by_code', {
+      p_code: code,
+    });
+
+    if (error) {
+      // Messages contrôlés par nous côté fonction SQL (join_household_by_code) :
+      // correspondance stable, pas un texte d'erreur Postgres générique.
+      if (error.message?.includes('Invalid invite code')) {
+        throw new NotFoundException("Code d'invitation invalide");
+      }
+      if (error.message?.includes('already used')) {
+        throw new BadRequestException('Ce code a déjà été utilisé');
+      }
+      if (error.message?.includes('expired')) {
+        throw new BadRequestException('Ce code a expiré');
+      }
+      throw error;
+    }
+
+    const row = Array.isArray(data) ? data[0] : data;
+    return { success: true, household_id: row.household_id };
   }
 }
