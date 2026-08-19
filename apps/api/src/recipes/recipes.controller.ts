@@ -83,6 +83,10 @@ export class RecipesController {
   @Post(':id/send')
   @ApiOperation({ summary: 'Envoyer la recette vers une liste de courses' })
   async sendToList(@Param('id') recipeId: string, @Body() dto: SendToListDto) {
-    return this.recipesService.sendToList(recipeId, dto.shopping_list_id);
+    return this.recipesService.sendToList(
+      recipeId,
+      dto.shopping_list_id,
+      dto.item_ids,
+    );
   }
 }

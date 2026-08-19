@@ -75,6 +75,31 @@ export class RecordPurchaseUseCase {
     });
 
     // Atomically mark as purchased and insert the record
-    return this.purchaseRecordRepository.recordPurchaseAtomic(itemId, record);
+    const purchaseRecord =
+      await this.purchaseRecordRepository.recordPurchaseAtomic(itemId, record);
+
+    // Point 4 (backend_mobile_ui) : garde le dernier prix connu du produit
+    // pour estimer le coût des recettes. Donnée dérivée secondaire — un échec
+    // ici ne doit jamais faire échouer l'achat, déjà enregistré à ce stade.
+    if (record.catalogItemId) {
+      try {
+        const { error: priceError } = await this.supabaseService
+          .getClient()
+          .from('items_catalog')
+          .update({ reference_price: record.pricePerUnit })
+          .eq('id', record.catalogItemId);
+
+        if (priceError) {
+          console.error(
+            'Failed to update items_catalog.reference_price',
+            priceError,
+          );
+        }
+      } catch (err) {
+        console.error('Failed to update items_catalog.reference_price', err);
+      }
+    }
+
+    return purchaseRecord;
   }
 }

@@ -118,4 +118,61 @@ describe('RecordPurchaseUseCase', () => {
     ).toHaveBeenCalledWith('item-001', expect.any(PurchaseRecord));
     expect(result).toBe(mockRecord);
   });
+
+  describe('reference_price (backend_mobile_ui, point 4)', () => {
+    // Client à deux temps : le 1er from() sert au fetch de l'item (chaîne
+    // .select().eq().single()), le 2e à la mise à jour de items_catalog
+    // (chaîne .update().eq(), awaited directement, sans .single()).
+    const makeTwoStepClient = (updateResult: { error: any }) => {
+      const itemQb = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: mockItem, error: null }),
+      };
+      const updatePromise = Promise.resolve(updateResult);
+      const catalogQb: any = {
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        then: updatePromise.then.bind(updatePromise),
+        catch: updatePromise.catch.bind(updatePromise),
+      };
+      let call = 0;
+      return {
+        from: jest.fn(() => (call++ === 0 ? itemQb : catalogQb)),
+        catalogQb,
+      };
+    };
+
+    it('met à jour items_catalog.reference_price avec le prix payé après un achat réussi', async () => {
+      mockSupabaseService.getHouseholdId.mockReturnValue('household-001');
+      mockPurchaseRecordRepository.recordPurchaseAtomic.mockResolvedValue(
+        mockRecord,
+      );
+      const client = makeTwoStepClient({ error: null });
+      mockSupabaseService.getClient.mockReturnValue(client);
+
+      await useCase.execute('list-001', 'item-001');
+
+      expect(client.catalogQb.update).toHaveBeenCalledWith({
+        reference_price: mockRecord.pricePerUnit,
+      });
+      expect(client.catalogQb.eq).toHaveBeenCalledWith(
+        'id',
+        mockRecord.catalogItemId,
+      );
+    });
+
+    it("ne fait pas échouer l'achat si la mise à jour de reference_price échoue", async () => {
+      mockSupabaseService.getHouseholdId.mockReturnValue('household-001');
+      mockPurchaseRecordRepository.recordPurchaseAtomic.mockResolvedValue(
+        mockRecord,
+      );
+      const client = makeTwoStepClient({ error: { message: 'boom' } });
+      mockSupabaseService.getClient.mockReturnValue(client);
+
+      const result = await useCase.execute('list-001', 'item-001');
+
+      expect(result).toBe(mockRecord);
+    });
+  });
 });

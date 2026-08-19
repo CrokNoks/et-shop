@@ -62,6 +62,7 @@ export class RecipesService {
             name,
             unit,
             store_id,
+            reference_price,
             categories (name, sort_order),
             stores (id, name)
           )
@@ -73,7 +74,28 @@ export class RecipesService {
       .single();
 
     if (error) this.handleError(error);
-    return data;
+    if (!data) return data;
+
+    return { ...data, estimated_cost: this.computeEstimatedCost(data) };
+  }
+
+  /**
+   * Somme (reference_price × quantity) pour chaque ingrédient. Renvoie
+   * `undefined` (jamais un total partiel) dès qu'un ingrédient n'a pas encore
+   * de reference_price connu — un total qui ignorerait silencieusement un
+   * ingrédient sous-estimerait le coût réel.
+   */
+  private computeEstimatedCost(recipe: any): number | undefined {
+    const items = recipe.recipe_items || [];
+    if (items.length === 0) return undefined;
+
+    let total = 0;
+    for (const item of items) {
+      const price = item.items_catalog?.reference_price;
+      if (price === null || price === undefined) return undefined;
+      total += Number(price) * Number(item.quantity ?? 1);
+    }
+    return total;
   }
 
   async create(dto: CreateRecipeDto) {
@@ -204,7 +226,11 @@ export class RecipesService {
     return { success: true };
   }
 
-  async sendToList(recipeId: string, shoppingListId: string) {
+  async sendToList(
+    recipeId: string,
+    shoppingListId: string,
+    itemIds?: string[],
+  ) {
     const householdId = this.getHouseholdIdOrThrow();
     const client = this.supabaseService.getClient();
 
@@ -228,12 +254,21 @@ export class RecipesService {
 
     if (lError || !list) throw new NotFoundException('Shopping list not found');
 
-    const recipeItems: {
+    let recipeItems: {
       id: string;
       catalog_item_id: string;
       quantity: number;
       unit?: string;
     }[] = (recipe as any).recipe_items || [];
+
+    // Point 5 : envoi partiel — si item_ids est fourni et non vide, ne garder
+    // que ces ingrédients. Un id qui ne correspond à aucun ingrédient de la
+    // recette (ex. déjà retiré côté client entre l'affichage et l'envoi) est
+    // ignoré silencieusement plutôt que de faire échouer tout l'envoi.
+    if (itemIds && itemIds.length > 0) {
+      const idSet = new Set(itemIds);
+      recipeItems = recipeItems.filter((ri) => idSet.has(ri.id));
+    }
 
     if (recipeItems.length === 0) {
       return { success: true, applied: 0 };
