@@ -34,11 +34,15 @@ export interface StoreCategoryOrder {
 export interface ShoppingList {
   id: string;
   name: string;
-  itemCount?: number;
   isShared?: boolean;
   color?: string;
   household_id: string;
   store_id?: string;
+}
+
+/** Forme renvoyée par `GET /recipes` (liste) : PostgREST agrège `recipe_items(count)` plutôt que le détail des lignes. */
+export interface RecipeItemsCountAggregate {
+  count: number;
 }
 
 export interface Recipe {
@@ -48,7 +52,15 @@ export interface Recipe {
   household_id: string;
   created_at: string;
   updated_at: string;
-  recipe_items?: RecipeItem[];
+  /**
+   * `GET /recipes/:id` (détail, `RecipeDetail`) renvoie le détail réel des
+   * lignes : `RecipeItem[]`. `GET /recipes` (liste, `RecipeCard`) renvoie
+   * un agrégat de comptage : `RecipeItemsCountAggregate[]` (un seul élément
+   * `{ count }`), pas le détail des ingrédients — ne pas lire `.name` ni
+   * `.items_catalog` dessus sans avoir d'abord vérifié laquelle des deux
+   * formes on manipule.
+   */
+  recipe_items?: RecipeItem[] | RecipeItemsCountAggregate[];
 }
 
 export interface RecipeItem {

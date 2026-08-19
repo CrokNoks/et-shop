@@ -20,8 +20,9 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onDelete }) => {
   // recette (N+1, écarté pour la même raison que les compteurs
   // rayons/produits de /stores).
   const rawItems = recipe.recipe_items ?? [];
-  const aggregateCount = (rawItems[0] as unknown as { count?: number })?.count;
-  const itemCount = aggregateCount ?? rawItems.length;
+  const firstItem = rawItems[0];
+  const itemCount =
+    firstItem && "count" in firstItem ? firstItem.count : rawItems.length;
 
   return (
     <Link

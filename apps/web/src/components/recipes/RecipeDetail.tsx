@@ -34,7 +34,13 @@ export const RecipeDetail: React.FC<RecipeDetailProps> = ({
   isSending = false,
 }) => {
   const [isSendDialogOpen, setIsSendDialogOpen] = useState(false);
-  const items: RecipeItem[] = recipe.recipe_items || [];
+  // Ce composant n'est monté que depuis la page de détail (GET /recipes/:id),
+  // qui renvoie le détail réel des lignes — jamais l'agrégat de comptage de
+  // GET /recipes (cf. RecipeCard). Le filtre rend ça honnête pour le
+  // typeur sans cast, sans changer le comportement réel.
+  const items: RecipeItem[] = (recipe.recipe_items ?? []).filter(
+    (item): item is RecipeItem => !("count" in item),
+  );
 
   const handleSend = (shoppingListId: string) => {
     onSendToList(shoppingListId);
