@@ -7,8 +7,10 @@ import { AddLoyaltyCardForm } from "../../../components/loyalty/AddLoyaltyCardFo
 
 export default function AddLoyaltyCardPage() {
   return (
-    <div className="flex flex-col gap-10">
-      <h1 className="text-4xl font-black">Ajouter une nouvelle carte</h1>
+    <div className="flex flex-col gap-6">
+      <h1 className="text-[24px] font-semibold text-[var(--es-ink)]">
+        Ajouter une nouvelle carte
+      </h1>
       <AddLoyaltyCardForm />
     </div>
   );

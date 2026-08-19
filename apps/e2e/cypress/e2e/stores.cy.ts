@@ -5,7 +5,7 @@ describe("Magasins", () => {
   });
 
   it("affiche la page des magasins", () => {
-    cy.contains("Mes Magasins").should("be.visible");
+    cy.contains("Mes magasins").should("be.visible");
     cy.get("[data-cy=stores-new]").should("be.visible");
   });
 
@@ -76,7 +76,11 @@ describe("Magasins", () => {
     cy.contains(storeName).click();
 
     // On est sur l'onglet rayons par défaut
-    cy.get("[data-cy=store-tab-rayons]").should("have.class", "bg-white");
+    cy.get("[data-cy=store-tab-rayons]").should(
+      "have.attr",
+      "aria-selected",
+      "true",
+    );
 
     // Créer un nouveau rayon
     const catName = "Surgelés";
@@ -92,7 +96,7 @@ describe("Magasins", () => {
       .closest(".group")
       .find("[data-cy=store-category-edit]")
       .click({ force: true });
-    
+
     cy.get("[data-cy=product-form-name]").clear().type("Glaces");
     cy.get("[data-cy=product-form-submit]").click();
 
@@ -104,10 +108,10 @@ describe("Magasins", () => {
       .closest(".group")
       .find("[data-cy=store-category-delete]")
       .click({ force: true });
-    
+
     // Confirmation navigateur
     cy.on("window:confirm", () => true);
-    
+
     cy.contains("Glaces").should("not.exist");
   });
 });

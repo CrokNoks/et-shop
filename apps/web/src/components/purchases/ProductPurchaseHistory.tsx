@@ -17,7 +17,7 @@ export const ProductPurchaseHistory: React.FC<ProductPurchaseHistoryProps> = ({
 
   if (isLoading) {
     return (
-      <p className="text-sm text-gray-400 italic animate-pulse">
+      <p className="text-sm text-[var(--es-tertiary)] italic animate-pulse">
         Chargement...
       </p>
     );
@@ -25,7 +25,10 @@ export const ProductPurchaseHistory: React.FC<ProductPurchaseHistoryProps> = ({
 
   if (!data || data.data.length === 0) {
     return (
-      <p data-cy="product-purchase-history" className="text-sm text-gray-400 italic">
+      <p
+        data-cy="product-purchase-history"
+        className="text-sm text-[var(--es-tertiary)] italic"
+      >
         Aucun historique pour {productName}.
       </p>
     );
@@ -33,7 +36,7 @@ export const ProductPurchaseHistory: React.FC<ProductPurchaseHistoryProps> = ({
 
   return (
     <div data-cy="product-purchase-history" className="flex flex-col gap-3">
-      <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest">
+      <h3 className="text-sm font-semibold text-[var(--es-tertiary)] uppercase tracking-widest">
         Historique — {productName}
       </h3>
       {data.data.map((record) => (

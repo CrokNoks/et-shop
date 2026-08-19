@@ -49,24 +49,26 @@ export function AddLoyaltyCardForm() {
     setShowScanner(false); // Hide scanner after scan
   };
 
+  const labelClass =
+    "block text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]";
+  const fieldClass =
+    "mt-1.5 block w-full rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-3.5 py-2.5 text-[15px] font-medium text-[var(--es-ink)] focus:border-[#FF6B35] focus:outline-none";
+
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">
+    <div className="rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] p-4 text-[var(--es-ink)]">
+      <h2 className="mb-6 text-[20px] font-semibold">
         Ajouter une nouvelle carte de fidélité
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label
-            htmlFor="storeId"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="storeId" className={labelClass}>
             Magasin
           </label>
           <select
             id="storeId"
             data-cy="loyalty-store"
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            className={fieldClass}
             value={storeId}
             onChange={(e) => setStoreId(e.target.value)}
             required
@@ -81,14 +83,14 @@ export function AddLoyaltyCardForm() {
         </div>
 
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="name" className={labelClass}>
             Nom de la carte
           </label>
           <input
             type="text"
             id="name"
             data-cy="loyalty-name"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className={fieldClass}
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ex: Carte Leclerc, Fidélité Bio..."
@@ -97,14 +99,17 @@ export function AddLoyaltyCardForm() {
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-            Description <span className="font-normal text-gray-400">(optionnel)</span>
+          <label htmlFor="description" className={labelClass}>
+            Description{" "}
+            <span className="font-normal normal-case text-[var(--es-tertiary)]">
+              (optionnel)
+            </span>
           </label>
           <input
             type="text"
             id="description"
             data-cy="loyalty-description"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className={fieldClass}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Ex: Carte principale, conjoint..."
@@ -112,17 +117,14 @@ export function AddLoyaltyCardForm() {
         </div>
 
         <div>
-          <label
-            htmlFor="cardData"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="cardData" className={labelClass}>
             Numéro de Carte
           </label>
           <input
             type="text"
             id="cardData"
             data-cy="loyalty-card-data"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className={`${fieldClass} font-mono`}
             value={cardData}
             onChange={(e) => setCardData(e.target.value)}
             required
@@ -130,16 +132,13 @@ export function AddLoyaltyCardForm() {
         </div>
 
         <div>
-          <label
-            htmlFor="barcodeFormat"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="barcodeFormat" className={labelClass}>
             Format de Code-barres
           </label>
           <select
             id="barcodeFormat"
             data-cy="loyalty-barcode-format"
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            className={fieldClass}
             value={barcodeFormat}
             onChange={(e) => setBarcodeFormat(e.target.value as BarcodeFormat)}
             required
@@ -153,36 +152,33 @@ export function AddLoyaltyCardForm() {
         </div>
 
         <div>
-          <label
-            htmlFor="customColor"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="customColor" className={labelClass}>
             Couleur Personnalisée (Hex)
           </label>
           <input
             type="text"
             id="customColor"
             data-cy="loyalty-color"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className={`${fieldClass} font-mono`}
             value={customColor}
             onChange={(e) => setCustomColor(e.target.value)}
             placeholder="#RRGGBB"
           />
         </div>
 
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between gap-3">
           <button
             type="button"
             data-cy="loyalty-scan"
             onClick={() => setShowScanner(true)}
-            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            className="flex h-11 items-center justify-center rounded-[10px] bg-[var(--es-field)] px-4 text-[13px] font-semibold text-[var(--es-secondary)]"
           >
             Scanner le code-barres
           </button>
           <button
             type="submit"
             data-cy="loyalty-submit"
-            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="flex h-11 items-center justify-center rounded-[10px] bg-[var(--es-banner)] px-4 text-[13px] font-semibold text-white disabled:opacity-50"
             disabled={createLoyaltyCard.isPending}
           >
             {createLoyaltyCard.isPending
@@ -192,7 +188,10 @@ export function AddLoyaltyCardForm() {
         </div>
 
         {createLoyaltyCard.isError && (
-          <p data-cy="loyalty-error" className="text-red-500 text-sm mt-2">
+          <p
+            data-cy="loyalty-error"
+            className="mt-2 text-[13px] text-[var(--es-danger)]"
+          >
             Erreur: {createLoyaltyCard.error?.message}
           </p>
         )}
@@ -200,9 +199,9 @@ export function AddLoyaltyCardForm() {
 
       {/* BarcodeScanner Modal/Component */}
       {showScanner && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl max-w-lg w-full">
-            <h3 className="text-xl font-semibold mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35">
+          <div className="w-full max-w-lg rounded-[14px] bg-[var(--es-surface)] p-6 text-[var(--es-ink)] shadow-xl">
+            <h3 className="mb-4 text-[17px] font-semibold">
               Scanner le code-barres
             </h3>
             <BarcodeScanner

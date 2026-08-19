@@ -8,7 +8,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { QrCodeIcon } from "@heroicons/react/24/outline";
 import { useCreateLoyaltyCard } from "@/hooks/useLoyaltyCards";
@@ -87,22 +86,26 @@ export function AddLoyaltyCardSheet({
   return (
     <Sheet open={open} onOpenChange={handleClose}>
       <SheetContent
-        side="right"
-        className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]"
+        side="bottom"
+        className="mx-auto w-full max-w-lg rounded-t-[18px] p-6 pt-3 text-[var(--es-ink)] bg-[var(--es-surface)]"
       >
-        <SheetHeader className="mb-10 text-left">
-          <SheetTitle className="text-3xl font-black">
+        <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-[var(--es-hairline)]" />
+        <SheetHeader className="p-0 text-left">
+          <SheetTitle className="text-[20px] font-semibold">
             Carte de fidélité
           </SheetTitle>
-          <SheetDescription className="text-base text-gray-500 mt-2">
+          <SheetDescription className="text-[13px] text-[var(--es-secondary)]">
             Associer une carte au magasin{" "}
-            <span className="font-semibold text-[#1A365D]">{storeName}</span>.
+            <span className="font-semibold text-[var(--es-ink)]">
+              {storeName}
+            </span>
+            .
           </SheetDescription>
         </SheetHeader>
 
         {showScanner ? (
-          <div className="flex flex-col gap-4">
-            <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
+          <div className="mt-6 flex flex-col gap-4">
+            <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]">
               Scanner le code-barres
             </p>
             <BarcodeScanner
@@ -111,9 +114,9 @@ export function AddLoyaltyCardSheet({
             />
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
             <div className="space-y-2">
-              <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+              <label className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]">
                 Nom de la carte
               </label>
               <input
@@ -122,12 +125,12 @@ export function AddLoyaltyCardSheet({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ex: Carte Leclerc, Fidélité Bio..."
-                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all"
+                className="h-[50px] w-full rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-3.5 text-[15px] font-medium outline-none focus:border-[#FF6B35]"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+              <label className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]">
                 Description{" "}
                 <span className="normal-case font-normal">(optionnel)</span>
               </label>
@@ -136,12 +139,12 @@ export function AddLoyaltyCardSheet({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Ex: Carte principale, conjoint..."
-                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all"
+                className="h-[50px] w-full rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-3.5 text-[15px] font-medium outline-none focus:border-[#FF6B35]"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+              <label className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]">
                 Numéro de carte
               </label>
               <div className="flex gap-2">
@@ -151,21 +154,21 @@ export function AddLoyaltyCardSheet({
                   value={cardData}
                   onChange={(e) => setCardData(e.target.value)}
                   placeholder="Ex: 1234567890"
-                  className="flex-1 p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all"
+                  className="h-[50px] flex-1 rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-3.5 text-[15px] font-medium outline-none focus:border-[#FF6B35]"
                 />
                 <button
                   type="button"
                   onClick={() => setShowScanner(true)}
-                  className="p-4 bg-gray-50 border border-gray-100 rounded-2xl hover:border-[#FF6B35] hover:text-[#FF6B35] transition-all"
+                  className="flex h-10 w-10 items-center justify-center self-center rounded-[10px] bg-[var(--es-field)] text-[var(--es-secondary)]"
                   title="Scanner"
                 >
-                  <QrCodeIcon className="w-5 h-5" />
+                  <QrCodeIcon className="h-5 w-5" />
                 </button>
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+              <label className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]">
                 Format du code-barres
               </label>
               <select
@@ -173,7 +176,7 @@ export function AddLoyaltyCardSheet({
                 onChange={(e) =>
                   setBarcodeFormat(e.target.value as BarcodeFormat)
                 }
-                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all appearance-none"
+                className="h-[50px] w-full appearance-none rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-3.5 text-[15px] outline-none focus:border-[#FF6B35]"
               >
                 {Object.values(BarcodeFormat).map((format) => (
                   <option key={format} value={format}>
@@ -184,29 +187,29 @@ export function AddLoyaltyCardSheet({
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+              <label className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]">
                 Couleur personnalisée{" "}
                 <span className="normal-case font-normal">(optionnel)</span>
               </label>
-              <div className="flex gap-3 items-center">
+              <div className="flex items-center gap-3">
                 <input
                   type="color"
                   value={customColor || "#FF6B35"}
                   onChange={(e) => setCustomColor(e.target.value)}
-                  className="w-12 h-12 p-1 bg-gray-50 border border-gray-100 rounded-2xl cursor-pointer"
+                  className="h-[42px] w-[42px] cursor-pointer rounded-[10px] border border-[var(--es-hairline)] p-1"
                 />
                 <input
                   type="text"
                   value={customColor}
                   onChange={(e) => setCustomColor(e.target.value)}
                   placeholder="#FF6B35"
-                  className="flex-1 p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all font-mono text-sm"
+                  className="h-[50px] flex-1 rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-3.5 font-mono text-[13px] outline-none focus:border-[#FF6B35]"
                 />
                 {customColor && (
                   <button
                     type="button"
                     onClick={() => setCustomColor("")}
-                    className="text-xs text-gray-400 hover:text-gray-600 transition-all"
+                    className="text-[11.5px] text-[var(--es-tertiary)]"
                   >
                     Effacer
                   </button>
@@ -214,15 +217,15 @@ export function AddLoyaltyCardSheet({
               </div>
             </div>
 
-            <Button
+            <button
               type="submit"
               disabled={createLoyaltyCard.isPending}
-              className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl shadow-lg"
+              className="h-[50px] rounded-[14px] bg-[#1A365D] text-[15px] font-semibold text-white disabled:opacity-50"
             >
               {createLoyaltyCard.isPending
                 ? "Enregistrement..."
                 : "Enregistrer la carte"}
-            </Button>
+            </button>
           </form>
         )}
       </SheetContent>

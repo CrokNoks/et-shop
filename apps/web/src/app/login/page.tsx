@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Logo } from "@/components/layout/Logo";
+import { ShoppingCartIcon } from "@heroicons/react/24/solid";
 import { toast } from "sonner";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -86,16 +86,23 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 text-[#1A365D]">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 flex flex-col gap-8">
-        <div className="flex flex-col items-center gap-4">
-          <Logo width={200} height={60} />
-          <h1 className="text-xl font-bold">Connectez-vous à Et SHop!</h1>
+    <div className="min-h-screen bg-[var(--es-bg)] flex flex-col items-center justify-center px-[18px] py-6 text-[var(--es-ink)]">
+      <div className="flex w-full max-w-sm flex-col gap-5">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[9px] bg-[var(--es-banner)]">
+            <ShoppingCartIcon className="h-[17px] w-[17px] text-[#FF6B35]" />
+          </div>
+          <span className="text-[16px] font-semibold">Et SHop!</span>
         </div>
+
+        <h1 className="text-[26px] font-semibold leading-tight">
+          Connectez-vous
+          <br />à votre foyer.
+        </h1>
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-black text-gray-400 uppercase tracking-widest px-1">
+            <label className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[var(--es-secondary)]">
               Email
             </label>
             <input
@@ -103,14 +110,14 @@ export default function LoginPage() {
               data-cy="login-email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all"
+              className="h-[50px] w-full rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-4 text-[15px] font-medium text-[var(--es-ink)] outline-none transition-colors focus:border-[#FF6B35]"
               placeholder="votre@email.com"
               required
             />
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-black text-gray-400 uppercase tracking-widest px-1">
+            <label className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[var(--es-secondary)]">
               Mot de passe
             </label>
             <input
@@ -118,14 +125,17 @@ export default function LoginPage() {
               data-cy="login-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all"
+              className="h-[50px] w-full rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-4 text-[15px] font-medium text-[var(--es-ink)] outline-none transition-colors focus:border-[#FF6B35]"
               placeholder="••••••••"
               required
             />
           </div>
 
           {error && (
-            <p data-cy="login-error" className="text-red-500 text-sm font-bold text-center px-2">
+            <p
+              data-cy="login-error"
+              className="px-1 text-center text-[13px] font-medium text-[var(--es-danger)]"
+            >
               {error}
             </p>
           )}
@@ -134,30 +144,32 @@ export default function LoginPage() {
             type="submit"
             data-cy="login-submit"
             disabled={loading}
-            className="mt-4 w-full py-4 bg-[#FF6B35] text-white rounded-2xl font-black text-lg shadow-lg hover:bg-[#e55a2b] disabled:opacity-50 transition-all"
+            className="mt-1 h-[50px] w-full rounded-[14px] bg-[var(--es-banner)] text-[15px] font-semibold text-white transition-opacity disabled:opacity-50"
           >
             {loading ? "Connexion..." : "Se connecter"}
           </button>
         </form>
 
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-4">
-            <div className="h-[1px] flex-1 bg-gray-100" />
-            <span className="text-xs font-bold text-gray-300 uppercase">
-              ou
-            </span>
-            <div className="h-[1px] flex-1 bg-gray-100" />
-          </div>
-
-          <button
-            onClick={handleSignUp}
-            data-cy="login-signup"
-            disabled={loading}
-            className="w-full py-4 bg-white text-[#1A365D] border-2 border-gray-100 rounded-2xl font-black text-lg hover:bg-gray-50 transition-all"
-          >
-            Créer un compte rapide
-          </button>
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-[var(--es-hairline)]" />
+          <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-tertiary)]">
+            ou
+          </span>
+          <div className="h-px flex-1 bg-[var(--es-hairline)]" />
         </div>
+
+        <button
+          onClick={handleSignUp}
+          data-cy="login-signup"
+          disabled={loading}
+          className="h-[50px] w-full rounded-[14px] border border-[#FF6B35] text-[15px] font-semibold text-[var(--es-accent-text)] transition-opacity disabled:opacity-50"
+        >
+          Créer un compte
+        </button>
+
+        <p className="text-center text-[11.5px] text-[var(--es-tertiary)]">
+          Retrouvez vos listes de courses en famille, en temps réel.
+        </p>
       </div>
     </div>
   );

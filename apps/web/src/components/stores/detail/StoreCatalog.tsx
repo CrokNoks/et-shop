@@ -162,40 +162,37 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
   }, [items, searchQuery]);
 
   return (
-    <div className="flex flex-col gap-10">
-      <div className="flex flex-col md:flex-row justify-between items-start gap-6">
-        <div className="flex flex-col gap-2">
-          <h2 className="text-3xl font-black">Catalogue du magasin</h2>
-          <p className="text-gray-500">
-            Gérez vos articles habituels pour ce magasin.
-          </p>
-        </div>
-        <div className="flex gap-3">
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[12px] text-[var(--es-secondary)]">
+          Catalogue · {items.length} produit{items.length > 1 ? "s" : ""}
+        </p>
+        <div className="flex shrink-0 gap-2">
           <CatalogImportWizard onImported={fetchData} storeId={storeId} />
-          <Button
+          <button
             onClick={handleOpenCreate}
-            className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold rounded-2xl px-6 py-6 shadow-lg transition-all border-none"
+            className="flex h-9 items-center gap-1.5 rounded-[10px] border border-[#FF6B35] px-3 text-[13px] font-semibold text-[var(--es-accent-text)]"
           >
-            <PlusIcon className="w-5 h-5 mr-2" strokeWidth={3} />
-            Nouveau Produit
-          </Button>
+            <PlusIcon className="h-4 w-4" strokeWidth={2.5} />
+            Nouveau
+          </button>
         </div>
       </div>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         <CatalogSearch value={searchQuery} onChange={setSearchQuery} />
 
         {selectedIds.length > 0 && (
-          <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4">
-            <p className="text-indigo-900 font-bold">
+          <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-[rgba(255,107,53,0.35)] bg-[rgba(255,107,53,0.06)] p-4 animate-in fade-in slide-in-from-top-4 md:flex-row">
+            <p className="font-semibold text-[var(--es-accent-text)]">
               {selectedIds.length} article(s) sélectionné(s)
             </p>
-            <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="flex w-full items-center gap-3 md:w-auto">
               <Select
                 value={bulkCategoryId || ""}
                 onValueChange={(val) => setBulkCategoryId(val || null)}
               >
-                <SelectTrigger className="bg-white border-indigo-200 text-indigo-900 font-bold rounded-xl min-w-[200px]">
+                <SelectTrigger className="min-w-[200px] rounded-xl border-[rgba(255,107,53,0.35)] bg-[var(--es-surface)] font-medium text-[var(--es-ink)]">
                   <SelectValue placeholder="Assigner à un rayon...">
                     {bulkCategoryId &&
                     categories.find((c) => c.id === bulkCategoryId) ? (
@@ -216,12 +213,12 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
                     ) : null}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="text-[#1A365D]">
+                <SelectContent className="text-[var(--es-ink)]">
                   {categories.map((cat) => (
                     <SelectItem
                       key={cat.id}
                       value={cat.id}
-                      className="font-bold"
+                      className="font-medium"
                     >
                       <span className="mr-2">{cat.icon}</span>
                       {cat.name}
@@ -232,14 +229,14 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
               <Button
                 onClick={handleBulkUpdateCategory}
                 disabled={!bulkCategoryId || isBulkUpdating}
-                className="bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl"
+                className="rounded-xl bg-[#FF6B35] font-semibold text-white hover:bg-[#e55a2b]"
               >
                 {isBulkUpdating ? "..." : "Appliquer"}
               </Button>
               <Button
                 variant="ghost"
                 onClick={() => setSelectedIds([])}
-                className="text-indigo-400 hover:text-indigo-600 font-bold"
+                className="font-semibold text-[var(--es-secondary)] hover:text-[var(--es-ink)]"
               >
                 Annuler
               </Button>
@@ -249,11 +246,11 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {isLoading ? (
-            <p className="col-span-full text-center py-20 text-gray-400 italic animate-pulse">
+            <p className="col-span-full animate-pulse py-20 text-center italic text-[var(--es-tertiary)]">
               Chargement...
             </p>
           ) : filteredItems.length === 0 ? (
-            <p className="col-span-full text-center py-20 text-gray-400 italic">
+            <p className="col-span-full py-20 text-center italic text-[var(--es-tertiary)]">
               Aucun produit trouvé.
             </p>
           ) : (
@@ -280,14 +277,15 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
       {/* Form Sheet */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent
-          side="right"
-          className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]"
+          side="bottom"
+          className="mx-auto w-full max-w-lg rounded-t-[18px] bg-[var(--es-surface)] p-6 pt-3 text-[var(--es-ink)]"
         >
-          <SheetHeader className="mb-10 text-left">
-            <SheetTitle className="text-3xl font-black">
+          <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-[var(--es-hairline)]" />
+          <SheetHeader className="mb-6 p-0 text-left">
+            <SheetTitle className="text-[20px] font-semibold">
               {editingItem ? "Modifier le produit" : "Nouveau produit"}
             </SheetTitle>
-            <SheetDescription className="text-base text-gray-500 mt-2">
+            <SheetDescription className="text-[13px] text-[var(--es-secondary)]">
               Détails du produit pour votre catalogue.
             </SheetDescription>
           </SheetHeader>

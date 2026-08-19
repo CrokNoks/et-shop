@@ -2,8 +2,6 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -49,8 +47,29 @@
 }
 
 :root {
-  --color-brand: #1A365D;
-  --color-accent: #FF6B35;
+  --color-brand: #1a365d;
+  --color-accent: #ff6b35;
+
+  /* Design tokens — refonte mobile (clair) */
+  --es-bg: #f7f8fa;
+  --es-banner: #1a365d;
+  --es-surface: #ffffff;
+  --es-surface-high: #ffffff;
+  --es-ink: #12243f;
+  --es-accent-text: #c8471c;
+  --es-secondary: #75798c;
+  --es-tertiary: #9397ab;
+  --es-disabled: #b2b6ca;
+  --es-hairline: rgba(18, 36, 63, 0.1);
+  --es-ring: #d9dde5;
+  --es-field: #f2f4f7;
+  --es-field-alt: #eceff3;
+  --es-skeleton: #eceff3;
+  --es-danger: #b3261e;
+  --es-secondary-purple: #5d5294;
+  --es-shopping-bg: #ffffff;
+  --es-shopping-card: #ffffff;
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -85,38 +104,60 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+/* Thème sombre — piloté uniquement par la préférence système, aucun état persisté ni toggle */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --es-bg: #0e1726;
+    --es-banner: #16223a;
+    --es-surface: #16223a;
+    --es-surface-high: #1d2c49;
+    --es-ink: #e8ecf4;
+    --es-accent-text: #ffb694;
+    --es-secondary: #8b96ab;
+    --es-tertiary: #75798c;
+    --es-disabled: #5f6779;
+    --es-hairline: rgba(255, 255, 255, 0.09);
+    --es-ring: #3f4a63;
+    --es-field: #1d2c49;
+    --es-field-alt: #1d2c49;
+    --es-skeleton: #1d2c49;
+    --es-danger: #b3261e;
+    --es-secondary-purple: #5d5294;
+    --es-shopping-bg: #12243f;
+    --es-shopping-card: #1b3355;
+
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+  }
 }
 
 @layer base {

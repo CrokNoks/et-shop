@@ -23,34 +23,6 @@ export interface PaginatedPurchaseHistory {
   limit: number;
 }
 
-export interface CategoryStat {
-  categoryId: string;
-  categoryName: string;
-  totalSpent: number;
-  itemCount: number;
-}
-
-export interface TopItem {
-  catalogItemId: string;
-  productName: string;
-  purchaseCount: number;
-  totalSpent: number;
-}
-
-export interface MonthStat {
-  month: string;
-  totalSpent: number;
-  itemCount: number;
-}
-
-export interface PurchaseStatistics {
-  totalSpent: number;
-  totalItems: number;
-  byCategory: CategoryStat[];
-  topItems: TopItem[];
-  byMonth: MonthStat[];
-}
-
 export interface PurchaseHistoryQuery {
   listId?: string;
   catalogItemId?: string;
@@ -61,14 +33,27 @@ export interface PurchaseHistoryQuery {
   limit?: number;
 }
 
-function buildQueryString(params: Record<string, string | number | undefined>): string {
-  const entries = Object.entries(params).filter(([, v]) => v !== undefined && v !== "");
+function buildQueryString(
+  params: Record<string, string | number | undefined>,
+): string {
+  const entries = Object.entries(params).filter(
+    ([, v]) => v !== undefined && v !== "",
+  );
   if (entries.length === 0) return "";
-  return "?" + entries.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`).join("&");
+  return (
+    "?" +
+    entries
+      .map(
+        ([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`,
+      )
+      .join("&")
+  );
 }
 
 export const purchasesApi = {
-  async getHistory(query: PurchaseHistoryQuery = {}): Promise<PaginatedPurchaseHistory> {
+  async getHistory(
+    query: PurchaseHistoryQuery = {},
+  ): Promise<PaginatedPurchaseHistory> {
     const qs = buildQueryString({
       listId: query.listId,
       catalogItemId: query.catalogItemId,
@@ -81,15 +66,15 @@ export const purchasesApi = {
     return fetchApi(`/purchases/history${qs}`);
   },
 
-  async getStatistics(from?: string, to?: string): Promise<PurchaseStatistics> {
-    const qs = buildQueryString({ from, to });
-    return fetchApi(`/purchases/statistics${qs}`);
-  },
-
-  async recordPurchase(listId: string, itemId: string, price?: number): Promise<PurchaseRecord> {
+  async recordPurchase(
+    listId: string,
+    itemId: string,
+    price?: number,
+  ): Promise<PurchaseRecord> {
     return fetchApi(`/shopping-lists/${listId}/items/${itemId}/purchase`, {
       method: "PATCH",
-      body: price !== undefined ? JSON.stringify({ price }) : JSON.stringify({}),
+      body:
+        price !== undefined ? JSON.stringify({ price }) : JSON.stringify({}),
     });
   },
 

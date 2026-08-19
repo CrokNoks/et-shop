@@ -29,64 +29,69 @@ export const CatalogItemCard: React.FC<CatalogItemCardProps> = ({
     <div
       data-cy={`catalog-item-${item.id}`}
       onClick={() => onEdit(item)}
-      className={`bg-white p-6 rounded-3xl border transition-all flex flex-col gap-4 group text-[#1A365D] relative cursor-pointer ${
+      className={`flex cursor-pointer flex-col gap-3 rounded-[14px] border p-3.5 text-[var(--es-ink)] transition-colors ${
         isSelected
-          ? "border-[#FF6B35] shadow-md ring-1 ring-[#FF6B35]"
-          : "border-gray-50 shadow-sm hover:shadow-md"
+          ? "border-[#FF6B35] bg-[rgba(255,107,53,0.05)]"
+          : "border-[var(--es-hairline)] bg-[var(--es-surface)]"
       }`}
     >
-      <div className="flex justify-between items-start">
-        <div className="flex items-start gap-4">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start gap-3">
           <div className="mt-1" onClick={(e) => e.stopPropagation()}>
             <Checkbox
               checked={isSelected}
               onCheckedChange={(checked) => onSelect(checked as boolean)}
-              className="w-5 h-5 border-gray-200 data-[state=checked]:bg-[#FF6B35] data-[state=checked]:border-[#FF6B35]"
+              className="h-[18px] w-[18px] border-[var(--es-hairline)] data-[state=checked]:bg-[#FF6B35] data-[state=checked]:border-[#FF6B35]"
             />
           </div>
           <div className="flex flex-col gap-1 text-left">
-            <span className="text-[10px] font-black uppercase tracking-widest text-[#FF6B35] bg-[#FF6B35]/10 px-2 py-0.5 rounded-full w-fit">
-              {item.categories?.name || "Sans Rayon"}
+            <span className="w-fit rounded-[6px] bg-[rgba(255,107,53,0.1)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--es-accent-text)]">
+              {item.categories?.name || "Sans rayon"}
             </span>
-            <h3 className="text-xl font-bold">{item.name}</h3>
+            <h3 className="text-[15px] font-medium">{item.name}</h3>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-0.5">
           <button
             onClick={() => onEdit(item)}
-            className="p-2 text-gray-300 hover:text-[#1A365D] hover:bg-gray-50 rounded-xl transition-all"
+            className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
             title="Modifier"
           >
-            <PencilIcon className="w-5 h-5" />
+            <PencilIcon className="h-[18px] w-[18px]" />
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); onDelete(item.id, item.name); }}
-            className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(item.id, item.name);
+            }}
+            className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--es-secondary)] hover:bg-[var(--es-field)]"
             title="Supprimer"
           >
-            <TrashIcon className="w-5 h-5" />
+            <TrashIcon className="h-[18px] w-[18px]" />
           </button>
         </div>
       </div>
 
-      <div className="flex justify-between items-center mt-auto ml-9">
+      <div className="ml-8 flex items-center justify-between">
         <div className="flex flex-col gap-1 text-left">
           {item.barcode && (
-            <div className="flex items-center gap-2 text-gray-400 font-mono text-sm bg-gray-50 p-2 rounded-xl border border-gray-100 w-fit">
-              <QrCodeIcon className="w-4 h-4" />
+            <div className="flex w-fit items-center gap-1.5 rounded-[8px] border border-[var(--es-hairline)] bg-[var(--es-field)] px-2 py-1 font-mono text-[12px] text-[var(--es-tertiary)]">
+              <QrCodeIcon className="h-3.5 w-3.5" />
               {item.barcode}
             </div>
           )}
           {item.unit && (
-            <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider px-2">
+            <span className="px-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-[var(--es-tertiary)]">
               Unité : {item.unit}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-1 text-gray-300">
-          <TagIcon className="w-4 h-4" />
-          <span className="text-xs font-bold">{item.usage_count}</span>
+        <div className="flex items-center gap-1 text-[var(--es-disabled)]">
+          <TagIcon className="h-3.5 w-3.5" />
+          <span className="text-[11.5px] font-semibold">
+            {item.usage_count}
+          </span>
         </div>
       </div>
     </div>

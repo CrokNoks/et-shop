@@ -13,16 +13,16 @@ export const CatalogSearch: React.FC<CatalogSearchProps> = ({
   onChange,
 }) => {
   return (
-    <div className="relative group max-w-md">
-      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-        <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 group-focus-within:text-[#FF6B35] transition-colors" />
+    <div className="group relative">
+      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+        <MagnifyingGlassIcon className="h-4 w-4 text-[var(--es-tertiary)] transition-colors group-focus-within:text-[#FF6B35]" />
       </div>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Rechercher par nom ou code-barres..."
-        className="block w-full pl-12 pr-4 py-4 bg-white border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] shadow-sm text-[#1A365D] font-medium transition-all"
+        className="h-11 w-full rounded-[12px] border border-[var(--es-hairline)] bg-[var(--es-surface)] pl-10 pr-3.5 text-[14px] font-medium text-[var(--es-ink)] outline-none focus:border-[#FF6B35]"
       />
     </div>
   );

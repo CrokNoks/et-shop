@@ -42,7 +42,9 @@ describe("Authentification", () => {
       cy.get("[data-cy=login-password]").type(user.password);
       cy.get("[data-cy=login-submit]").click();
       cy.url().should("not.include", "/login");
-      
+
+      // "Se déconnecter" vit dans le menu "..." du bandeau (écran 4j).
+      cy.get("[data-cy=list-options]").click();
       cy.get("[data-cy=logout-button]").click();
       cy.url().should("include", "/login");
     });

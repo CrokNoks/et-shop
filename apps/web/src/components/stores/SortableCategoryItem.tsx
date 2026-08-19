@@ -30,30 +30,36 @@ export const SortableCategoryItem: React.FC<SortableCategoryItemProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-4 p-4 bg-white border rounded-2xl transition-colors ${
+      className={`flex h-14 items-center gap-3 rounded-[12px] border bg-[var(--es-surface)] px-3 transition-colors ${
         isDragging
-          ? "border-[#FF6B35] shadow-lg opacity-80"
-          : "border-gray-100 hover:border-gray-200 shadow-sm"
+          ? "border-[#FF6B35] bg-[rgba(255,107,53,0.05)] shadow-[0_6px_16px_rgba(18,36,63,0.1)]"
+          : "border-[var(--es-hairline)]"
       }`}
     >
       <div
         {...attributes}
         {...listeners}
-        className="cursor-grab active:cursor-grabbing p-2 text-gray-300 hover:text-gray-500 transition-colors"
+        className="flex h-8 w-6 shrink-0 cursor-grab items-center justify-center text-[var(--es-disabled)] active:cursor-grabbing"
       >
-        <Bars3Icon className="w-6 h-6" />
+        <Bars3Icon className="h-5 w-5" />
       </div>
 
-      <div className="flex items-center gap-3 flex-1">
-        <span className="text-2xl">{order.category?.icon || "📦"}</span>
-        <span className="font-bold text-lg text-[#1A365D]">
+      <span className="w-5 shrink-0 text-[12.5px] tabular-nums text-[var(--es-tertiary)]">
+        {order.sort_order}
+      </span>
+
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <span className="text-lg">{order.category?.icon || "📦"}</span>
+        <span className="truncate text-[15px] font-medium text-[var(--es-ink)]">
           {order.category?.name}
         </span>
       </div>
 
-      <div className="text-xs font-black text-gray-300 uppercase tracking-widest bg-gray-50 px-3 py-1.5 rounded-lg">
-        {order.sort_order}
-      </div>
+      {isDragging && (
+        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--es-accent-text)]">
+          déplacé
+        </span>
+      )}
     </div>
   );
 };

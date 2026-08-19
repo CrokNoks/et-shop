@@ -2,7 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { ChefHat, Trash2, ChevronRight } from "lucide-react";
+import { ChefHat, Trash2 } from "lucide-react";
+import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { Recipe } from "@/types";
 
 interface RecipeCardProps {
@@ -11,42 +12,47 @@ interface RecipeCardProps {
 }
 
 export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onDelete }) => {
-  const itemCount = recipe.recipe_items?.length ?? 0;
+  // GET /recipes renvoie recipe_items en agrégat (`recipe_items(count)`),
+  // pas le détail des items : `recipe.recipe_items` vaut ici [{ count: N }],
+  // pas un vrai tableau d'ingrédients. Le détail (noms, items_catalog)
+  // n'existe que sur GET /recipes/:id (RecipeDetail). On ne peut donc
+  // afficher qu'un compte ici, pas de puces de noms sans un fetch par
+  // recette (N+1, écarté pour la même raison que les compteurs
+  // rayons/produits de /stores).
+  const rawItems = recipe.recipe_items ?? [];
+  const firstItem = rawItems[0];
+  const itemCount =
+    firstItem && "count" in firstItem ? firstItem.count : rawItems.length;
 
   return (
     <Link
       href={`/recipes/${recipe.id}`}
-      className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex items-center justify-between group"
+      className="group flex items-center justify-between gap-3 rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] p-3 text-left"
     >
-      <div className="flex items-center gap-6">
-        <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-[#FF6B35]">
-          <ChefHat className="w-6 h-6" />
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-[rgba(255,107,53,0.1)] text-[var(--es-accent-text)]">
+          <ChefHat className="h-5 w-5" />
         </div>
-        <div className="flex flex-col text-left">
-          <h3 className="text-xl font-bold">{recipe.name}</h3>
-          {recipe.description && (
-            <p className="text-sm text-gray-400 truncate max-w-xs">
-              {recipe.description}
-            </p>
-          )}
-          <p className="text-sm text-gray-400">
-            {itemCount} produit{itemCount !== 1 ? "s" : ""}
+        <div className="flex min-w-0 flex-col gap-1">
+          <h3 className="truncate text-[16.5px] font-semibold text-[var(--es-ink)]">
+            {recipe.name}
+          </h3>
+          <p className="text-[11.5px] text-[var(--es-tertiary)]">
+            {itemCount} ingrédient{itemCount !== 1 ? "s" : ""}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-1">
         <button
           onClick={(e) => onDelete(e, recipe.id, recipe.name)}
           data-cy="recipe-delete"
-          className="p-3 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all opacity-0 group-hover:opacity-100"
+          className="flex h-11 w-11 items-center justify-center rounded-[10px] text-[var(--es-tertiary)] transition-colors hover:bg-[rgba(179,38,30,0.08)] hover:text-[var(--es-danger)]"
           title="Supprimer"
         >
-          <Trash2 className="w-5 h-5" />
+          <Trash2 className="h-4 w-4" />
         </button>
-        <div className="p-3 text-gray-300 group-hover:text-[#FF6B35] transition-all">
-          <ChevronRight className="w-6 h-6" strokeWidth={3} />
-        </div>
+        <ChevronRightIcon className="h-[18px] w-[18px] text-[var(--es-disabled)]" />
       </div>
     </Link>
   );
