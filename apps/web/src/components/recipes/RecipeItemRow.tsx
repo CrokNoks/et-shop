@@ -6,7 +6,10 @@ import { RecipeItem } from "@/types";
 
 interface RecipeItemRowProps {
   item: RecipeItem;
-  onUpdate: (itemId: string, data: { quantity?: number; unit?: string }) => void;
+  onUpdate: (
+    itemId: string,
+    data: { quantity?: number; unit?: string },
+  ) => void;
   onDelete: (itemId: string) => void;
 }
 
@@ -39,52 +42,57 @@ export const RecipeItemRow: React.FC<RecipeItemRowProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl group">
-      <div className="flex items-center gap-4 min-w-0">
-        <div className="flex flex-col min-w-0">
-          <span className="font-semibold truncate">{itemName}</span>
+    <div className="group flex h-14 items-center justify-between gap-3 border-b border-[var(--es-hairline)] px-1 last:border-b-0">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate text-[15px] font-medium text-[var(--es-ink)]">
+            {itemName}
+          </span>
           {isEditing ? (
-            <div className="flex items-center gap-2 mt-1">
+            <div className="mt-1 flex items-center gap-2">
               <input
                 type="number"
                 min="0.01"
                 step="0.01"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className="w-20 p-1 text-sm border border-[#FF6B35] rounded-lg outline-none"
+                className="h-7 w-16 rounded-[8px] border border-[#FF6B35] px-1.5 text-[13px] tabular-nums outline-none"
               />
               <input
                 type="text"
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
                 placeholder="unité"
-                className="w-16 p-1 text-sm border border-gray-200 rounded-lg outline-none"
+                className="h-7 w-16 rounded-[8px] border border-[var(--es-hairline)] px-1.5 text-[13px] uppercase outline-none"
               />
             </div>
           ) : (
-            <span className="text-sm text-gray-400">
-              {item.quantity} {item.unit || catalogItem?.unit || "pcs"}
+            <span className="text-[11.5px] text-[var(--es-tertiary)]">
+              <span className="tabular-nums">{item.quantity}</span>{" "}
+              <span className="uppercase">
+                {item.unit || catalogItem?.unit || "pcs"}
+              </span>
             </span>
           )}
         </div>
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1">
         {isEditing ? (
           <>
             <button
               onClick={handleSave}
               data-cy={`recipe-item-${item.id}-save`}
-              className="p-2 text-green-500 hover:bg-green-50 rounded-xl transition-all"
+              className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#2e7d32] hover:bg-[rgba(46,125,50,0.08)]"
             >
-              <Check className="w-4 h-4" />
+              <Check className="h-4 w-4" />
             </button>
             <button
               onClick={handleCancel}
               data-cy={`recipe-item-${item.id}-cancel`}
-              className="p-2 text-gray-400 hover:bg-gray-100 rounded-xl transition-all"
+              className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--es-tertiary)] hover:bg-[var(--es-field)]"
             >
-              <X className="w-4 h-4" />
+              <X className="h-4 w-4" />
             </button>
           </>
         ) : (
@@ -92,16 +100,16 @@ export const RecipeItemRow: React.FC<RecipeItemRowProps> = ({
             <button
               onClick={() => setIsEditing(true)}
               data-cy={`recipe-item-${item.id}-edit`}
-              className="p-2 text-gray-300 hover:text-[#1A365D] hover:bg-gray-100 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+              className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--es-tertiary)] opacity-0 transition-opacity hover:bg-[var(--es-field)] hover:text-[var(--es-ink)] group-hover:opacity-100"
             >
-              <Pencil className="w-4 h-4" />
+              <Pencil className="h-4 w-4" />
             </button>
             <button
               onClick={() => onDelete(item.id)}
               data-cy={`recipe-item-${item.id}-delete`}
-              className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+              className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--es-tertiary)] opacity-0 transition-opacity hover:bg-[rgba(179,38,30,0.08)] hover:text-[var(--es-danger)] group-hover:opacity-100"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="h-4 w-4" />
             </button>
           </>
         )}

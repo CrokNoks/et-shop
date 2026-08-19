@@ -14,7 +14,6 @@ import {
 } from "@/lib/api";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -134,29 +133,27 @@ export default function RecipePage({ params }: RecipePageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col sm:flex-row font-sans text-[#1A365D]">
-
-      <main className="flex-1 p-6 pt-24 pb-24 sm:p-12 flex justify-center">
-        <div className="w-full max-w-4xl flex flex-col gap-10">
-          {isLoading ? (
-            <p className="text-center py-20 text-gray-400 italic animate-pulse">
-              Chargement...
-            </p>
-          ) : error || !recipe ? (
-            <p className="text-center py-20 text-red-400">
-              Recette introuvable.
-            </p>
-          ) : (
-            <>
-              <div className="flex justify-end">
-                <Button
-                  variant="outline"
-                  onClick={openEditSheet}
-                  className="font-bold rounded-xl"
-                >
-                  Modifier la recette
-                </Button>
-              </div>
+    <div className="min-h-screen bg-[var(--es-bg)] pb-24 text-[var(--es-ink)]">
+      <main className="mx-auto flex w-full max-w-lg flex-col gap-4 pt-6 sm:max-w-2xl">
+        {isLoading ? (
+          <p className="animate-pulse px-3.5 py-20 text-center italic text-[var(--es-tertiary)]">
+            Chargement...
+          </p>
+        ) : error || !recipe ? (
+          <p className="px-3.5 py-20 text-center text-[var(--es-danger)]">
+            Recette introuvable.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-end px-3.5">
+              <button
+                onClick={openEditSheet}
+                className="text-[13px] font-semibold text-[var(--es-secondary)] hover:text-[var(--es-ink)]"
+              >
+                Modifier la recette
+              </button>
+            </div>
+            <div className="px-3.5">
               <RecipeDetail
                 recipe={recipe}
                 onAddItem={handleAddItem}
@@ -166,29 +163,33 @@ export default function RecipePage({ params }: RecipePageProps) {
                 isAddingItem={isAddingItem}
                 isSending={isSending}
               />
-            </>
-          )}
-        </div>
+            </div>
+          </div>
+        )}
       </main>
       <TabBar />
 
       {/* Edit recipe sheet */}
       <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
         <SheetContent
-          side="right"
-          className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]"
+          side="bottom"
+          className="mx-auto w-full max-w-lg rounded-t-[18px] p-6 pt-3 text-[var(--es-ink)] bg-[var(--es-surface)]"
         >
-          <SheetHeader className="mb-10 text-left">
-            <SheetTitle className="text-3xl font-black">
+          <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-[var(--es-hairline)]" />
+          <SheetHeader className="p-0 text-left">
+            <SheetTitle className="text-[20px] font-semibold">
               Modifier la recette
             </SheetTitle>
-            <SheetDescription className="text-base text-gray-500 mt-2">
+            <SheetDescription className="text-[13px] text-[var(--es-secondary)]">
               Modifiez le nom ou la description de votre recette.
             </SheetDescription>
           </SheetHeader>
-          <form onSubmit={handleEditSubmit} className="space-y-6">
+          <form
+            onSubmit={handleEditSubmit}
+            className="mt-6 flex flex-col gap-4"
+          >
             <div className="space-y-2">
-              <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+              <label className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]">
                 Nom
               </label>
               <input
@@ -196,27 +197,27 @@ export default function RecipePage({ params }: RecipePageProps) {
                 required
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all"
+                className="h-[50px] w-full rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-3.5 text-[15px] font-medium outline-none focus:border-[#FF6B35] focus:bg-[rgba(255,107,53,0.04)]"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+              <label className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]">
                 Description (optionnel)
               </label>
               <textarea
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
                 rows={3}
-                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all resize-none"
+                className="w-full resize-none rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] p-3.5 text-[15px] font-medium outline-none focus:border-[#FF6B35] focus:bg-[rgba(255,107,53,0.04)]"
               />
             </div>
-            <Button
+            <button
               type="submit"
               disabled={isEditSubmitting}
-              className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl shadow-lg"
+              className="h-[50px] rounded-[14px] bg-[#1A365D] text-[15px] font-semibold text-white disabled:opacity-40"
             >
               {isEditSubmitting ? "Enregistrement..." : "Enregistrer"}
-            </Button>
+            </button>
           </form>
         </SheetContent>
       </Sheet>

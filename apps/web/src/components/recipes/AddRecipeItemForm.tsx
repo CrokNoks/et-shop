@@ -28,7 +28,10 @@ export const AddRecipeItemForm: React.FC<AddRecipeItemFormProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
+      ) {
         setShowSuggestions(false);
       }
     };
@@ -43,7 +46,9 @@ export const AddRecipeItemForm: React.FC<AddRecipeItemFormProps> = ({
     }
     const timeout = setTimeout(async () => {
       try {
-        const data = await fetchApi(`/shopping-lists/suggest/${encodeURIComponent(search)}`);
+        const data = await fetchApi(
+          `/shopping-lists/suggest/${encodeURIComponent(search)}`,
+        );
         setSuggestions(data || []);
         setShowSuggestions(true);
       } catch {
@@ -90,21 +95,25 @@ export const AddRecipeItemForm: React.FC<AddRecipeItemFormProps> = ({
             }
           }}
           placeholder="Rechercher un produit du catalogue..."
-          className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all"
+          className="h-[50px] w-full rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-3.5 text-[15px] font-medium text-[var(--es-ink)] outline-none focus:border-[#FF6B35] focus:bg-[rgba(255,107,53,0.04)]"
         />
         {showSuggestions && suggestions.length > 0 && (
-          <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-100 rounded-2xl shadow-lg overflow-hidden">
+          <ul className="absolute z-10 mt-1.5 w-full overflow-hidden rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] shadow-lg">
             {suggestions.map((item) => (
               <li
                 key={item.id}
                 data-cy={`recipe-item-suggestion-${item.id}`}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleSelect(item)}
-                className="px-4 py-3 hover:bg-orange-50 cursor-pointer transition-colors"
+                className="flex h-14 cursor-pointer items-center justify-between border-b border-[var(--es-hairline)] px-3.5 last:border-b-0 hover:bg-[var(--es-field)]"
               >
-                <span className="font-medium">{item.name}</span>
+                <span className="text-[15px] font-medium text-[var(--es-ink)]">
+                  {item.name}
+                </span>
                 {item.unit && (
-                  <span className="ml-2 text-sm text-gray-400">({item.unit})</span>
+                  <span className="text-[11.5px] uppercase text-[var(--es-tertiary)]">
+                    {item.unit}
+                  </span>
                 )}
               </li>
             ))}
@@ -112,7 +121,7 @@ export const AddRecipeItemForm: React.FC<AddRecipeItemFormProps> = ({
         )}
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         <input
           type="number"
           data-cy="recipe-item-quantity"
@@ -120,24 +129,24 @@ export const AddRecipeItemForm: React.FC<AddRecipeItemFormProps> = ({
           step="0.01"
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
-          placeholder="Quantité"
-          className="w-28 p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all"
+          placeholder="Qté"
+          className="h-[50px] w-20 rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-3 text-[15px] font-semibold tabular-nums outline-none focus:border-[#FF6B35]"
         />
         <input
           type="text"
           data-cy="recipe-item-unit"
           value={unit}
           onChange={(e) => setUnit(e.target.value)}
-          placeholder="Unité (pcs, kg...)"
-          className="flex-1 p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#FF6B35] font-medium transition-all"
+          placeholder="UNITÉ"
+          className="h-[50px] w-24 rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-3 text-[13px] font-semibold uppercase tracking-wide outline-none focus:border-[#FF6B35]"
         />
         <button
           type="submit"
           data-cy="recipe-item-submit"
           disabled={!selectedItem || isSubmitting}
-          className="px-6 py-4 bg-[#FF6B35] text-white font-bold rounded-2xl shadow hover:bg-[#e55a2b] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+          className="flex flex-1 items-center justify-center gap-2 rounded-[14px] bg-[#1A365D] text-[15px] font-semibold text-white transition-opacity disabled:opacity-40"
         >
-          <PlusIcon className="w-5 h-5" strokeWidth={2.5} />
+          <PlusIcon className="h-4 w-4" strokeWidth={2.5} />
           Ajouter
         </button>
       </div>

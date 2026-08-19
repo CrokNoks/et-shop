@@ -10,7 +10,6 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
 import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 
 interface SendToListDialogProps {
@@ -52,57 +51,58 @@ export const SendToListDialog: React.FC<SendToListDialogProps> = ({
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
       <SheetContent
-        side="right"
-        className="w-screen sm:max-w-[450px] p-10 text-[#1A365D]"
+        side="bottom"
+        className="mx-auto w-full max-w-lg rounded-t-[18px] p-6 pt-3 text-[var(--es-ink)] bg-[var(--es-surface)]"
       >
-        <SheetHeader className="mb-10 text-left">
-          <SheetTitle className="text-3xl font-black">
+        <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-[var(--es-hairline)]" />
+        <SheetHeader className="p-0 text-left">
+          <SheetTitle className="text-[20px] font-semibold">
             Envoyer vers une liste
           </SheetTitle>
-          <SheetDescription className="text-base text-gray-500 mt-2">
-            Sélectionnez la liste de courses dans laquelle vous souhaitez
-            ajouter les produits de cette recette.
+          <SheetDescription className="text-[13px] text-[var(--es-secondary)]">
+            Sélectionnez la liste de courses dans laquelle ajouter les
+            ingrédients de cette recette.
           </SheetDescription>
         </SheetHeader>
 
         {isLoading ? (
-          <p className="text-gray-400 italic text-center py-8">
+          <p className="py-8 text-center italic text-[var(--es-tertiary)]">
             Chargement des listes...
           </p>
         ) : lists.length === 0 ? (
-          <p className="text-gray-400 italic text-center py-8">
+          <p className="py-8 text-center italic text-[var(--es-tertiary)]">
             Aucune liste de courses disponible.
           </p>
         ) : (
-          <div className="flex flex-col gap-3 mb-8">
+          <div className="mt-6 flex flex-col gap-2">
             {lists.map((list) => (
               <button
                 key={list.id}
                 data-cy={`send-to-list-${list.id}`}
                 onClick={() => setSelectedListId(list.id)}
-                className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left ${
+                className={`flex h-14 items-center gap-3 rounded-[14px] border px-3.5 text-left transition-colors ${
                   selectedListId === list.id
-                    ? "border-[#FF6B35] bg-orange-50"
-                    : "border-gray-100 bg-white hover:border-gray-200"
+                    ? "border-[#FF6B35] bg-[rgba(255,107,53,0.06)]"
+                    : "border-[var(--es-hairline)] hover:border-[var(--es-disabled)]"
                 }`}
               >
                 <ShoppingCartIcon
-                  className={`w-5 h-5 flex-shrink-0 ${selectedListId === list.id ? "text-[#FF6B35]" : "text-gray-400"}`}
+                  className={`h-5 w-5 shrink-0 ${selectedListId === list.id ? "text-[#c8471c]" : "text-[var(--es-tertiary)]"}`}
                 />
-                <span className="font-bold">{list.name}</span>
+                <span className="text-[15px] font-medium">{list.name}</span>
               </button>
             ))}
           </div>
         )}
 
-        <Button
+        <button
           onClick={handleSend}
           data-cy="send-to-list-submit"
           disabled={!selectedListId || isSending || isLoading}
-          className="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-bold text-lg py-6 rounded-xl shadow-lg"
+          className="mt-6 flex h-[50px] items-center justify-center rounded-[14px] bg-[#1A365D] text-[15px] font-semibold text-white disabled:opacity-40"
         >
           {isSending ? "Envoi en cours..." : "Envoyer la recette"}
-        </Button>
+        </button>
       </SheetContent>
     </Sheet>
   );
