@@ -36,6 +36,7 @@ import { AisleSelector } from "./AisleSelector";
 import { ListSkeleton } from "./ListSkeleton";
 import { EmptyState } from "./EmptyState";
 import { HouseholdMember } from "@/hooks/useHousehold";
+import { useCurrentUserId } from "@/hooks/useCurrentUserId";
 
 interface ShoppingListProps {
   isLoading: boolean;
@@ -56,13 +57,18 @@ interface ShoppingListProps {
  * Nom de la personne ayant coché l'article, résolu depuis la liste des
  * membres du foyer déjà chargée par la page (pas de nouvel appel réseau).
  * `undefined` si l'auteur n'est pas connu (article pas encore coché,
- * `purchased_by` absent) ou pas résolvable dans la liste de membres.
+ * `purchased_by` absent, pas résolvable dans la liste de membres), ou si
+ * l'auteur est l'utilisateur courant (la spec ne demande le nom que pour
+ * les coches faites par un *autre* membre — se voir soi-même nommé n'a pas
+ * de valeur).
  */
 function purchasedByName(
   item: ShoppingListItem,
   members: HouseholdMember[],
+  currentUserId: string | null,
 ): string | undefined {
   if (!item.purchased_by) return undefined;
+  if (item.purchased_by === currentUserId) return undefined;
   const member = members.find((m) => m.user_id === item.purchased_by);
   return member?.profile?.full_name || member?.profile?.email || undefined;
 }
@@ -77,6 +83,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
   refetch,
   members = [],
 }) => {
+  const currentUserId = useCurrentUserId();
   const [isShoppingMode, setIsShoppingMode] = useState(false);
   // Ref plutôt que state : lue dans le cleanup de l'effet ci-dessous. Les
   // deps de l'effet sont volontairement réduites à [isShoppingMode] (une
@@ -651,9 +658,16 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                             </p>
                             {item.is_purchased ? (
                               <p className="text-[11.5px] text-[var(--es-tertiary)]">
-                                {purchasedByName(item, members)
-                                  ? `Coché par ${purchasedByName(item, members)} · ${formatRelativeTime(item.updated_at)}`
-                                  : `Coché · ${formatRelativeTime(item.updated_at)}`}
+                                {(() => {
+                                  const author = purchasedByName(
+                                    item,
+                                    members,
+                                    currentUserId,
+                                  );
+                                  return author
+                                    ? `Coché par ${author} · ${formatRelativeTime(item.updated_at)}`
+                                    : `Coché · ${formatRelativeTime(item.updated_at)}`;
+                                })()}
                               </p>
                             ) : (
                               <div
