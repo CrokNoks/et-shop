@@ -64,18 +64,9 @@ Ce Change Request lève ces limitations une par une. Chaque point liste le chang
 - `apps/web/src/components/recipes/RecipeItemRow.tsx` / `RecipeDetail.tsx` : cases à cocher par ingrédient (déjà décrites par le design, écran 2i/3f), bouton d'action recalculé « Ajouter N articles · {coût} » selon la sélection et `servings`.
 - `apps/web/src/components/recipes/SendToListDialog.tsx` : transmettre `item_ids` sélectionnés.
 
-### 6. Création de produit catalogue sans magasin obligatoire — ⚠️ point à trancher
+### 6. Création de produit catalogue sans magasin — EXCLU (voir décision plus bas)
 
-**Constat** : `items_catalog.store_id` est **`NOT NULL`** avec une contrainte unique `(name, store_id)`, posée par la migration `20260324000003_store_centric_model.sql`. Le pattern « Créer « x » dans mon catalogue » (déjà en place dans `HopInput.tsx` pour la liste de courses) suppose un magasin connu au moment de la saisie ; l'écran 4g (nouvelle recette) n'a pas ce contexte, d'où son absence documentée dans `decisions.md`.
-
-Rendre `store_id` optionnel demande :
-- `ALTER TABLE items_catalog ALTER COLUMN store_id DROP NOT NULL;`
-- Remplacer l'index unique `(name, store_id)` par un index partiel qui tolère plusieurs lignes `store_id IS NULL` du même nom (`CREATE UNIQUE INDEX ... ON items_catalog (name, store_id) WHERE store_id IS NOT NULL;` + un second index pour le cas `store_id IS NULL` si l'unicité doit aussi s'y appliquer).
-- Revoir toute requête qui suppose `store_id` non nul (jointures `stores(name)`, RLS `items_catalog` basée sur `store_id` — la policy actuelle vérifie l'appartenance via le magasin, un item sans magasin n'a plus ce chemin d'accès RLS et doit en obtenir un autre, ex. basé sur le foyer qui a créé l'item).
-
-C'est un changement de schéma avec un vrai risque de régression sur le regroupement des listes par magasin (le frontend sait déjà grouper « articles sans magasin à la fin » selon le design, mais ce n'est pas implémenté aujourd'hui puisqu'aucun item sans magasin n'existe en pratique).
-
-**Recommandation** : traiter ce point comme une décision séparée plutôt que de l'implémenter par défaut dans ce cycle — cf. question ouverte dans la section Critères d'acceptance.
+`items_catalog.store_id` est `NOT NULL` avec une contrainte unique `(name, store_id)`, posée intentionnellement par la migration `20260324000003_store_centric_model.sql`. **Décision de l'utilisateur : un produit ne peut pas exister sans magasin — ce point n'est pas implémenté dans ce cycle.** Détails et conséquence assumée dans la section « Point 6 — tranché » en fin de document.
 
 ### Fichiers à NE PAS toucher
 | Fichier | Raison |
@@ -104,13 +95,13 @@ C'est un changement de schéma avec un vrai risque de régression sur le regroup
 - Le champ « Couverts » et le coût estimé apparaissent en création/détail de recette.
 - Des cases à cocher permettent de sélectionner un sous-ensemble d'ingrédients à l'envoi vers une liste, avec libellé de bouton recalculé.
 
-## Question ouverte avant de lancer le développement
-**Le point 6 (produit catalogue sans magasin) est-il inclus dans ce cycle ?** Il touche une contrainte NOT NULL + un index unique posés intentionnellement par une migration antérieure, avec un risque de régression sur le regroupement par magasin. Options :
-- **A. Reporté** — ce cycle couvre les points 1 à 5 uniquement ; le pattern « Créer un produit » reste absent de l'écran 4g des recettes (déjà le cas aujourd'hui, pas une régression).
-- **B. Inclus** — le cycle couvre aussi le point 6, avec la migration de schéma décrite et une vérification approfondie de tout le code dépendant de `store_id` non-null.
+## Point 6 — tranché : exclu de ce cycle
+
+Décision explicite de l'utilisateur : **un produit ne peut pas exister sans magasin**. La contrainte `items_catalog.store_id NOT NULL` (+ index unique `(name, store_id)`) est confirmée comme une règle métier voulue, pas un oubli à corriger. Ce cycle ne touche donc pas au schéma de `items_catalog` sur ce point.
+
+Conséquence assumée, non régressive : l'écran 4g (nouvelle recette) ne propose pas de « Créer « x » dans mon catalogue » comme le fait `HopInput` pour la liste de courses — créer un produit y restera un aller-retour vers le catalogue d'un magasin existant. Aucun changement de comportement par rapport à l'état actuel.
 
 ## Risques de régression
 - RPC `record_purchase_atomic`/`cancel_purchase_atomic` : toute nouvelle version de la fonction doit rester atomique (transaction unique) comme l'actuelle — ne pas scinder en plusieurs requêtes séparées.
 - Policy RLS `profiles` élargie : bien scoper à « même foyer », jamais à tous les profils (fuite de données sinon).
 - `items_catalog.reference_price` mis à jour à chaque achat : vérifier que ça ne ralentit pas le chemin critique de `RecordPurchaseUseCase` (une requête `UPDATE` de plus par coche).
-- Point 6 si retenu (option B) : RLS `items_catalog` et tout regroupement par magasin côté frontend qui suppose `store_id` toujours présent.
