@@ -87,7 +87,7 @@ export const RecipeItemRow: React.FC<RecipeItemRowProps> = ({
               data-cy={`recipe-item-${item.id}-save`}
               aria-label="Enregistrer"
               title="Enregistrer"
-              className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#2e7d32] hover:bg-[rgba(46,125,50,0.08)]"
+              className="flex h-11 w-11 items-center justify-center rounded-[8px] text-[#2e7d32] hover:bg-[rgba(46,125,50,0.08)]"
             >
               <Check className="h-4 w-4" />
             </button>
@@ -96,7 +96,7 @@ export const RecipeItemRow: React.FC<RecipeItemRowProps> = ({
               data-cy={`recipe-item-${item.id}-cancel`}
               aria-label="Annuler"
               title="Annuler"
-              className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--es-tertiary)] hover:bg-[var(--es-field)]"
+              className="flex h-11 w-11 items-center justify-center rounded-[8px] text-[var(--es-tertiary)] hover:bg-[var(--es-field)]"
             >
               <X className="h-4 w-4" />
             </button>
