@@ -185,7 +185,9 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
     recognition.lang = "fr-FR";
     recognition.start();
     setIsListening(true);
-    recognition.onresult = (event: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => {
+    recognition.onresult = (event: {
+      results: { [key: number]: { [key: number]: { transcript: string } } };
+    }) => {
       setInputValue(String(event.results[0][0].transcript));
       setIsListening(false);
     };
@@ -316,9 +318,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[rgba(255,107,53,0.12)]">
                 <PlusIcon className="h-3.5 w-3.5" strokeWidth={2.5} />
               </span>
-              <span>
-                Créer «{" "}{inputValue}{" "} » dans mon catalogue
-              </span>
+              <span>Créer « {inputValue} » dans mon catalogue</span>
             </button>
           </div>
         </SheetContent>

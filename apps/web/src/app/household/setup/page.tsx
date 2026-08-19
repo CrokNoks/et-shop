@@ -98,9 +98,9 @@ export default function HouseholdSetupPage() {
               Bienvenue !
             </h1>
             <p className="text-center text-[13px] text-[var(--es-secondary)]">
-              Pour commencer à utiliser Et SHop!, créez un foyer (ex:{" "}
-              {'"'}Ma Famille{'"'}, {'"'}Coloc{'"'}). Vous pourrez ensuite y
-              inviter des membres.
+              Pour commencer à utiliser Et SHop!, créez un foyer (ex: {'"'}Ma
+              Famille{'"'}, {'"'}Coloc{'"'}). Vous pourrez ensuite y inviter des
+              membres.
             </p>
           </div>
 
@@ -138,9 +138,7 @@ export default function HouseholdSetupPage() {
           <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-tertiary)]">
             Étape 2 sur 2
           </span>
-          <h1 className="text-[25px] font-semibold">
-            Invitez votre foyer
-          </h1>
+          <h1 className="text-[25px] font-semibold">Invitez votre foyer</h1>
           <p className="text-[13px] text-[var(--es-secondary)]">
             Partagez vos listes avec les membres de{" "}
             <span className="text-[#c8471c]">{createdHousehold?.name}</span>{" "}

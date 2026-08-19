@@ -2,7 +2,11 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { PlusIcon, CreditCardIcon, PencilIcon } from "@heroicons/react/24/outline";
+import {
+  PlusIcon,
+  CreditCardIcon,
+  PencilIcon,
+} from "@heroicons/react/24/outline";
 import {
   Sheet,
   SheetContent,
@@ -21,7 +25,6 @@ interface StoreLoyaltyCardsProps {
   storeName: string;
 }
 
-
 const BARCODE_FORMAT_LABELS: Record<BarcodeFormat, string> = {
   [BarcodeFormat.CODE_128]: "CODE 128 (code-barres standard)",
   [BarcodeFormat.QR_CODE]: "QR Code",
@@ -29,18 +32,27 @@ const BARCODE_FORMAT_LABELS: Record<BarcodeFormat, string> = {
   [BarcodeFormat.UNKNOWN]: "Inconnu",
 };
 
-export function StoreLoyaltyCards({ storeId, storeName }: StoreLoyaltyCardsProps) {
+export function StoreLoyaltyCards({
+  storeId,
+  storeName,
+}: StoreLoyaltyCardsProps) {
   const { data: cards, isLoading } = useLoyaltyCards([storeId]);
   const updateLoyaltyCard = useUpdateLoyaltyCard();
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
-  const [editingCard, setEditingCard] = useState<LoyaltyCardFrontend | null>(null);
-  const [activeCard, setActiveCard] = useState<LoyaltyCardFrontend | null>(null);
+  const [editingCard, setEditingCard] = useState<LoyaltyCardFrontend | null>(
+    null,
+  );
+  const [activeCard, setActiveCard] = useState<LoyaltyCardFrontend | null>(
+    null,
+  );
 
   // Edit form state
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editCardData, setEditCardData] = useState("");
-  const [editBarcodeFormat, setEditBarcodeFormat] = useState<BarcodeFormat>(BarcodeFormat.CODE_128);
+  const [editBarcodeFormat, setEditBarcodeFormat] = useState<BarcodeFormat>(
+    BarcodeFormat.CODE_128,
+  );
   const [editCustomColor, setEditCustomColor] = useState("");
 
   const handleOpenEdit = (e: React.MouseEvent, card: LoyaltyCardFrontend) => {
@@ -172,7 +184,10 @@ export function StoreLoyaltyCards({ storeId, storeName }: StoreLoyaltyCardsProps
       />
 
       {/* Edit Sheet */}
-      <Sheet open={!!editingCard} onOpenChange={(open) => !open && setEditingCard(null)}>
+      <Sheet
+        open={!!editingCard}
+        onOpenChange={(open) => !open && setEditingCard(null)}
+      >
         <SheetContent
           side="bottom"
           className="mx-auto w-full max-w-lg rounded-t-[18px] p-6 pt-3 text-[var(--es-ink)] bg-[var(--es-surface)]"
@@ -186,7 +201,10 @@ export function StoreLoyaltyCards({ storeId, storeName }: StoreLoyaltyCardsProps
               Modifiez les informations de votre carte de fidélité.
             </SheetDescription>
           </SheetHeader>
-          <form onSubmit={handleEditSubmit} className="mt-6 flex flex-col gap-4">
+          <form
+            onSubmit={handleEditSubmit}
+            className="mt-6 flex flex-col gap-4"
+          >
             <div className="space-y-2">
               <label className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--es-secondary)]">
                 Nom de la carte
@@ -231,11 +249,15 @@ export function StoreLoyaltyCards({ storeId, storeName }: StoreLoyaltyCardsProps
               </label>
               <select
                 value={editBarcodeFormat}
-                onChange={(e) => setEditBarcodeFormat(e.target.value as BarcodeFormat)}
+                onChange={(e) =>
+                  setEditBarcodeFormat(e.target.value as BarcodeFormat)
+                }
                 className="h-[50px] w-full appearance-none rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-3.5 text-[15px] outline-none focus:border-[#FF6B35]"
               >
                 {Object.values(BarcodeFormat).map((f) => (
-                  <option key={f} value={f}>{BARCODE_FORMAT_LABELS[f]}</option>
+                  <option key={f} value={f}>
+                    {BARCODE_FORMAT_LABELS[f]}
+                  </option>
                 ))}
               </select>
             </div>
@@ -274,7 +296,9 @@ export function StoreLoyaltyCards({ storeId, storeName }: StoreLoyaltyCardsProps
               disabled={updateLoyaltyCard.isPending}
               className="h-[50px] rounded-[14px] bg-[#1A365D] text-[15px] font-semibold text-white disabled:opacity-50"
             >
-              {updateLoyaltyCard.isPending ? "Enregistrement..." : "Enregistrer"}
+              {updateLoyaltyCard.isPending
+                ? "Enregistrement..."
+                : "Enregistrer"}
             </button>
           </form>
         </SheetContent>

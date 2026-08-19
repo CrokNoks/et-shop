@@ -4,10 +4,7 @@
 
 import React from "react";
 import Link from "next/link";
-import {
-  CreditCardIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/24/outline";
+import { CreditCardIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { LoyaltyCardFrontend } from "../../types/loyalty-card";
 
 interface LoyaltyCardItemProps {

@@ -10,7 +10,13 @@ interface LoyaltyCardOverlayProps {
   onClose: () => void;
 }
 
-function BarcodeContent({ data, format }: { data: string; format: BarcodeFormat }) {
+function BarcodeContent({
+  data,
+  format,
+}: {
+  data: string;
+  format: BarcodeFormat;
+}) {
   if (format === BarcodeFormat.QR_CODE) {
     return (
       <div className="flex flex-col items-center gap-4">
@@ -31,7 +37,11 @@ function BarcodeContent({ data, format }: { data: string; format: BarcodeFormat 
         {Array.from({ length: 60 }).map((_, i) => (
           <div
             key={i}
-            className={i % 4 === 0 || i % 7 === 0 ? "flex-[2] bg-black" : "flex-1 bg-black opacity-[0.85]"}
+            className={
+              i % 4 === 0 || i % 7 === 0
+                ? "flex-[2] bg-black"
+                : "flex-1 bg-black opacity-[0.85]"
+            }
             style={{ opacity: i % 3 === 0 ? 1 : i % 2 === 0 ? 0 : 1 }}
           />
         ))}
@@ -41,12 +51,22 @@ function BarcodeContent({ data, format }: { data: string; format: BarcodeFormat 
   );
 }
 
-export function LoyaltyCardOverlay({ card, storeName, onClose }: LoyaltyCardOverlayProps) {
+export function LoyaltyCardOverlay({
+  card,
+  storeName,
+  onClose,
+}: LoyaltyCardOverlayProps) {
   useEffect(() => {
     // Luminosité max : demande le wake lock pour garder l'écran allumé
     let wakeLock: { release: () => void } | null = null;
     if ("wakeLock" in navigator) {
-      (navigator as Navigator & { wakeLock: { request: (type: string) => Promise<{ release: () => void }> } }).wakeLock
+      (
+        navigator as Navigator & {
+          wakeLock: {
+            request: (type: string) => Promise<{ release: () => void }>;
+          };
+        }
+      ).wakeLock
         .request("screen")
         .then((lock) => {
           wakeLock = lock;
@@ -55,7 +75,10 @@ export function LoyaltyCardOverlay({ card, storeName, onClose }: LoyaltyCardOver
     }
 
     // Verrouillage orientation paysage
-    const orientation = screen.orientation as ScreenOrientation & { lock?: (orientation: string) => Promise<void>; unlock?: () => void };
+    const orientation = screen.orientation as ScreenOrientation & {
+      lock?: (orientation: string) => Promise<void>;
+      unlock?: () => void;
+    };
     if (orientation?.lock) {
       orientation.lock("landscape").catch(() => {});
     }

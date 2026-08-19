@@ -54,14 +54,17 @@ export function useShoppingLists() {
     };
   }, [supabase, fetchLists]);
 
-  const createList = useCallback(async (name: string) => {
-    const newList = await fetchApi("/shopping-lists", {
-      method: "POST",
-      body: JSON.stringify({ name }),
-    });
-    await fetchLists();
-    return newList as ShoppingList;
-  }, [fetchLists]);
+  const createList = useCallback(
+    async (name: string) => {
+      const newList = await fetchApi("/shopping-lists", {
+        method: "POST",
+        body: JSON.stringify({ name }),
+      });
+      await fetchLists();
+      return newList as ShoppingList;
+    },
+    [fetchLists],
+  );
 
   return { lists, isLoading, createList, refetch: fetchLists };
 }

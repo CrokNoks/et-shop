@@ -48,7 +48,11 @@ export function LoyaltyCardList() {
   return (
     <div className="flex flex-col overflow-hidden rounded-[14px] border border-[var(--es-hairline)]">
       {loyaltyCards.map((card: LoyaltyCardFrontend) => (
-        <LoyaltyCardItem key={card.id} card={card} storeName={storeMap[card.storeId]} />
+        <LoyaltyCardItem
+          key={card.id}
+          card={card}
+          storeName={storeMap[card.storeId]}
+        />
       ))}
     </div>
   );

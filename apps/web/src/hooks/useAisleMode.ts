@@ -50,7 +50,9 @@ export function useAisleMode(storeGroups: StoreGroup[]) {
   // disparu (ex. tous ses articles supprimés).
   const activeAisle = useMemo(() => {
     if (aisles.length === 0) return null;
-    const selected = selectedKey ? aisles.find((a) => a.key === selectedKey) : null;
+    const selected = selectedKey
+      ? aisles.find((a) => a.key === selectedKey)
+      : null;
     return selected ?? aisles.find((a) => remainingCount(a) > 0) ?? aisles[0];
   }, [aisles, selectedKey]);
 
