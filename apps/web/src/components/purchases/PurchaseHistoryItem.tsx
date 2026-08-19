@@ -28,21 +28,24 @@ export const PurchaseHistoryItem: React.FC<PurchaseHistoryItemProps> = ({
   );
 
   return (
-    <div data-cy={`purchase-history-item-${record.id}`} className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+    <div
+      data-cy={`purchase-history-item-${record.id}`}
+      className="flex items-center justify-between p-4 bg-[var(--es-surface)] rounded-2xl border border-[var(--es-hairline)] shadow-sm hover:shadow-md transition-all"
+    >
       <div className="flex flex-col gap-1 min-w-0">
-        <span className="font-bold text-[#1A365D] truncate">
+        <span className="font-semibold text-[var(--es-ink)] truncate">
           {record.productName}
         </span>
-        <span className="text-sm text-gray-400">
+        <span className="text-sm text-[var(--es-tertiary)]">
           {record.quantity} {record.unit} &bull; {formattedDate} à{" "}
           {formattedTime}
         </span>
       </div>
       <div className="flex flex-col items-end gap-1 ml-4 shrink-0">
-        <span className="font-black text-[#FF6B35]">
+        <span className="font-semibold text-[var(--es-accent-text)]">
           {record.totalAmount.toFixed(2)} €
         </span>
-        <span className="text-xs text-gray-400">
+        <span className="text-xs text-[var(--es-tertiary)]">
           {record.price.toFixed(2)} € / {record.unit}
         </span>
       </div>
