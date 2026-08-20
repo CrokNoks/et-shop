@@ -64,6 +64,23 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
   const [scannedBarcode, setScannedBarcode] = useState("");
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Ferme les suggestions au clic en dehors du composant (le champ n'est plus
+  // dans une feuille modale : rien ne le fait plus automatiquement).
+  useEffect(() => {
+    if (!showSuggestions) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showSuggestions]);
 
   useEffect(() => {
     const fetchStores = async () => {
@@ -207,7 +224,7 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
   };
 
   return (
-    <div className="w-full max-w-lg relative group">
+    <div ref={containerRef} className="w-full max-w-lg relative group">
       <div
         className={`flex h-12 items-center flex-nowrap gap-1 rounded-[14px] border bg-[var(--es-surface)] px-1.5 transition-all duration-200 ${isListening ? "border-[#FF6B35] bg-[rgba(255,107,53,0.04)] animate-pulse" : "border-[var(--es-hairline)] focus-within:border-[#FF6B35] focus-within:bg-[rgba(255,107,53,0.04)]"}`}
       >
@@ -255,29 +272,16 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
         </div>
       </div>
 
-      {/* Feuille basse de suggestions (écran 2e/3c). Non modale et sans
-          vol de focus : l'utilisateur continue de taper dans `hop-input`,
-          qui reste hors de cette feuille, pendant qu'elle s'ouvre/se
-          referme à chaque frappe. */}
-      <Sheet
-        open={showSuggestions}
-        onOpenChange={(open) => setShowSuggestions(open)}
-        modal={false}
-      >
-        <SheetContent
-          side="bottom"
-          initialFocus={false}
-          finalFocus={false}
-          showCloseButton={false}
-          className="mx-auto w-full max-w-lg rounded-t-[18px] p-4 pt-3 text-[var(--es-ink)] bg-[var(--es-surface)]"
+      {/* Panneau de suggestions (écran 2e/3c) ancré juste au-dessus de la
+          barre de saisie plutôt que dans une feuille plein écran séparée :
+          le champ `hop-input` reste visible et modifiable en permanence,
+          pas besoin de fermer les suggestions pour le retrouver. */}
+      {showSuggestions && (
+        <div
+          role="listbox"
+          aria-label="Suggestions"
+          className="absolute bottom-full left-0 right-0 z-10 mb-2 max-h-[60vh] overflow-y-auto rounded-[18px] border border-[var(--es-hairline)] bg-[var(--es-surface)] p-2 shadow-[0_-8px_24px_rgba(18,36,63,0.14)]"
         >
-          <div className="mx-auto mb-3 h-1 w-9 rounded-full bg-[var(--es-hairline)]" />
-          <SheetHeader className="sr-only">
-            <SheetTitle>Suggestions</SheetTitle>
-            <SheetDescription>
-              Suggestions d&apos;articles pour « {inputValue} »
-            </SheetDescription>
-          </SheetHeader>
           <div className="overflow-hidden rounded-[14px] border border-[var(--es-hairline)]">
             {suggestions.map((item, index) => (
               <button
@@ -321,8 +325,8 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
               <span>Créer « {inputValue} » dans mon catalogue</span>
             </button>
           </div>
-        </SheetContent>
-      </Sheet>
+        </div>
+      )}
 
       {/* Create Product Sheet */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
