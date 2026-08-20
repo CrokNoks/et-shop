@@ -61,7 +61,7 @@ La spec initiale prévoyait un nouveau composant `LoyaltyCardFullscreen.tsx`. En
 
 ## Icône Android 13+ monochrome (écran 7c)
 
-`app/manifest.ts` n'a pas d'icône avec `purpose: "monochrome"`. Cette variante est une spécificité de l'adaptive icon Android natif (packagé), pas du manifest PWA web standard — non implémentable simplement dans ce framework, documenté plutôt que simulé (cf. section Assets du Cycle I).
+Correction : la conclusion initiale (« spécificité de l'adaptive icon Android natif packagé, non implémentable dans une PWA web ») était erronée. Le Web App Manifest standard supporte `purpose: "monochrome"` — Chrome/Android recolore lui-même l'icône avec la couleur d'accent système si l'utilisateur active les « icônes thématisées » du launcher, sans empaquetage natif. Implémenté : `AppIconMonochrome` (`lib/app-icon.tsx`) sert une variante fond transparent, une seule couleur pleine, où la coche est un vide réservé (fill-rule evenodd) dans le panier, exposée via `app/pwa-icon-monochrome/route.tsx` et déclarée dans `manifest.ts`.
 
 ## Duplications factorisées
 

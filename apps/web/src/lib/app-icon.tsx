@@ -55,3 +55,45 @@ export function AppIconMark({
     </div>
   );
 }
+
+/**
+ * Variante monochrome (écran 7c, icône thémée Android 13+). Contrairement à
+ * ce qui a été documenté par erreur dans un cycle précédent ("hors périmètre
+ * PWA web, nécessite un empaquetage natif"), le Web App Manifest standard
+ * supporte bien `purpose: "monochrome"` : Chrome/Android le recolorent avec
+ * la couleur d'accent système si l'utilisateur a activé les "icônes
+ * thématisées" du launcher — aucun empaquetage natif requis.
+ *
+ * Fond transparent (l'OS gère lui-même la forme et la teinte de fond) et une
+ * seule couleur pleine pour tout le contenu — un canal monochrome ne peut
+ * pas distinguer le panier du trait de la coche par la couleur. La coche est
+ * donc un VIDE réservé dans le remplissage du panier (un seul <path>, deux
+ * sous-tracés, `fillRule="evenodd"` — le second sous-tracé, un ruban
+ * approximant le trait `M14 21.5l6.5 6.5L28.5 20` élargi de sa largeur de
+ * trait d'origine (4.6) par décalage perpendiculaire à chaque segment, avec
+ * jointure en onglet au sommet), conforme à la description du handoff : "la
+ * coche lisible par son vide réservé".
+ */
+export function AppIconMonochrome() {
+  return (
+    <div style={{ width: "100%", height: "100%", display: "flex" }}>
+      <svg width="100%" height="100%" viewBox="0 0 48 48">
+        <path
+          fillRule="evenodd"
+          fill="#000000"
+          d="M8 20h30l-4 14H16L8 20z M12.37 23.13L20.50 31.25L30.13 21.63L26.87 18.37L20.50 24.75L15.63 19.87Z"
+        />
+        <circle cx="18" cy="41" r="2.8" fill="#000000" />
+        <circle cx="32" cy="41" r="2.8" fill="#000000" />
+        <path
+          d="M27.5 21L40 8"
+          stroke="#000000"
+          strokeWidth={5.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+      </svg>
+    </div>
+  );
+}

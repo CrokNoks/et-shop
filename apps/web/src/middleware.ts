@@ -20,7 +20,15 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - robots.txt, sitemap.xml, etc.
+     * - icon, apple-icon, pwa-icon-192, pwa-icon-512, pwa-icon-monochrome
+     *   (icones generees dynamiquement par app/icon.tsx, apple-icon.tsx et
+     *   les route handlers pwa-icon-*). Un favicon ou une icone PWA ne doit
+     *   jamais dependre d'une session : sans cette exclusion, une requete
+     *   sans cookie de session valide (ex. avant toute connexion) recevait
+     *   une redirection HTML vers /login au lieu du PNG attendu, et l'icone
+     *   ne s'installait/ne s'affichait pas. manifest.webmanifest contient
+     *   deja un point, exclu par la regle generique .*\..* ci-dessous.
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\..*).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|icon|apple-icon|pwa-icon-192|pwa-icon-512|pwa-icon-monochrome|.*\\..*).*)",
   ],
 };

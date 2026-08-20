@@ -36,6 +36,12 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/png",
         purpose: "maskable",
       },
+      {
+        src: "/pwa-icon-monochrome",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "monochrome",
+      },
     ],
   };
 }
