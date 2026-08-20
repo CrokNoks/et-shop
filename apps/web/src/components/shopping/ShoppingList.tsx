@@ -759,6 +759,13 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
         ))
       )}
       {editSheet}
+      {activeCard && (
+        <LoyaltyCardOverlay
+          card={activeCard}
+          storeName={storeMap[activeCard.storeId] ?? activeCard.storeId}
+          onClose={() => setActiveCard(null)}
+        />
+      )}
     </div>
   );
 };
