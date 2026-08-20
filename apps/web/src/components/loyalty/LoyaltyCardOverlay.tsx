@@ -30,7 +30,30 @@ function BarcodeContent({
     );
   }
 
-  // CODE_128 / EAN_13 / fallback — barres horizontales larges en paysage
+  if (format === BarcodeFormat.EAN_13) {
+    // Barres fines et régulières, beaucoup plus denses que CODE_128 —
+    // même parti pris visuel que LoyaltyCardDisplay.tsx (l'autre endroit de
+    // l'app qui affiche une carte de fidélité) pour rester cohérent : c'est
+    // la densité/régularité qui distingue un EAN-13 d'un CODE_128 ici, pas
+    // un vrai encodage (aucun des deux formats n'est réellement décodable,
+    // ce composant est un simulateur décoratif).
+    return (
+      <div className="flex flex-col items-center gap-4 w-full">
+        <div className="w-full h-32 flex items-stretch gap-px">
+          {Array.from({ length: 90 }).map((_, i) => (
+            <div
+              key={i}
+              className={`flex-1 ${i % 2 === 0 ? "bg-black" : "bg-white"}`}
+            />
+          ))}
+        </div>
+        <p className="font-mono text-2xl tracking-[0.3em] text-black">{data}</p>
+      </div>
+    );
+  }
+
+  // CODE_128 / fallback — barres pleine hauteur, largeurs irrégulières, pas de
+  // barres de garde ni de découpe en blocs (à l'inverse de l'EAN-13 ci-dessus).
   return (
     <div className="flex flex-col items-center gap-4 w-full">
       <div className="w-full h-32 flex items-stretch gap-[2px]">
