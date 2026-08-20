@@ -260,6 +260,7 @@ export class ShoppingListsService {
   ) {
     const client = this.supabaseService.getClient();
     const householdId = this.getHouseholdIdOrThrow();
+    const addedBy = this.supabaseService.getUser().id;
     const {
       name,
       quantity = 1,
@@ -321,6 +322,7 @@ export class ShoppingListsService {
             unit: finalUnit,
             barcode: barcode || directCatalogItem.barcode || null,
             price: 0,
+            added_by: addedBy,
           })
           .select()
           .single();
@@ -435,6 +437,7 @@ export class ShoppingListsService {
         unit: finalUnit,
         barcode: barcode || catalogItem.barcode || null,
         price: 0,
+        added_by: addedBy,
       })
       .select()
       .single();
@@ -446,6 +449,7 @@ export class ShoppingListsService {
   async addItemByBarcode(listId: string, barcode: string) {
     this.getHouseholdIdOrThrow();
     const client = this.supabaseService.getClient();
+    const addedBy = this.supabaseService.getUser().id;
 
     // 0. Récupérer le store_id de la liste
     const { data: list } = await client
@@ -513,6 +517,7 @@ export class ShoppingListsService {
         unit: catalogItem.unit,
         barcode,
         price: 0,
+        added_by: addedBy,
       })
       .select()
       .single();

@@ -239,6 +239,7 @@ export class RecipesService {
   ) {
     const householdId = this.getHouseholdIdOrThrow();
     const client = this.supabaseService.getClient();
+    const addedBy = this.supabaseService.getUser().id;
 
     // 1. Verify recipe belongs to household and fetch its items
     const { data: recipe, error: rError } = await client
@@ -309,6 +310,7 @@ export class RecipesService {
       unit?: string;
       is_purchased: boolean;
       price: number;
+      added_by: string;
     }[] = [];
 
     for (const ri of recipeItems) {
@@ -352,6 +354,7 @@ export class RecipesService {
             unit: ri.unit || catalogItem.unit || 'pcs',
             is_purchased: false,
             price: 0,
+            added_by: addedBy,
           });
         }
       }

@@ -43,6 +43,7 @@ describe('RecipesService', () => {
     mockSupabaseService = {
       getClient: jest.fn(),
       getHouseholdId: jest.fn().mockReturnValue(HOUSEHOLD_ID),
+      getUser: jest.fn().mockReturnValue({ id: 'user-1' }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
