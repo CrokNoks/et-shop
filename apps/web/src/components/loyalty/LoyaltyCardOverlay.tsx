@@ -96,8 +96,19 @@ export function LoyaltyCardOverlay({
   return (
     // Fond forcé en blanc (pas de token dark) : cet écran doit rester lisible
     // et lumineux en caisse quel que soit le thème système (écran 4h).
-    <div className="fixed inset-0 z-[200] overflow-hidden bg-white">
-      <div className="flex h-full w-full flex-col items-center justify-center gap-8 p-8 portrait:h-[100vw] portrait:w-[100vh] portrait:rotate-90">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden bg-white">
+      {/* Repli portrait (screen.orientation.lock indisponible/refusé) : pivote
+          le contenu à 90°. `rotate-90` tourne autour du centre de CET élément
+          — sans le centrage flex du parent ci-dessus, l'élément (positionné
+          par défaut en haut à gauche, avec des dimensions permutées 100vh ×
+          100vw) tournait autour d'un centre décalé du centre réel de l'écran,
+          débordant visuellement (coupé à droite/en haut, vide à gauche/en
+          bas). Centré ici, la rotation retombe exactement sur l'écran. */}
+      <div className="relative flex h-full w-full flex-col items-center justify-center gap-8 p-8 portrait:h-[100vw] portrait:w-[100vh] portrait:rotate-90">
+        {/* `relative` ci-dessus : la barre de couleur et le bouton fermer sont
+            en `absolute` et doivent pivoter avec le reste de la carte, pas
+            rester ancrés au coin physique de l'écran une fois le contenu
+            tourné à 90°. */}
         {/* Barre de couleur du magasin en haut */}
         <div
           className="absolute top-0 left-0 right-0 h-1.5"
