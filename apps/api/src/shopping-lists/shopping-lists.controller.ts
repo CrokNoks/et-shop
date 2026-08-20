@@ -147,6 +147,7 @@ export class ShoppingListsController {
       barcode?: string;
       category_id?: string;
       unit?: string;
+      store_id?: string;
     },
   ) {
     return this.shoppingListsService.updateCatalogItem(id, payload);

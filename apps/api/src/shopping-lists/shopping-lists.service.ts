@@ -582,19 +582,37 @@ export class ShoppingListsService {
       barcode?: string;
       category_id?: string;
       unit?: string;
+      store_id?: string;
     },
   ) {
     const householdId = this.getHouseholdIdOrThrow();
+    // Changer de magasin sans changer de rayon laisserait category_id pointer
+    // vers un rayon de l'ancien magasin : on le réinitialise, l'utilisateur
+    // choisit un nouveau rayon dans le magasin cible (comme à la création).
+    const finalPayload =
+      payload.store_id !== undefined
+        ? { ...payload, category_id: payload.category_id ?? null }
+        : payload;
+
     const { data, error } = await this.supabaseService
       .getClient()
       .from('items_catalog')
-      .update(payload)
+      .update(finalPayload)
       .eq('id', id)
       .eq('household_id', householdId)
       .select()
       .single();
 
-    if (error) this.handleError(error);
+    if (error) {
+      // Contrainte unique (name, store_id) : un produit du même nom existe
+      // déjà dans le magasin cible.
+      if (error.code === '23505') {
+        throw new BadRequestException(
+          'Un produit du même nom existe déjà dans le magasin sélectionné.',
+        );
+      }
+      this.handleError(error);
+    }
     return data;
   }
 

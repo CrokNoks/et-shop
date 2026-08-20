@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Category, CatalogItem } from "@/types";
 import { CatalogImportWizard } from "@/components/catalog/CatalogImportWizard";
+import { useStores } from "@/hooks/useStores";
 
 interface StoreCatalogProps {
   storeId: string;
@@ -49,6 +50,28 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
   const [unit, setUnit] = useState("pcs");
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Magasin du produit dans le formulaire — distinct de `storeId` (le magasin
+  // de LA PAGE) pour permettre de déplacer un produit vers un autre magasin.
+  const [formStoreId, setFormStoreId] = useState(storeId);
+  const [formCategories, setFormCategories] = useState<Category[]>([]);
+  const { data: allStores = [] } = useStores();
+
+  // Un changement explicite de magasin dans le formulaire réinitialise le
+  // rayon : celui déjà sélectionné appartient à l'ancien magasin.
+  const handleFormStoreChange = (id: string | null) => {
+    setFormStoreId(id || storeId);
+    setCategoryId(null);
+  };
+
+  useEffect(() => {
+    if (!isSheetOpen) return;
+    fetchApi(`/shopping-lists/categories?storeId=${formStoreId}`)
+      .then((data) => setFormCategories(data || []))
+      .catch((error) =>
+        console.error("Failed to fetch form categories:", error),
+      );
+  }, [formStoreId, isSheetOpen]);
 
   const fetchData = async () => {
     try {
@@ -77,6 +100,7 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
     setBarcode("");
     setUnit("pcs");
     setCategoryId(null);
+    setFormStoreId(storeId);
     setIsSheetOpen(true);
   };
 
@@ -86,6 +110,7 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
     setBarcode(item.barcode || "");
     setUnit(item.unit || "pcs");
     setCategoryId(item.category_id || null);
+    setFormStoreId(item.store_id);
     setIsSheetOpen(true);
   };
 
@@ -98,7 +123,7 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
         barcode: barcode || null,
         unit,
         category_id: categoryId || null,
-        store_id: storeId,
+        store_id: formStoreId,
       };
 
       if (editingItem) {
@@ -116,8 +141,10 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
       }
       fetchData();
       setIsSheetOpen(false);
-    } catch {
-      toast.error("Erreur lors de l'enregistrement.");
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Erreur lors de l'enregistrement.";
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -299,7 +326,10 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
             setUnit={setUnit}
             categoryId={categoryId || ""}
             setCategoryId={setCategoryId}
-            categories={categories}
+            categories={formCategories}
+            stores={allStores}
+            storeId={formStoreId}
+            setStoreId={handleFormStoreChange}
             isSubmitting={isSubmitting}
             submitLabel={editingItem ? "Mettre à jour" : "Ajouter au catalogue"}
             onSubmit={handleSubmit}
