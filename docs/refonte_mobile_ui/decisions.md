@@ -65,6 +65,8 @@ Correction : la conclusion initiale (« spécificité de l'adaptive icon Android
 
 Bug de suivi : une fois recolorée, l'icône affichait un cran visible qui perçait le bord haut du panier au lieu d'une silhouette propre. Cause : le sommet du trait de coche d'origine (28.5, 20) touche exactement ce bord ; le décalage perpendiculaire symétrique utilisé pour approximer l'épaisseur du trait plaçait donc un des deux côtés du ruban hors du panier (jusqu'à y=18.37). Corrigé en découpant le ruban au demi-plan y≥20 (intersection de Sutherland-Hodgman avec le bord haut) pour qu'il reste entièrement contenu dans la silhouette, quelle que soit la couleur d'accent appliquée par le launcher.
 
+Limite constatée hors code (2026-08-21) : sur un appareil Samsung (One UI, Android 13+, toggle « Icônes thématisées » activé), l'icône installée reste dans ses couleurs d'origine malgré un manifest/service worker à jour (vérifié en prod : `purpose: "monochrome"` correct, cache-control non agressif, `CACHE_VERSION` du service worker à jour) et un WebAPK réinstallé. One UI a un support connu comme peu fiable du champ `purpose: "monochrome"` du Web App Manifest pour les WebAPK Chrome — contrairement à Pixel Launcher, il ne recolore pas systématiquement ces icônes même correctement configurées. Aucune action côté app ne permet de contourner ce comportement du launcher ; ne pas ré-ouvrir cette piste sans un nouveau signal concret (ex. un appareil Samsung où ça fonctionnerait, qui invaliderait ce constat).
+
 ## Duplications factorisées
 
 Trois petites duplications signalées en revue ont été factorisées (Fix Cycle K5) :
