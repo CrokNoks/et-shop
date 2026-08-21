@@ -2,12 +2,15 @@ describe("Onboarding — Création du foyer", () => {
   const randomEmail = `onboarding-${Date.now()}@etshop.local`;
 
   beforeEach(() => {
-    // On crée un nouvel utilisateur pour chaque test d'onboarding
-    // pour s'assurer qu'il n'a pas encore de foyer
-    cy.visit("/login");
-    cy.get("[data-cy=login-email]").type(randomEmail + "-" + Math.random());
-    cy.get("[data-cy=login-password]").type("Password123!");
-    cy.get("[data-cy=login-signup]").click();
+    // Un compte créé via le formulaire d'inscription public rattache
+    // désormais toujours à un foyer existant (code d'invitation
+    // obligatoire) : pour tester l'écran "créer son propre foyer", on
+    // bootstrappe un compte sans foyer via l'API Admin Supabase plutôt que
+    // via le formulaire public.
+    const email = `${randomEmail}-${Math.random()}`;
+    const password = "Password123!";
+    cy.createBootstrapAccount(email, password);
+    cy.login(email, password);
     cy.url().should("include", "/household/setup");
   });
 

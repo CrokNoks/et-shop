@@ -27,6 +27,8 @@ declare global {
       ): Chainable<void>;
       getShoppingListItemsViaApi(listId: string): Chainable<unknown[]>;
       cleanupTestData(): Chainable<void>;
+      createSignupInviteCode(): Chainable<string>;
+      createBootstrapAccount(email: string, password: string): Chainable<void>;
     }
   }
 }
@@ -88,6 +90,65 @@ Cypress.Commands.add("getSupabaseToken", () => {
     const token = session.access_token;
     if (!token) throw new Error("access_token missing in Supabase session cookie");
     return token as string;
+  });
+});
+
+// ─── Comptes de test pour l'inscription ────────────────────────────────────────
+// L'inscription publique exige désormais un code household_invites valide
+// (garde-fou anti-inscription-libre) qui rattache aussi le compte au foyer
+// du code. Ces deux commandes couvrent les deux besoins des specs
+// d'inscription/onboarding sans dépendre du formulaire public pour l'un ou
+// l'autre :
+//   - createSignupInviteCode : mint un vrai code via l'utilisateur fixture
+//     (a déjà un foyer), pour tester le parcours normal "s'inscrire avec un
+//     code" → rattaché au foyer de l'inviteur.
+//   - createBootstrapAccount : crée un compte SANS code via l'API Admin
+//     Supabase (clé service_role, jamais exposée au navigateur), pour tester
+//     l'écran /household/setup ("créer son propre foyer") — chemin qui
+//     n'est plus atteignable depuis le formulaire d'inscription public
+//     maintenant que tout code valide rattache automatiquement à un foyer
+//     existant.
+
+Cypress.Commands.add("createSignupInviteCode", () => {
+  return cy.fixture("user").then((user) => {
+    cy.login(user.email, user.password);
+    return cy
+      .window()
+      .its("localStorage")
+      .invoke("getItem", "active_household_id")
+      .then((householdId: string | null) => {
+        if (!householdId) {
+          throw new Error(
+            "active_household_id absent après connexion de l'utilisateur fixture",
+          );
+        }
+        return cy.apiRequest<{ code: string }>(
+          "POST",
+          `/households/${householdId}/invite-code`,
+        );
+      })
+      .then((invite: { code: string }) => {
+        cy.clearCookies();
+        cy.clearLocalStorage();
+        return cy.wrap(invite.code);
+      });
+  });
+});
+
+Cypress.Commands.add("createBootstrapAccount", (email: string, password: string) => {
+  cy.request({
+    method: "POST",
+    url: `${Cypress.env("supabaseUrl")}/auth/v1/admin/users`,
+    headers: {
+      apikey: Cypress.env("supabaseServiceKey"),
+      Authorization: `Bearer ${Cypress.env("supabaseServiceKey")}`,
+    },
+    body: {
+      email,
+      password,
+      email_confirm: true,
+      app_metadata: { bootstrap_account: true },
+    },
   });
 });
 
