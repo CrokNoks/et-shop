@@ -103,10 +103,22 @@ export const ListHeader: React.FC<ListHeaderProps> = ({
   return (
     <div className="bg-[var(--es-banner)] text-white px-3.5 py-3 flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
-        <span className="flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[#FF6B35] dark:text-[#ffb694]">
+        <span
+          className={`flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] ${
+            isSynced
+              ? "text-[#16A34A] dark:text-[#4ADE80]"
+              : "text-[#DC2626] dark:text-[#F87171]"
+          }`}
+        >
           <span
-            className="w-[5px] h-[5px] rounded-full bg-[#FF6B35]"
-            style={{ boxShadow: "0 0 0 3px rgba(255,107,53,.25)" }}
+            className={`w-[5px] h-[5px] rounded-full ${
+              isSynced ? "bg-[#16A34A]" : "bg-[#DC2626]"
+            }`}
+            style={{
+              boxShadow: isSynced
+                ? "0 0 0 3px rgba(22,163,74,.25)"
+                : "0 0 0 3px rgba(220,38,38,.25)",
+            }}
           />
           {isSynced ? "En direct" : "Hors ligne"} · {householdName}
         </span>
