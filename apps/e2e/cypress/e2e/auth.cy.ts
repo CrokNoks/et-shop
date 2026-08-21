@@ -18,13 +18,29 @@ describe("Authentification", () => {
     cy.url().should("include", "/login");
   });
 
-  it("inscrit un nouvel utilisateur", () => {
+  it("refuse l'inscription sans code d'invitation valide", () => {
     const randomEmail = `test-${Date.now()}@etshop.local`;
     cy.get("[data-cy=login-email]").type(randomEmail);
     cy.get("[data-cy=login-password]").type("Password123!");
+    cy.get("[data-cy=login-invite-code]").type("CODEINVALIDE");
     cy.get("[data-cy=login-signup]").click();
-    // Après inscription, il devrait être redirigé vers /household/setup
-    cy.url().should("include", "/household/setup");
+    cy.get("[data-cy=login-error]").should("be.visible");
+    cy.url().should("include", "/login");
+  });
+
+  it("inscrit un nouvel utilisateur avec un code d'invitation valide", () => {
+    cy.createSignupInviteCode().then((code) => {
+      const randomEmail = `test-${Date.now()}@etshop.local`;
+      cy.visit("/login");
+      cy.get("[data-cy=login-email]").type(randomEmail);
+      cy.get("[data-cy=login-password]").type("Password123!");
+      cy.get("[data-cy=login-invite-code]").type(code);
+      cy.get("[data-cy=login-signup]").click();
+      // Le code rattache automatiquement au foyer de l'inviteur (fixture
+      // user) : contrairement à un compte sans foyer, on atterrit sur "/",
+      // pas sur /household/setup.
+      cy.url().should("eq", Cypress.config("baseUrl") + "/");
+    });
   });
 
   it("connecte l'utilisateur et redirige vers /", () => {

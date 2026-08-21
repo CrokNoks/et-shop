@@ -26,7 +26,7 @@ INSERT INTO auth.users (
   'guerrier.lucas@gmail.com',
   crypt('toto', gen_salt('bf')),
   now(),
-  '{"provider":"email","providers":["email"]}'::jsonb,
+  '{"provider":"email","providers":["email"],"bootstrap_account":true}'::jsonb,
   '{"full_name":"Lucas Guerrier"}'::jsonb,
   'authenticated',
   'authenticated',

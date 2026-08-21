@@ -9,6 +9,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -52,11 +53,27 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
+    // Garde-fou : la création de compte n'est ouverte que sur invitation.
+    // Pré-vérification en lecture seule pour un message d'erreur précis
+    // avant d'appeler signUp — la validation faisant foi est côté serveur
+    // (handle_new_user), atomique avec la création du compte elle-même.
+    const { error: codeError } = await supabase.rpc(
+      "check_signup_invite_code",
+      { p_code: code },
+    );
+
+    if (codeError) {
+      setError(codeError.message);
+      setLoading(false);
+      return;
+    }
+
     const { error, data } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${location.origin}/auth/callback`,
+        data: { invite_code: code },
       },
     });
 
@@ -128,6 +145,20 @@ export default function LoginPage() {
               className="h-[50px] w-full rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-4 text-[15px] font-medium text-[var(--es-ink)] outline-none transition-colors focus:border-[#FF6B35]"
               placeholder="••••••••"
               required
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[var(--es-secondary)]">
+              Code d&apos;invitation (pour créer un compte)
+            </label>
+            <input
+              type="text"
+              data-cy="login-invite-code"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="h-[50px] w-full rounded-[14px] border border-[var(--es-hairline)] bg-[var(--es-surface)] px-4 text-[15px] font-medium text-[var(--es-ink)] outline-none transition-colors focus:border-[#FF6B35]"
+              placeholder="Reçu d'un membre du foyer"
             />
           </div>
 

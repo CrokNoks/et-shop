@@ -19,7 +19,15 @@ Le service permet à un admin de se supprimer lui-même du foyer (via `DELETE /h
 
 ### Invitation nécessite un compte existant
 
-`addMember` cherche l'utilisateur par email dans la table `profiles`. Si l'utilisateur n'a jamais créé de compte sur Et-Shop, la recherche échoue avec une `NotFoundException`. Il n'y a pas de flow d'invitation/onboarding.
+`addMember` cherche l'utilisateur par email dans la table `profiles`. Si l'utilisateur n'a jamais créé de compte sur Et-Shop, la recherche échoue avec une `NotFoundException`. Il n'y a pas de flow d'invitation/onboarding par email — en revanche, un flow par **code** existe pour ce cas précis (voir ci-dessous).
+
+### Inscription publique fermée : code d'invitation obligatoire
+
+L'app est à usage personnel/familial (`SPEC.md`), pas ouverte à un signup public. `supabase.auth.signUp` exige un code `household_invites` valide, passé dans `raw_user_meta_data.invite_code` (`apps/web/src/app/login/page.tsx`, `handleSignUp`) : sans code, ou avec un code invalide/expiré/déjà utilisé, le trigger `handle_new_user` (`supabase/migrations/20260402000002_signup_invite_gate.sql`) fait échouer la création du compte — la ligne `auth.users` elle-même n'est jamais créée, donc rien à nettoyer après coup. Le même code rattache aussi automatiquement le nouveau compte au foyer qui l'a généré (même table/génération que `POST /households/:id/invite-code`, réutilisée telle quelle).
+
+Une RPC `check_signup_invite_code` (lecture seule, callable en `anon`) fait la pré-vérification côté client pour un message d'erreur précis avant l'appel à `signUp` — mais c'est le trigger qui fait foi (verrou `FOR UPDATE`, anti-race, comme `join_household_by_code`).
+
+Échappatoire pour les comptes créés hors du formulaire public (seed SQL, future Admin API) : positionner `raw_app_meta_data.bootstrap_account = true` contourne le garde-fou. Sûr par construction — `signUp()` public n'écrit jamais dans `raw_app_meta_data`, seulement dans `raw_user_meta_data`. `supabase/seed.sql` utilise déjà ce drapeau pour le compte de dev local.
 
 ---
 
@@ -40,3 +48,7 @@ Toutes les politiques RLS de l'application vérifient `household_id IN (SELECT h
 ### Trigger `handle_new_household_membership` — point de fragilité
 
 Si ce trigger échoue (erreur SQL, contrainte), le foyer est créé mais l'utilisateur n'est pas ajouté comme admin. Il ne pourra alors plus accéder à son propre foyer. La migration `20260328000000_fix_household_trigger.sql` a déjà corrigé une version défaillante de ce trigger.
+
+### Trigger `handle_new_user` — point de fragilité critique (depuis le garde-fou d'inscription)
+
+Ce trigger (`AFTER INSERT ON auth.users`) conditionne maintenant la création de **tout** compte, pas seulement son profil : une régression ici (erreur SQL, contrainte) casse l'inscription pour tout le monde, y compris les inscriptions avec un code valide. Il fait aussi échouer tout insert direct dans `auth.users` qui ne fournit ni `raw_user_meta_data.invite_code` ni `raw_app_meta_data.bootstrap_account` — ce qui inclut un futur seed/script écrit sans ce drapeau. À tester manuellement (code valide/absent/invalide/expiré/déjà utilisé) après toute modification de ce trigger, avant déploiement.

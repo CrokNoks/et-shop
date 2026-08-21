@@ -43,6 +43,8 @@ Ce Change Request lève ces limitations une par une. Chaque point liste le chang
 - `apps/web/src/components/household/InviteMemberModal.tsx` : afficher le bloc code monospace + « valable 48h · usage unique » + boutons Copier/Partager déjà prévus par le design (écran 4c) mais non implémentés faute d'endpoint — appelle `POST /households/:id/invite-code` à l'ouverture de la feuille.
 - Un écran/flux de saisie du code à la connexion ou à l'inscription doit exister pour consommer `POST /households/join` — à cadrer précisément si retenu (cf. Critères d'acceptance).
 
+**Mise à jour (garde-fou d'inscription, cf. `docs/refonte_mobile_ui/decisions.md`)** : ce point est tranché à l'inscription, pas à la connexion. `POST /households/join` reste inchangé (utilisé pour un compte déjà existant qui veut rejoindre un foyer) ; à l'inscription, le même code `household_invites` est désormais **obligatoire** — l'app n'est pas ouverte au signup public. Le formulaire `/login` (mode inscription) exige un code, vérifié côté client (RPC `check_signup_invite_code`, lecture seule) puis consommé atomiquement côté serveur dans le trigger `handle_new_user` (`supabase/migrations/20260402000002_signup_invite_gate.sql`) : un code absent/invalide/expiré/déjà utilisé fait échouer la création du compte lui-même (rien à nettoyer après coup). La consommation rattache aussi automatiquement le nouveau compte au foyer du code.
+
 ### 4. Recettes : couverts (servings) et coût estimé
 
 **Backend**
