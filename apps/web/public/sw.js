@@ -40,7 +40,7 @@
 //     `isAuthRoute`/`dropRedirectFlag` sont réellement la garde qui empêche
 //     de précacher le HTML de `/login` sous la clé `/`.
 
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const STATIC_CACHE = `et-shop-static-${CACHE_VERSION}`;
 const NAV_CACHE = `et-shop-nav-${CACHE_VERSION}`;
 const CURRENT_CACHES = [STATIC_CACHE, NAV_CACHE];
