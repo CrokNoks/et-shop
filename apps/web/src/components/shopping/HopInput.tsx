@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { ProductForm } from "./ProductForm";
 import { toast } from "sonner";
 import { Category, Store } from "@/types";
+import type { AddItemPayload } from "@/lib/offline/db";
 
 interface Suggestion {
   name: string;
@@ -33,9 +34,20 @@ interface Suggestion {
 interface HopInputProps {
   listId: string;
   onItemAdded?: () => void;
+  /**
+   * Passe par `useShoppingListItems.addItem` quand fourni : ajout optimiste
+   * + mise en file offline si le réseau est indisponible. Repli sur un
+   * appel direct à `fetchApi` sinon (compatibilité si le composant est
+   * utilisé sans le hook).
+   */
+  addItem?: (payload: AddItemPayload) => Promise<void>;
 }
 
-export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
+export const HopInput: React.FC<HopInputProps> = ({
+  listId,
+  onItemAdded,
+  addItem,
+}) => {
   const [inputValue, setInputValue] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -141,17 +153,15 @@ export const HopInput: React.FC<HopInputProps> = ({ listId, onItemAdded }) => {
     if (!name || isAdding) return;
     setIsAdding(true);
     try {
-      await fetchApi(`/shopping-lists/${listId}/items`, {
-        method: "POST",
-        body: JSON.stringify({
-          name,
-          quantity,
-          unit,
-          barcode,
-          category_id,
-          store_id,
-        }),
-      });
+      const payload = { name, quantity, unit, barcode, category_id, store_id };
+      if (addItem) {
+        await addItem(payload);
+      } else {
+        await fetchApi(`/shopping-lists/${listId}/items`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+      }
       setInputValue("");
       setShowSuggestions(false);
       if (isSheetOpen) setIsSheetOpen(false);

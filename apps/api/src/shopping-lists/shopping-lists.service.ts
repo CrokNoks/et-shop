@@ -528,14 +528,16 @@ export class ShoppingListsService {
 
   async removeItem(itemId: string) {
     const client = this.supabaseService.getClient();
-    const { error, count } = await client
+    const { error } = await client
       .from('shopping_list_items')
-      .delete({ count: 'exact' })
+      .delete()
       .eq('id', itemId);
 
     if (error) this.handleError(error);
-    if (count === 0)
-      throw new NotFoundException('Shopping list item not found');
+    // Idempotent : un item déjà supprimé (rejeu d'une action offline, ou
+    // suppression concurrente par un autre membre du foyer) reste un succès
+    // silencieux, pour ne pas faire échouer toute la file de synchronisation
+    // sur un conflit inoffensif.
     return { success: true };
   }
 

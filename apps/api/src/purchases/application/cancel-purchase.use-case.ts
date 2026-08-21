@@ -21,7 +21,7 @@ export class CancelPurchaseUseCase {
     const { data: item, error } = await this.supabaseService
       .getClient()
       .from('shopping_list_items')
-      .select('id, list_id, shopping_lists!inner(household_id)')
+      .select('id, list_id, is_purchased, shopping_lists!inner(household_id)')
       .eq('id', itemId)
       .eq('list_id', listId)
       .single();
@@ -40,6 +40,14 @@ export class CancelPurchaseUseCase {
       throw new NotFoundException(
         'Item does not belong to the active household',
       );
+    }
+
+    // Idempotence : rejeu d'une action offline (ou double-clic) sur un item
+    // déjà non-acheté (ex: annulé par un autre membre du foyer entre-temps)
+    // doit rester un succès silencieux, pas une exception. Sans ce garde,
+    // l'appel RPC échoue car aucun purchase_record n'existe plus à annuler.
+    if (!item.is_purchased) {
+      return;
     }
 
     await this.purchaseRecordRepository.cancelPurchase(itemId);

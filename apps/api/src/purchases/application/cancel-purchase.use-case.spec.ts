@@ -10,6 +10,7 @@ describe('CancelPurchaseUseCase', () => {
   const mockItem = {
     id: 'item-001',
     list_id: 'list-001',
+    is_purchased: true,
     shopping_lists: { household_id: 'household-001' },
   };
 
@@ -93,5 +94,32 @@ describe('CancelPurchaseUseCase', () => {
     expect(mockPurchaseRecordRepository.cancelPurchase).toHaveBeenCalledWith(
       'item-001',
     );
+  });
+
+  it('should return successfully when item is already not purchased (idempotent)', async () => {
+    mockSupabaseService.getHouseholdId.mockReturnValue('household-001');
+
+    const alreadyNotPurchasedItem = {
+      id: 'item-001',
+      list_id: 'list-001',
+      is_purchased: false, // item already not purchased
+      shopping_lists: { household_id: 'household-001' },
+    };
+
+    const mockClient = {
+      from: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      single: jest
+        .fn()
+        .mockResolvedValue({ data: alreadyNotPurchasedItem, error: null }),
+    };
+    mockSupabaseService.getClient.mockReturnValueOnce(mockClient);
+
+    // Should not throw and should complete without calling cancelPurchase
+    await useCase.execute('list-001', 'item-001');
+
+    // Verify that cancelPurchase was NOT called (early return due to idempotence)
+    expect(mockPurchaseRecordRepository.cancelPurchase).not.toHaveBeenCalled();
   });
 });
