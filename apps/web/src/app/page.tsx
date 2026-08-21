@@ -16,6 +16,9 @@ import {
   useHouseholdMembers,
 } from "@/hooks/useHousehold";
 import { ACTIVE_LIST_KEY } from "@/lib/constants";
+import { useOnlineStatus } from "@/lib/offline/network";
+import { setCachedLoyaltyCards, getCachedListName } from "@/lib/offline/db";
+import { loyaltyCardsApi } from "@/lib/api/loyalty-cards";
 
 export const dynamic = "force-dynamic";
 
@@ -69,7 +72,27 @@ export default function Home() {
         localStorage.removeItem("active_household_id");
         router.push("/household/setup");
       } else {
-        setActiveListName("Erreur de connexion");
+        // Panne réseau (pas de `status` HTTP : fetch a échoué avant même
+        // d'obtenir une réponse). Démarrage à froid hors ligne (app tuée
+        // par l'OS puis rouverte sans réseau) : on retombe sur la liste
+        // active persistée + son nom en cache IndexedDB plutôt que de
+        // rester bloqué sans `activeListId`, ce qui empêcherait
+        // `useShoppingListItems` d'atteindre son propre repli cache pour
+        // les articles. Si rien d'exploitable n'est en cache, on garde le
+        // comportement actuel ("Erreur de connexion").
+        const persistedId =
+          typeof window !== "undefined"
+            ? localStorage.getItem(ACTIVE_LIST_KEY)
+            : null;
+        const cachedName = persistedId
+          ? await getCachedListName(householdId, persistedId)
+          : null;
+        if (persistedId && cachedName) {
+          setActiveListId(persistedId);
+          setActiveListName(cachedName);
+        } else {
+          setActiveListName("Erreur de connexion");
+        }
       }
     } finally {
       setIsLoadingLists(false);
@@ -83,6 +106,18 @@ export default function Home() {
     run();
   }, [loadInitialList]);
 
+  const household = useActiveHousehold();
+  const householdId = useActiveHouseholdId();
+  const { data: members = [] } = useHouseholdMembers(householdId);
+  const onlineStatus = useOnlineStatus();
+  const isSynced = onlineStatus !== "offline";
+
+  const handleActiveListGone = useCallback(() => {
+    setActiveListId(null);
+    localStorage.removeItem(ACTIVE_LIST_KEY);
+    loadInitialList();
+  }, [loadInitialList]);
+
   const {
     isLoading: itemsLoading,
     storeGroups,
@@ -91,12 +126,21 @@ export default function Home() {
     toggleCheck,
     handleQuantityUpdate,
     handleDeleteItem,
+    addItem,
     fetchItems,
-  } = useShoppingListItems(activeListId, refreshTrigger);
+  } = useShoppingListItems(activeListId, refreshTrigger, handleActiveListGone);
 
-  const household = useActiveHousehold();
-  const householdId = useActiveHouseholdId();
-  const { data: members = [] } = useHouseholdMembers(householdId);
+  // Précache proactif des cartes de fidélité une fois le foyer actif résolu
+  // (fire-and-forget, non bloquant) : la liste active est déjà mise en
+  // cache par `useShoppingListItems` lui-même à chaque fetch réussi. Un
+  // échec ici est silencieux — pas de capacité offline revendiquée.
+  useEffect(() => {
+    if (!householdId) return;
+    loyaltyCardsApi
+      .getLoyaltyCards()
+      .then((cards) => setCachedLoyaltyCards(householdId, cards))
+      .catch(() => {});
+  }, [householdId]);
 
   return (
     <div className="min-h-screen bg-[var(--es-bg)] flex flex-col font-sans">
@@ -106,17 +150,13 @@ export default function Home() {
             <ListHeader
               id={activeListId}
               name={activeListName}
-              isSynced={true}
+              isSynced={isSynced}
               householdName={household?.name || "Foyer"}
               members={members}
               totalBudget={totalBudget}
               checkedTotal={checkedTotal}
               onUpdate={(newName) => setActiveListName(newName)}
-              onDelete={() => {
-                setActiveListId(null);
-                localStorage.removeItem(ACTIVE_LIST_KEY);
-                loadInitialList();
-              }}
+              onDelete={handleActiveListGone}
             />
           ) : isLoadingLists ? (
             <div className="flex flex-col gap-2 px-3.5 pt-6 animate-pulse">
@@ -159,7 +199,11 @@ export default function Home() {
 
           {activeListId && (
             <div className="sticky bottom-16 px-3.5 py-2 bg-[var(--es-bg)]">
-              <HopInput listId={activeListId} onItemAdded={handleItemAdded} />
+              <HopInput
+                listId={activeListId}
+                onItemAdded={handleItemAdded}
+                addItem={addItem}
+              />
             </div>
           )}
 
