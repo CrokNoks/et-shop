@@ -15,6 +15,7 @@ export interface CatalogItem {
   store_id: string;
   categories?: { name: string; sort_order: number };
   usage_count: number;
+  sort_order: number;
 }
 
 export interface Store {
@@ -91,6 +92,7 @@ export interface ShoppingListItem {
         name?: string;
         barcode?: string;
         unit?: string;
+        sort_order?: number;
         categories?: { name: string; sort_order: number };
         stores?: { id: string; name: string };
       }
@@ -98,6 +100,7 @@ export interface ShoppingListItem {
         name?: string;
         barcode?: string;
         unit?: string;
+        sort_order?: number;
         categories?: { name: string; sort_order: number };
         stores?: { id: string; name: string };
       }[]
