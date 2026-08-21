@@ -26,6 +26,22 @@ import {
 import { Category, CatalogItem } from "@/types";
 import { CatalogImportWizard } from "@/components/catalog/CatalogImportWizard";
 import { useStores } from "@/hooks/useStores";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { SortableCatalogItem } from "@/components/stores/SortableCatalogItem";
 
 interface StoreCatalogProps {
   storeId: string;
@@ -56,6 +72,15 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
   const [formStoreId, setFormStoreId] = useState(storeId);
   const [formCategories, setFormCategories] = useState<Category[]>([]);
   const { data: allStores = [] } = useStores();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
   // Un changement explicite de magasin dans le formulaire réinitialise le
   // rayon : celui déjà sélectionné appartient à l'ancien magasin.
@@ -188,6 +213,85 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
     );
   }, [items, searchQuery]);
 
+  // Une recherche active désactive le drag-and-drop : l'ordre visible d'un
+  // sous-ensemble filtré ne représente plus l'ordre réel et complet du rayon.
+  const isDragDisabled = searchQuery.trim().length > 0;
+
+  // Groupe les produits par rayon, dans l'ordre déjà défini par
+  // `categories` (trié par `sort_order` côté backend, cf. `findAllCategories`).
+  // Un produit dont le `category_id` ne correspond à aucun rayon connu
+  // (rayon supprimé) retombe dans "Sans rayon", comme le fait déjà
+  // `CatalogItemCard` pour son badge.
+  const groupedByCategory = useMemo(() => {
+    const knownCategoryIds = new Set(categories.map((c) => c.id));
+    const byCategoryId = new Map<string, CatalogItem[]>();
+    const orphanItems: CatalogItem[] = [];
+
+    filteredItems.forEach((item) => {
+      if (item.category_id && knownCategoryIds.has(item.category_id)) {
+        if (!byCategoryId.has(item.category_id)) {
+          byCategoryId.set(item.category_id, []);
+        }
+        byCategoryId.get(item.category_id)!.push(item);
+      } else {
+        orphanItems.push(item);
+      }
+    });
+
+    const groups = categories
+      .map((category) => ({
+        category,
+        items: (byCategoryId.get(category.id) || [])
+          .slice()
+          .sort((a, b) => {
+            const diff = (a.sort_order ?? 0) - (b.sort_order ?? 0);
+            return diff !== 0 ? diff : a.name.localeCompare(b.name);
+          }),
+      }))
+      .filter((group) => group.items.length > 0);
+
+    const withoutCategory = orphanItems
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    return { groups, withoutCategory };
+  }, [filteredItems, categories]);
+
+  const handleCategoryDragEnd =
+    (groupCategoryId: string, categoryItems: CatalogItem[]) =>
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+
+      const oldIndex = categoryItems.findIndex((item) => item.id === active.id);
+      const newIndex = categoryItems.findIndex((item) => item.id === over.id);
+      if (oldIndex === -1 || newIndex === -1) return;
+
+      const reordered = arrayMove(categoryItems, oldIndex, newIndex).map(
+        (item, idx) => ({ ...item, sort_order: idx + 1 }),
+      );
+      const reorderedById = new Map(reordered.map((item) => [item.id, item]));
+      setItems((prev) =>
+        prev.map((item) => reorderedById.get(item.id) || item),
+      );
+
+      try {
+        await fetchApi("/shopping-lists/catalog/order", {
+          method: "PUT",
+          body: JSON.stringify({
+            categoryId: groupCategoryId,
+            orders: reordered.map((o) => ({
+              itemId: o.id,
+              sortOrder: o.sort_order,
+            })),
+          }),
+        });
+      } catch {
+        toast.error("Erreur lors de l'enregistrement de l'ordre.");
+        fetchData(); // Revert on error
+      }
+    };
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
@@ -271,32 +375,82 @@ export const StoreCatalog: React.FC<StoreCatalogProps> = ({ storeId }) => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-6">
           {isLoading ? (
-            <p className="col-span-full animate-pulse py-20 text-center italic text-[var(--es-tertiary)]">
+            <p className="animate-pulse py-20 text-center italic text-[var(--es-tertiary)]">
               Chargement...
             </p>
           ) : filteredItems.length === 0 ? (
-            <p className="col-span-full py-20 text-center italic text-[var(--es-tertiary)]">
+            <p className="py-20 text-center italic text-[var(--es-tertiary)]">
               Aucun produit trouvé.
             </p>
           ) : (
-            filteredItems.map((item) => (
-              <CatalogItemCard
-                key={item.id}
-                item={item}
-                onEdit={() => openEditSheet(item)}
-                onDelete={() => handleDelete(item.id)}
-                isSelected={selectedIds.includes(item.id)}
-                onSelect={(selected) => {
-                  setSelectedIds((prev) =>
-                    selected
-                      ? [...prev, item.id]
-                      : prev.filter((id) => id !== item.id),
-                  );
-                }}
-              />
-            ))
+            <>
+              {groupedByCategory.groups.map(({ category, items: categoryItems }) => (
+                <div key={category.id} className="flex flex-col gap-2">
+                  <h4 className="flex items-center gap-1.5 px-1 text-[13px] font-semibold text-[var(--es-secondary)]">
+                    <span>{category.icon || "📦"}</span>
+                    {category.name}
+                  </h4>
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleCategoryDragEnd(category.id, categoryItems)}
+                  >
+                    <SortableContext
+                      items={categoryItems.map((item) => item.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="flex flex-col gap-2">
+                        {categoryItems.map((item) => (
+                          <SortableCatalogItem
+                            key={item.id}
+                            item={item}
+                            dragDisabled={isDragDisabled}
+                            isSelected={selectedIds.includes(item.id)}
+                            onSelect={(selected) => {
+                              setSelectedIds((prev) =>
+                                selected
+                                  ? [...prev, item.id]
+                                  : prev.filter((id) => id !== item.id),
+                              );
+                            }}
+                            onEdit={() => openEditSheet(item)}
+                            onDelete={() => handleDelete(item.id)}
+                          />
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                </div>
+              ))}
+
+              {groupedByCategory.withoutCategory.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <h4 className="px-1 text-[13px] font-semibold text-[var(--es-secondary)]">
+                    Sans rayon
+                  </h4>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {groupedByCategory.withoutCategory.map((item) => (
+                      <CatalogItemCard
+                        key={item.id}
+                        item={item}
+                        onEdit={() => openEditSheet(item)}
+                        onDelete={() => handleDelete(item.id)}
+                        isSelected={selectedIds.includes(item.id)}
+                        onSelect={(selected) => {
+                          setSelectedIds((prev) =>
+                            selected
+                              ? [...prev, item.id]
+                              : prev.filter((id) => id !== item.id),
+                          );
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

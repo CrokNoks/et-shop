@@ -22,6 +22,8 @@ export interface CatalogInfo {
   category?: { name: string; sort_order: number };
   store?: { id: string; name: string };
   unit: string;
+  /** `sort_order` du produit catalogue — `undefined` sans correspondance catalogue (article libre ou optimiste hors ligne pas encore synchronisé). */
+  sortOrder?: number;
 }
 
 export function getCatalogInfo(item: ShoppingListItem): CatalogInfo {
@@ -34,6 +36,7 @@ export function getCatalogInfo(item: ShoppingListItem): CatalogInfo {
     category: catalog?.categories,
     store: catalog?.stores,
     unit: item.unit || catalog?.unit || "pcs",
+    sortOrder: catalog?.sort_order,
   };
 }
 
@@ -430,9 +433,30 @@ export function useShoppingListItems(
           .sort((a, b) => a.order - b.order)
           .map((aisle) => ({
             ...aisle,
-            items: [...aisle.items].sort(
-              (a, b) => Number(a.is_purchased) - Number(b.is_purchased),
-            ),
+            // Tri primaire : non-cochés d'abord (cf. fix(classic_item_order)).
+            // Tri secondaire : sort_order du produit catalogue au sein d'un
+            // même rayon. Un article sans correspondance catalogue (ajout
+            // libre, ou optimiste hors ligne pas encore synchronisé —
+            // `items_catalog: null`) se trie après les articles catalogués
+            // du rayon, par nom.
+            items: [...aisle.items].sort((a, b) => {
+              const purchasedDiff =
+                Number(a.is_purchased) - Number(b.is_purchased);
+              if (purchasedDiff !== 0) return purchasedDiff;
+
+              const aInfo = getCatalogInfo(a);
+              const bInfo = getCatalogInfo(b);
+              const aHasSortOrder = aInfo.sortOrder !== undefined;
+              const bHasSortOrder = bInfo.sortOrder !== undefined;
+
+              if (aHasSortOrder && bHasSortOrder) {
+                return aInfo.sortOrder! - bInfo.sortOrder!;
+              }
+              if (aHasSortOrder !== bHasSortOrder) {
+                return aHasSortOrder ? -1 : 1;
+              }
+              return aInfo.name.localeCompare(bInfo.name);
+            }),
           })),
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
