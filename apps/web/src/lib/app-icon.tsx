@@ -73,6 +73,14 @@ export function AppIconMark({
  * trait d'origine (4.6) par décalage perpendiculaire à chaque segment, avec
  * jointure en onglet au sommet), conforme à la description du handoff : "la
  * coche lisible par son vide réservé".
+ *
+ * Le sommet du trait d'origine (28.5, 20) touche exactement le bord haut du
+ * panier (y=20) : un décalage perpendiculaire symétrique y place donc
+ * nécessairement un des deux côtés du ruban au-delà de ce bord (jusqu'à
+ * (26.87, 18.37) sans correction), ce qui perçait un cran visible hors de la
+ * silhouette une fois recoloré par le thème (bug initial). Le ruban est donc
+ * découpé au demi-plan y>=20 (intersection de Sutherland-Hodgman avec le
+ * bord haut du panier) pour rester entièrement contenu dans le panier.
  */
 export function AppIconMonochrome() {
   return (
@@ -81,7 +89,7 @@ export function AppIconMonochrome() {
         <path
           fillRule="evenodd"
           fill="#000000"
-          d="M8 20h30l-4 14H16L8 20z M12.37 23.13L20.50 31.25L30.13 21.63L26.87 18.37L20.50 24.75L15.63 19.87Z"
+          d="M8 20h30l-4 14H16L8 20z M12.37 23.13L20.50 31.25L30.13 21.63L28.50 20L25.24 20L20.50 24.75L15.76 20L15.50 20Z"
         />
         <circle cx="18" cy="41" r="2.8" fill="#000000" />
         <circle cx="32" cy="41" r="2.8" fill="#000000" />

@@ -63,6 +63,8 @@ La spec initiale prévoyait un nouveau composant `LoyaltyCardFullscreen.tsx`. En
 
 Correction : la conclusion initiale (« spécificité de l'adaptive icon Android natif packagé, non implémentable dans une PWA web ») était erronée. Le Web App Manifest standard supporte `purpose: "monochrome"` — Chrome/Android recolore lui-même l'icône avec la couleur d'accent système si l'utilisateur active les « icônes thématisées » du launcher, sans empaquetage natif. Implémenté : `AppIconMonochrome` (`lib/app-icon.tsx`) sert une variante fond transparent, une seule couleur pleine, où la coche est un vide réservé (fill-rule evenodd) dans le panier, exposée via `app/pwa-icon-monochrome/route.tsx` et déclarée dans `manifest.ts`.
 
+Bug de suivi : une fois recolorée, l'icône affichait un cran visible qui perçait le bord haut du panier au lieu d'une silhouette propre. Cause : le sommet du trait de coche d'origine (28.5, 20) touche exactement ce bord ; le décalage perpendiculaire symétrique utilisé pour approximer l'épaisseur du trait plaçait donc un des deux côtés du ruban hors du panier (jusqu'à y=18.37). Corrigé en découpant le ruban au demi-plan y≥20 (intersection de Sutherland-Hodgman avec le bord haut) pour qu'il reste entièrement contenu dans la silhouette, quelle que soit la couleur d'accent appliquée par le launcher.
+
 ## Duplications factorisées
 
 Trois petites duplications signalées en revue ont été factorisées (Fix Cycle K5) :
