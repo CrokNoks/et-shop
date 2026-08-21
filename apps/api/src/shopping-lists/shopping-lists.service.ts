@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   BadRequestException,
 } from '@nestjs/common';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
@@ -54,7 +55,9 @@ export class ShoppingListsService {
       query.eq('household_id', householdId);
     }
 
-    const { data, error } = await query.order('name', { ascending: true });
+    const { data, error } = await query
+      .order('sort_order', { ascending: true })
+      .order('name', { ascending: true });
 
     if (error) this.handleError(error);
     return data || [];
@@ -577,6 +580,28 @@ export class ShoppingListsService {
     return data;
   }
 
+  // Calcule le sort_order de fin de rayon pour un produit qui rejoint
+  // category_id : MAX(sort_order) + 1 parmi les produits déjà présents dans
+  // ce rayon, ou 1 si le rayon est vide (même convention que
+  // handleOpenCreate côté frontend pour les rayons).
+  private async getNextCatalogSortOrder(
+    client: SupabaseClient,
+    categoryId: string,
+    householdId: string,
+  ): Promise<number> {
+    const { data, error } = await client
+      .from('items_catalog')
+      .select('sort_order')
+      .eq('category_id', categoryId)
+      .eq('household_id', householdId)
+      .order('sort_order', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) this.handleError(error);
+    return (data?.sort_order ?? 0) + 1;
+  }
+
   async updateCatalogItem(
     id: string,
     payload: {
@@ -588,16 +613,47 @@ export class ShoppingListsService {
     },
   ) {
     const householdId = this.getHouseholdIdOrThrow();
+    const client = this.supabaseService.getClient();
+
     // Changer de magasin sans changer de rayon laisserait category_id pointer
     // vers un rayon de l'ancien magasin : on le réinitialise, l'utilisateur
     // choisit un nouveau rayon dans le magasin cible (comme à la création).
-    const finalPayload =
+    let finalPayload: Omit<typeof payload, 'category_id'> & {
+      category_id?: string | null;
+      sort_order?: number;
+    } =
       payload.store_id !== undefined
         ? { ...payload, category_id: payload.category_id ?? null }
         : payload;
 
-    const { data, error } = await this.supabaseService
-      .getClient()
+    // Changement de rayon RÉEL uniquement : le frontend envoie systématiquement
+    // category_id à chaque édition (renommage, code-barres, unité...), même
+    // sans changement de rayon. On compare à la valeur actuelle en base pour
+    // ne recalculer sort_order QUE si elle change vraiment (y compris le
+    // passage vers/depuis "aucun rayon") — sinon l'ordre configuré par
+    // drag-and-drop serait détruit à la première correction de libellé.
+    if (finalPayload.category_id !== undefined) {
+      const { data: current } = await client
+        .from('items_catalog')
+        .select('category_id')
+        .eq('id', id)
+        .eq('household_id', householdId)
+        .maybeSingle();
+
+      const categoryChanged =
+        (current?.category_id ?? null) !== (finalPayload.category_id ?? null);
+
+      if (categoryChanged && finalPayload.category_id) {
+        const sortOrder = await this.getNextCatalogSortOrder(
+          client,
+          finalPayload.category_id,
+          householdId,
+        );
+        finalPayload = { ...finalPayload, sort_order: sortOrder };
+      }
+    }
+
+    const { data, error } = await client
       .from('items_catalog')
       .update(finalPayload)
       .eq('id', id)
@@ -633,16 +689,59 @@ export class ShoppingListsService {
 
   async bulkUpdateCatalogItemsCategory(ids: string[], category_id: string) {
     const householdId = this.getHouseholdIdOrThrow();
-    const { data, error } = await this.supabaseService
-      .getClient()
+    const client = this.supabaseService.getClient();
+
+    // Les produits assignés en masse rejoignent la fin du rayon de
+    // destination : sort_order calculé côté serveur, comme pour l'édition
+    // individuelle d'un produit.
+    const sortOrder = await this.getNextCatalogSortOrder(
+      client,
+      category_id,
+      householdId,
+    );
+
+    const { data, error } = await client
       .from('items_catalog')
-      .update({ category_id })
+      .update({ category_id, sort_order: sortOrder })
       .in('id', ids)
       .eq('household_id', householdId)
       .select();
 
     if (error) this.handleError(error);
     return data;
+  }
+
+  async updateCatalogOrder(
+    categoryId: string,
+    orders: { itemId: string; sortOrder: number }[],
+  ) {
+    if (!categoryId || !Array.isArray(orders) || orders.length === 0) {
+      throw new BadRequestException('categoryId et orders sont requis');
+    }
+
+    const householdId = this.getHouseholdIdOrThrow();
+    const client = this.supabaseService.getClient();
+
+    // N updates séquentiels via le client Supabase, sur le modèle de
+    // updateCategoryOrders (stores.service.ts) : pas de RPC/transaction
+    // dédiée, décision explicitement actée dans la spec. Chaque update est
+    // scopé par category_id ET household_id (défense en profondeur en plus
+    // de la RLS) : un itemId hors de ce rayon ou hors du foyer courant n'est
+    // simplement pas affecté, sans faire échouer les autres.
+    const updates = orders.map((o) =>
+      client
+        .from('items_catalog')
+        .update({ sort_order: o.sortOrder })
+        .eq('id', o.itemId)
+        .eq('category_id', categoryId)
+        .eq('household_id', householdId),
+    );
+
+    const results = await Promise.all(updates);
+    const firstError = results.find((r) => r.error)?.error;
+
+    if (firstError) this.handleError(firstError);
+    return { success: true };
   }
 
   async suggestItems(query: string) {

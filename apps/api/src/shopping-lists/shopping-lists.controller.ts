@@ -5,6 +5,7 @@ import {
   Body,
   Param,
   Patch,
+  Put,
   Delete,
   Logger,
   UseGuards,
@@ -135,6 +136,27 @@ export class ShoppingListsController {
     return this.shoppingListsService.bulkUpdateCatalogItemsCategory(
       payload.ids,
       payload.category_id,
+    );
+  }
+
+  @Put('catalog/order')
+  @ApiOperation({
+    summary: 'Reorder catalog items within a category (aisle)',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Catalog items reordered successfully',
+  })
+  async updateCatalogOrder(
+    @Body()
+    payload: {
+      categoryId: string;
+      orders: { itemId: string; sortOrder: number }[];
+    },
+  ) {
+    return this.shoppingListsService.updateCatalogOrder(
+      payload.categoryId,
+      payload.orders,
     );
   }
 
